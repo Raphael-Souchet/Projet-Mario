@@ -1,17 +1,18 @@
 #include "projet.h"
 
 int main() {
-    FILE *fichier = fopen("Mario.txt", "r");
-    if (fichier == NULL) {
-        printf("Impossible d'ouvrir le fichier Mario.txt\n");
-        return 1;
-    }
+    const char *fichierOriginal = "Mario.txt";
+    const char *fichierTemp = "temp.txt";
+
+    copierFichier(fichierOriginal, fichierTemp);
 
     int choix = menu();
-    int positionJoueur = 55; 
+    int posx = 21; 
+    int posy = 5;
+
     switch(choix) {
         case 1:
-            afficherPaysage(fichier, positionJoueur);
+            jouer(fichierTemp, posx, posy);
             break;
         case 2:
             // fct score
@@ -19,7 +20,6 @@ int main() {
         case 3:
             break;
     }
-
-    fclose(fichier);
+    
     return 0;
 }
