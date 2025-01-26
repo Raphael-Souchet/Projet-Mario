@@ -56,11 +56,11 @@ void caracterePaysage(char caractereActuel) {
     }
 }
 
-void afficherPaysage(FILE *fichier, int *positionJoueur) {
+void afficherPaysage(FILE *fichier, int positionJoueur) {
     char ligne[1024];
 
-    int debutLecture = *positionJoueur - 21;
-    int finLecture = *positionJoueur + 21;
+    int debutLecture = positionJoueur - 21;
+    int finLecture = positionJoueur + 21;
 
     if (debutLecture < 0) {
         debutLecture = 0;
@@ -89,50 +89,51 @@ void afficherPaysage(FILE *fichier, int *positionJoueur) {
     }
 }
 
-void deplacer_joueur(FILE *fichier, int *posx, int *posy, int largeur) {
+void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
     if (_kbhit()) {
         char touche = _getch();
-        int nouvelle_posx = *posx;
-        int nouvelle_posy = *posy;
+        printf("%c", touche);
+        int nouvelle_posx = perso->positionX;
+        int nouvelle_posy = perso->positionY;
 
         switch (touche) {
             case 'q': 
-                if (*posx > 0) nouvelle_posx--;
+                if (perso->positionX > 0) nouvelle_posx--;
                 break;
             case 'd': 
-                if (*posx < largeur - 1) nouvelle_posx++;
+                if (perso->positionX < largeur - 1) nouvelle_posx++;
                 break;
             case 'z': 
-                if (*posy > 0) nouvelle_posy--;
+                if (perso->positionY > 0) nouvelle_posy--;
                 break;
             case 'e': 
                 exit(0);
         }
 
-        fseek(fichier, (*posy) * largeur + *posx, SEEK_SET);
+        fseek(fichier, (perso->positionY) * largeur + perso->positionX, SEEK_SET);
         fputc(' ', fichier);
 
         fseek(fichier, nouvelle_posy * largeur + nouvelle_posx, SEEK_SET);
         fputc('M', fichier);
 
-        *posx = nouvelle_posx;
-        *posy = nouvelle_posy;
+        perso->positionX = nouvelle_posx;
+        perso->positionY = nouvelle_posy;
 
         rewind(fichier); 
     }
 }
 
-void jouer(const char *fichierTemp, int posx, int posy) {
+void jouer(const char *fichierTemp, Personnage* perso) {
     FILE *fichier = fopen(fichierTemp, "r+");
 
-    fseek(fichier, (posy) * 100 + posx, SEEK_SET);
+    fseek(fichier, (perso->positionY) * 100 + perso->positionX, SEEK_SET);
     fputc('M', fichier);
 
     int largeur = 100; 
     while (1) {
         system("cls"); 
-        afficherPaysage(fichier, &posx);
-        deplacer_joueur(fichier, &posx, &posy, largeur);
+        afficherPaysage(fichier, perso->positionX);
+        deplacer_joueur(fichier, perso, largeur);
         Sleep(250);
     }
     

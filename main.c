@@ -7,12 +7,12 @@ int main() {
     copierFichier(fichierOriginal, fichierTemp);
 
     int choix = menu();
-    int posx = 21; 
-    int posy = 5;
+
+    Personnage perso = {21, 5, "Mario", 0};
 
     switch(choix) {
         case 1:
-            jouer(fichierTemp, posx, posy);
+            jouer(fichierTemp, &perso);
             break;
         case 2:
             // fct score
