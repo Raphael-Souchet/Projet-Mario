@@ -92,7 +92,10 @@ void afficherPaysage(FILE *fichier, int positionJoueur) {
 void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
     if (_kbhit()) {
         char touche = _getch();
-        printf("%c", touche);
+        while (_kbhit()) {
+            _getch();
+        }
+        
         int nouvelle_posx = perso->positionX;
         int nouvelle_posy = perso->positionY;
 
@@ -110,16 +113,18 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
                 exit(0);
         }
 
-        fseek(fichier, (perso->positionY) * largeur + perso->positionX, SEEK_SET);
-        fputc(' ', fichier);
+        if (nouvelle_posx != perso->positionX || nouvelle_posy != perso->positionY) {
+            fseek(fichier, (perso->positionY) * largeur + perso->positionX, SEEK_SET);
+            fputc(' ', fichier);
 
-        fseek(fichier, nouvelle_posy * largeur + nouvelle_posx, SEEK_SET);
-        fputc('M', fichier);
+            fseek(fichier, nouvelle_posy * largeur + nouvelle_posx, SEEK_SET);
+            fputc('M', fichier);
 
-        perso->positionX = nouvelle_posx;
-        perso->positionY = nouvelle_posy;
+            perso->positionX = nouvelle_posx;
+            perso->positionY = nouvelle_posy;
+        }
 
-        rewind(fichier); 
+        rewind(fichier);
     }
 }
 
