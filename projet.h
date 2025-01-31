@@ -13,8 +13,12 @@ typedef struct {
     int positionY;
     char nom[100];
     int en_saut;
+    int score;
 } Personnage;
 
+void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction);
+void effacer_position(FILE *fichier, Personnage *perso, int largeur);
+void mettre_position(FILE *fichier, Personnage *perso, int largeur);
 void copierFichier(const char *source, const char *destination);
 void deplacer_joueur(FILE *fichier, Personnage *perso, int largeur);
 void caracterePaysage(char caractereActuel);
