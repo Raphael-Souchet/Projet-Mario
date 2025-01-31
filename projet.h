@@ -13,6 +13,7 @@ typedef struct {
     int positionY;
     char nom[100];
     int en_saut;
+    int score;
 } Personnage;
 
 void copierFichier(const char *source, const char *destination);

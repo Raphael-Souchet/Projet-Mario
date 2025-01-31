@@ -137,8 +137,8 @@ void jouer(const char *fichierTemp, Personnage* perso) {
     int largeur = 100; 
     while (1) {
         system("cls"); 
-        afficherPaysage(fichier, perso->positionX);
         deplacer_joueur(fichier, perso, largeur);
+        afficherPaysage(fichier, perso->positionX);
         Sleep(250);
     }
     
