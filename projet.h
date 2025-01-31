@@ -1,5 +1,5 @@
-#ifndef PROJET
-#define PROJET
+#ifndef PROJET_H
+#define PROJET_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +7,8 @@
 #include <windows.h>
 #include <conio.h>
 #include <time.h>
+
+#define FICHIER_SAUVEGARDE "sauvegarde.txt"
 
 typedef struct {
     int positionX;
@@ -23,7 +25,11 @@ void copierFichier(const char *source, const char *destination);
 void deplacer_joueur(FILE *fichier, Personnage *perso, int largeur);
 void caracterePaysage(char caractereActuel);
 void afficherPaysage(FILE *fichier, int positionJoueur);
-int menu();
+void menuPrincipal(const char *fichierTemp);
 void jouer(const char *fichierTemp, Personnage *perso);
+void sauvegarderPartie(Personnage *perso);
+int chargerPartie(Personnage *perso);
+void menuSauvegarde(Personnage *perso, const char *fichierTemp);
+void afficherScores();
 
 #endif
