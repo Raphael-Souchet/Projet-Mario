@@ -117,29 +117,30 @@ void afficherPaysage(FILE *fichier, int positionJoueur) {
 }
 
 void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
+    static char touche_maintenue = 0;  
+    
     if (_kbhit()) {
-        int direction = 0;  
-        char touche = _getch();
+        char nouvelle_touche = _getch();
+        
+        if (nouvelle_touche == 'd' || nouvelle_touche == 'q') {
+            touche_maintenue = nouvelle_touche;
+        }
+        
         while (_kbhit()) {
             _getch();
         }
-        
-        if (_kbhit()) {
-            char deuxieme_touche = _getch();
-            
-            if ((touche == 'z' && (deuxieme_touche == 'd' || deuxieme_touche == 'q')) ||
-                ((touche == 'd' || touche == 'q') && deuxieme_touche == 'z')) {
-                if (touche == 'd' || deuxieme_touche == 'd') {
-                    direction = 1;  
-                } else {
-                    direction = -1; 
-                }
-                
-                if (!perso->en_saut) {
-                    perso->en_saut = 1;
-                    gerer_saut(fichier, perso, largeur, direction);
-                    return;
-                }
+
+        if (nouvelle_touche == 'z') {
+            if (touche_maintenue != 0 && !perso->en_saut) {
+                perso->en_saut = 1;
+                int direction = (touche_maintenue == 'd') ? 1 : -1;
+                gerer_saut(fichier, perso, largeur, direction);
+                return;
+            } 
+            else if (!perso->en_saut) {
+                perso->en_saut = 1;
+                gerer_saut(fichier, perso, largeur, 0);
+                return;
             }
         }
         
@@ -147,23 +148,23 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
             int nouvelle_posx = perso->positionX;
             int nouvelle_posy = perso->positionY;
 
-            switch (touche) {
+            switch (nouvelle_touche) {
                 case 'q': 
                     if (perso->positionX > 0) nouvelle_posx--;
                     break;
                 case 'd': 
                     if (perso->positionX < largeur - 1) nouvelle_posx++;
                     break;
-                case 'z': 
-                    perso->en_saut = 1;
-                    gerer_saut(fichier, perso, largeur, 0);  
-                    return;
                 case 'e': 
                     exit(0);
                 case 's':
                 case 'S':
                     menuSauvegarde(perso, "temp.txt");
+                    touche_maintenue = 0;  
                     return;
+                default:
+                    touche_maintenue = 0;  
+                    break;
             }
 
             if (nouvelle_posx != perso->positionX || nouvelle_posy != perso->positionY) {
@@ -175,6 +176,9 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
         }
 
         rewind(fichier);
+    } 
+    else {
+        touche_maintenue = 0;
     }
 }
 
@@ -228,7 +232,7 @@ void menuPrincipal(const char *fichierTemp) {
 }
 
 void sauvegarderPartie(Personnage *perso) {
-    FILE *fichier = fopen(FICHIER_SAUVEGARDE, "a");
+    FILE *fichier = fopen("sauvegarde.txt", "a");
     if (fichier == NULL) {
         printf("Erreur lors de la creation du fichier de sauvegarde!\n");
         return;
@@ -250,7 +254,7 @@ void sauvegarderPartie(Personnage *perso) {
 }
 
 int chargerPartie(Personnage *perso) {
-    FILE *fichier = fopen(FICHIER_SAUVEGARDE, "r");
+    FILE *fichier = fopen("sauvegarde.txt", "r");
     if (fichier == NULL) {
         printf("Aucune sauvegarde trouvee!\n");
         Sleep(1000);
@@ -313,7 +317,7 @@ void menuSauvegarde(Personnage *perso, const char *fichierTemp) {
 }
 
 void afficherScores() {
-    FILE *fichier = fopen(FICHIER_SAUVEGARDE, "r");
+    FILE *fichier = fopen("sauvegarde.txt", "r");
     if (fichier == NULL) {
         printf("Aucune sauvegarde trouvee!\n");
         Sleep(1000);
@@ -348,7 +352,7 @@ void jouer(const char *fichierTemp, Personnage* perso) {
         printf("\nAppuyez sur 'S' pour ouvrir le menu de sauvegarde\n");
         
         deplacer_joueur(fichier, perso, largeur);
-        Sleep(200);
+        Sleep(100);
     }
     
     fclose(fichier);

@@ -8,8 +8,6 @@
 #include <conio.h>
 #include <time.h>
 
-#define FICHIER_SAUVEGARDE "sauvegarde.txt"
-
 typedef struct {
     int positionX;
     int positionY;
