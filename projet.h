@@ -35,5 +35,6 @@ int chargerPartie(Personnage *perso);
 void menuSauvegarde(Personnage *perso, const char *fichierTemp);
 void afficherScores();
 void verifier_collision(FILE *fichier, Personnage* perso, int largeur);
+void cacherCurseur();
 
 #endif

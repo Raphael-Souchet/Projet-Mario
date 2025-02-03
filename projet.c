@@ -10,6 +10,14 @@ void mettre_position(FILE *fichier, Personnage *perso, int largeur) {
     fputc('M', fichier);
 }
 
+void cacherCurseur() {
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO info;
+    info.bVisible = FALSE;
+    info.dwSize = 1;
+    SetConsoleCursorInfo(console, &info);
+}
+
 void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction) {
     int hauteur_saut[8] = {-1, -1, -1, -1, 1, 1, 1, 1}; 
     
@@ -347,6 +355,8 @@ void jouer(const char *fichierTemp, Personnage* perso) {
 
     fseek(fichier, (perso->positionY) * 100 + perso->positionX, SEEK_SET);
     fputc('M', fichier);
+
+    cacherCurseur();
 
     while (1) {
         Sleep(50);
