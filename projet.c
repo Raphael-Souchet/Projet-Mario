@@ -11,42 +11,21 @@ void mettre_position(FILE *fichier, Personnage *perso, int largeur) {
 }
 
 void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction) {
-    int positions_saut[4][2];
+    int hauteur_saut[6] = {-2, -1, -1, 1, 1, 2}; 
     
-    if (direction == 0) {  
-        int saut_vertical[4][2] = {{0, -1}, {0, -1}, {0, 1}, {0, 1}};
-        memcpy(positions_saut, saut_vertical, sizeof(positions_saut));
-    }
-    else if (direction == 1) { 
-        int saut_droite[4][2] = {{1, -1}, {1, -1}, {1, 1}, {1, 1}};
-        memcpy(positions_saut, saut_droite, sizeof(positions_saut));
-    }
-    else { 
-        int saut_gauche[4][2] = {{-1, -1}, {-1, -1}, {-1, 1}, {-1, 1}};
-        memcpy(positions_saut, saut_gauche, sizeof(positions_saut));
-    }
-    
-    for (int i = 0; i < 4; i++) {
-        int ancien_x = perso->positionX;
-        int ancien_y = perso->positionY;
+    for (int i = 0; i < 6; i++) {
+        int nouv_x = perso->positionX + direction;
+        int nouv_y = perso->positionY + hauteur_saut[i];
         
-        int nouveau_x = perso->positionX + positions_saut[i][0];
-        int nouveau_y = perso->positionY + positions_saut[i][1];
-        
-        if (nouveau_x >= 0 && nouveau_x < largeur && nouveau_y >= 0) {
+        if (nouv_x >= 0 && nouv_x < largeur && nouv_y >= 0) {
             effacer_position(fichier, perso, largeur);
-            
-            perso->positionX = nouveau_x;
-            perso->positionY = nouveau_y;
-            
+            perso->positionX = nouv_x;
+            perso->positionY = nouv_y;
             mettre_position(fichier, perso, largeur);
             
             system("cls");
             afficherPaysage(fichier, perso->positionX);
-            Sleep(100);
-        } else {
-            perso->positionX = ancien_x;
-            perso->positionY = ancien_y;
+            Sleep(75); 
         }
     }
     
@@ -117,68 +96,30 @@ void afficherPaysage(FILE *fichier, int positionJoueur) {
 }
 
 void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
-    static char touche_maintenue = 0;  
+    int deplacement_x = 0;
     
-    if (_kbhit()) {
-        char nouvelle_touche = _getch();
+    if (GetAsyncKeyState('D') & 0x8000) deplacement_x = 1;
+    if (GetAsyncKeyState('Q') & 0x8000) deplacement_x = -1;
+
+    if (deplacement_x != 0 && !perso->en_saut) {
+        effacer_position(fichier, perso, largeur);
+        perso->positionX += deplacement_x;
+        // Vérifier les collisions ici 
+        mettre_position(fichier, perso, largeur);
+    }
+
+    if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_saut) {
+        perso->en_saut = 1;
+        int direction = 0;
         
-        if (nouvelle_touche == 'd' || nouvelle_touche == 'q') {
-            touche_maintenue = nouvelle_touche;
-        }
+        if (deplacement_x > 0) direction = 1;
+        else if (deplacement_x < 0) direction = -1;
         
-        while (_kbhit()) {
-            _getch();
-        }
+        gerer_saut(fichier, perso, largeur, direction);
+    }
 
-        if (nouvelle_touche == 'z') {
-            if (touche_maintenue != 0 && !perso->en_saut) {
-                perso->en_saut = 1;
-                int direction = (touche_maintenue == 'd') ? 1 : -1;
-                gerer_saut(fichier, perso, largeur, direction);
-                return;
-            } 
-            else if (!perso->en_saut) {
-                perso->en_saut = 1;
-                gerer_saut(fichier, perso, largeur, 0);
-                return;
-            }
-        }
-        
-        if (!perso->en_saut) {
-            int nouvelle_posx = perso->positionX;
-            int nouvelle_posy = perso->positionY;
-
-            switch (nouvelle_touche) {
-                case 'q': 
-                    if (perso->positionX > 0) nouvelle_posx--;
-                    break;
-                case 'd': 
-                    if (perso->positionX < largeur - 1) nouvelle_posx++;
-                    break;
-                case 'e': 
-                    exit(0);
-                case 's':
-                case 'S':
-                    menuSauvegarde(perso, "temp.txt");
-                    touche_maintenue = 0;  
-                    return;
-                default:
-                    touche_maintenue = 0;  
-                    break;
-            }
-
-            if (nouvelle_posx != perso->positionX || nouvelle_posy != perso->positionY) {
-                effacer_position(fichier, perso, largeur);
-                perso->positionX = nouvelle_posx;
-                perso->positionY = nouvelle_posy;
-                mettre_position(fichier, perso, largeur);
-            }
-        }
-
-        rewind(fichier);
-    } 
-    else {
-        touche_maintenue = 0;
+    if (GetAsyncKeyState('S') & 0x8000) {
+        menuSauvegarde(perso, "temp.txt");
     }
 }
 
@@ -286,10 +227,10 @@ void menuSauvegarde(Personnage *perso, const char *fichierTemp) {
     printf("+---------------------------------------------+\n");
     printf("|              Menu Sauvegarde                |\n");
     printf("|                                             |\n");
-    printf("|           1. Sauvegarder la partie         |\n");
-    printf("|           2. Charger une partie            |\n");
-    printf("|           3. Retour au jeu                 |\n");
-    printf("|           4. Menu Principal                |\n");
+    printf("|           1. Sauvegarder la partie          |\n");
+    printf("|           2. Charger une partie             |\n");
+    printf("|           3. Retour au jeu                  |\n");
+    printf("|           4. Menu Principal                 |\n");
     printf("+---------------------------------------------+\n");
     printf("Votre choix: ");
     
@@ -341,18 +282,23 @@ void afficherScores() {
 
 void jouer(const char *fichierTemp, Personnage* perso) {
     FILE *fichier = fopen(fichierTemp, "r+");
+    int largeur = 100;
 
     fseek(fichier, (perso->positionY) * 100 + perso->positionX, SEEK_SET);
     fputc('M', fichier);
 
-    int largeur = 100; 
     while (1) {
-        system("cls"); 
-        afficherPaysage(fichier, perso->positionX);
-        printf("\nAppuyez sur 'S' pour ouvrir le menu de sauvegarde\n");
+        Sleep(50);
         
+        if (_kbhit()) {
+            char touche = _getch();
+            if (touche == 'e') exit(0);
+        }
+
+        system("cls");
+        afficherPaysage(fichier, perso->positionX);
         deplacer_joueur(fichier, perso, largeur);
-        Sleep(100);
+        fflush(fichier);
     }
     
     fclose(fichier);

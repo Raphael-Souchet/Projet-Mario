@@ -8,6 +8,7 @@
 #include <conio.h>
 #include <time.h>
 
+
 typedef struct {
     int positionX;
     int positionY;
