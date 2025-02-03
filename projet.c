@@ -129,7 +129,7 @@ void verifier_collision(FILE *fichier, Personnage* perso, int largeur) {
     fseek(fichier, (perso->positionY) * largeur + perso->positionX + 1, SEEK_SET);
     caractere_devant = fgetc(fichier);
     
-    if (caractere_devant == 'w') {
+    if (caractere_devant == 'w' || perso->positionX == largeur - 3) {
         perso->peut_avancer = 0;
     } else {
         perso->peut_avancer = 1;
@@ -139,7 +139,7 @@ void verifier_collision(FILE *fichier, Personnage* perso, int largeur) {
     fseek(fichier, (perso->positionY) * largeur + perso->positionX - 1, SEEK_SET);
     caractere_derriere = fgetc(fichier);
     
-    if (caractere_derriere == 'w') {
+    if (caractere_derriere == 'w' || perso->positionX == 0) {
         perso->peut_reculer = 0;
     } else {
         perso->peut_reculer = 1;
