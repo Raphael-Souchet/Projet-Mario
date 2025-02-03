@@ -11,13 +11,22 @@ void mettre_position(FILE *fichier, Personnage *perso, int largeur) {
 }
 
 void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction) {
-    int hauteur_saut[6] = {-2, -1, -1, 1, 1, 2}; 
+    int hauteur_saut[8] = {-1, -1, -1, -1, 1, 1, 1, 1}; 
     
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 8; i++) {
         int nouv_x = perso->positionX + direction;
         int nouv_y = perso->positionY + hauteur_saut[i];
         
-        if (nouv_x >= 0 && nouv_x < largeur && nouv_y >= 0) {
+        char caractere_destination;
+        fseek(fichier, nouv_y * largeur + nouv_x, SEEK_SET);
+        caractere_destination = fgetc(fichier);
+
+        char caractere_lateral;
+        fseek(fichier, perso->positionY * largeur + nouv_x, SEEK_SET);
+        caractere_lateral = fgetc(fichier);
+        
+        if (nouv_x >= 0 && nouv_x < largeur && nouv_y >= 0 && 
+            caractere_destination != 'w' && caractere_lateral != 'w' && perso->peut_monter) {
             effacer_position(fichier, perso, largeur);
             perso->positionX = nouv_x;
             perso->positionY = nouv_y;
@@ -95,20 +104,72 @@ void afficherPaysage(FILE *fichier, int positionJoueur) {
     }
 }
 
+void verifier_collision(FILE *fichier, Personnage* perso, int largeur) {
+    char caractere_dessous;
+    fseek(fichier, (perso->positionY + 1) * largeur + perso->positionX, SEEK_SET);
+    caractere_dessous = fgetc(fichier);
+    
+    if (caractere_dessous == 'w') {
+        perso->en_chute = 0;
+    } else {
+        perso->en_chute = 1;
+    }
+
+    char caractere_dessus;
+    fseek(fichier, (perso->positionY - 1) * largeur + perso->positionX, SEEK_SET);
+    caractere_dessus = fgetc(fichier);
+    
+    if (caractere_dessus == 'w') {
+        perso->peut_monter = 0;
+    } else {
+        perso->peut_monter = 1;
+    }
+
+    char caractere_devant;
+    fseek(fichier, (perso->positionY) * largeur + perso->positionX + 1, SEEK_SET);
+    caractere_devant = fgetc(fichier);
+    
+    if (caractere_devant == 'w') {
+        perso->peut_avancer = 0;
+    } else {
+        perso->peut_avancer = 1;
+    }
+
+    char caractere_derriere;
+    fseek(fichier, (perso->positionY) * largeur + perso->positionX - 1, SEEK_SET);
+    caractere_derriere = fgetc(fichier);
+    
+    if (caractere_derriere == 'w') {
+        perso->peut_reculer = 0;
+    } else {
+        perso->peut_reculer = 1;
+    }
+}
+
 void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
     int deplacement_x = 0;
     
     if (GetAsyncKeyState('D') & 0x8000) deplacement_x = 1;
-    if (GetAsyncKeyState('Q') & 0x8000) deplacement_x = -1;
+    if (GetAsyncKeyState('Q') & 0x8000) deplacement_x = -1; 
 
-    if (deplacement_x != 0 && !perso->en_saut) {
+    verifier_collision(fichier, perso, largeur);
+
+    if (perso->en_chute) {
         effacer_position(fichier, perso, largeur);
-        perso->positionX += deplacement_x;
-        // Vérifier les collisions ici 
+        perso->positionY++;
         mettre_position(fichier, perso, largeur);
     }
 
-    if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_saut) {
+    if (deplacement_x != 0 && !perso->en_saut) {
+        if ((deplacement_x > 0 && perso->peut_avancer) || 
+            (deplacement_x < 0 && perso->peut_reculer)) {
+            effacer_position(fichier, perso, largeur);
+            perso->positionX += deplacement_x;
+            mettre_position(fichier, perso, largeur);
+        }
+    }
+
+    if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_saut && !perso->en_chute) {
         perso->en_saut = 1;
         int direction = 0;
         
@@ -124,7 +185,7 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
 }
 
 void menuPrincipal(const char *fichierTemp) {
-    Personnage perso = {21, 5, "Mario", 0, 0};
+    Personnage perso = {21, 5, "Mario"};
     int choix;
     
     system("cls");

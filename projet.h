@@ -15,6 +15,10 @@ typedef struct {
     char nom[100];
     int en_saut;
     int score;
+    int en_chute;
+    int peut_monter;
+    int peut_avancer;
+    int peut_reculer;
 } Personnage;
 
 void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction);
@@ -30,5 +34,6 @@ void sauvegarderPartie(Personnage *perso);
 int chargerPartie(Personnage *perso);
 void menuSauvegarde(Personnage *perso, const char *fichierTemp);
 void afficherScores();
+void verifier_collision(FILE *fichier, Personnage* perso, int largeur);
 
 #endif
