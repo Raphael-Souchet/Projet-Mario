@@ -37,7 +37,7 @@ void caracterePaysage(char caractereActuel);
 void afficherPaysage(FILE *fichier, int positionJoueur);
 void menuPrincipal(const char *fichierTemp);
 void jouer(const char *fichierTemp, Personnage *perso);
-void sauvegarderPartie(Personnage *perso);
+void sauvegarderPartie(Personnage *perso,const char *fichierTemp);
 int chargerPartie(Personnage *perso);
 void menuSauvegarde(Personnage *perso, const char *fichierTemp);
 void resetScores();
