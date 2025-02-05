@@ -152,6 +152,10 @@ void verifier_collision(FILE *fichier, Personnage* perso, int largeur) {
     } else {
         perso->peut_reculer = 1;
     }
+
+    if (perso->positionX < 0) perso->positionX = 0;
+    if (perso->positionX >= largeur) perso->positionX = largeur - 1;
+    if (perso->positionY < 0) perso->positionY = 0;
 }
 
 void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
@@ -166,11 +170,12 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
         effacer_position(fichier, perso, largeur);
         perso->positionY++;
         mettre_position(fichier, perso, largeur);
+        verifier_collision(fichier, perso, largeur);
     }
 
     if (deplacement_x != 0 && !perso->en_saut) {
-        if ((deplacement_x > 0 && perso->peut_avancer) || 
-            (deplacement_x < 0 && perso->peut_reculer)) {
+        if ((deplacement_x > 0 && perso->peut_avancer && perso->positionX < largeur - 1) || 
+            (deplacement_x < 0 && perso->peut_reculer && perso->positionX > 0)) {
             effacer_position(fichier, perso, largeur);
             perso->positionX += deplacement_x;
             mettre_position(fichier, perso, largeur);
