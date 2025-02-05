@@ -21,6 +21,12 @@ typedef struct {
     int peut_reculer;
 } Personnage;
 
+typedef struct {
+    char nom[100];
+    int score;
+    char date[100];
+} Sauvegarde;
+
 void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction);
 void effacer_position(FILE *fichier, Personnage *perso, int largeur);
 void mettre_position(FILE *fichier, Personnage *perso, int largeur);
@@ -33,6 +39,7 @@ void jouer(const char *fichierTemp, Personnage *perso);
 void sauvegarderPartie(Personnage *perso);
 int chargerPartie(Personnage *perso);
 void menuSauvegarde(Personnage *perso, const char *fichierTemp);
+void resetScores();
 void afficherScores();
 void verifier_collision(FILE *fichier, Personnage* perso, int largeur);
 void cacherCurseur();

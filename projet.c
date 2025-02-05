@@ -187,7 +187,7 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
         gerer_saut(fichier, perso, largeur, direction);
     }
 
-    if (GetAsyncKeyState('S') & 0x8000) {
+    if (GetAsyncKeyState('V') & 0x8000) {
         menuSauvegarde(perso, "temp.txt");
     }
 }
@@ -204,13 +204,14 @@ void menuPrincipal(const char *fichierTemp) {
     printf("|                                             |\n");  
     printf("|                1. Nouvelle Partie           |\n");  
     printf("|                2. Charger Partie            |\n");  
-    printf("|                3. Score                     |\n");  
-    printf("|                4. Quitter                   |\n"); 
+    printf("|                3. Score                     |\n"); 
+    printf("|                4. Reset les scores          |\n");
+    printf("|                5. Quitter                   |\n"); 
     printf("+---------------------------------------------+\n");
     printf("Choisissez une option : ");
     scanf("%d", &choix);
 
-    if (choix < 1 || choix > 4) {
+    if (choix < 1 || choix > 5) {
         printf("Choix invalide, veuillez reessayer\n");
         Sleep(1000);
         menuPrincipal(fichierTemp);
@@ -237,6 +238,10 @@ void menuPrincipal(const char *fichierTemp) {
             menuPrincipal(fichierTemp);
             break;
         case 4:
+            resetScores();
+            menuPrincipal(fichierTemp);
+            break;
+        case 5:
             exit(0);
     }
 }
@@ -255,9 +260,7 @@ void sauvegarderPartie(Personnage *perso) {
     fprintf(fichier, "Nom:%s\n", perso->nom);
     fprintf(fichier, "PositionX:%d\n", perso->positionX);
     fprintf(fichier, "PositionY:%d\n", perso->positionY);
-    fprintf(fichier, "EnSaut:%d\n", perso->en_saut);
     fprintf(fichier, "Score:%d\n\n", perso->score);  
-
     fclose(fichier);
     printf("Partie sauvegardee avec succes!\n");
     Sleep(1000);
@@ -302,7 +305,7 @@ void menuSauvegarde(Personnage *perso, const char *fichierTemp) {
     printf("|           4. Menu Principal                 |\n");
     printf("+---------------------------------------------+\n");
     printf("Votre choix: ");
-    
+    Sleep(1000);
     int choix;
     scanf("%d", &choix);
 
@@ -334,21 +337,68 @@ void afficherScores() {
         return;
     }
 
-    printf("+---------------------------------------------+\n");
-    printf("|                  Scores                     |\n");
-    printf("+---------------------------------------------+\n");
-
+    Sauvegarde sauvegardes[100]; 
+    int nbSauvegardes = 0;
+    
     char ligne[100];
+    char nom_temp[100];
+    int score_temp = 0;
+    char date_temp[100];
+
     while (fgets(ligne, sizeof(ligne), fichier)) {
-        printf("%s", ligne);
+        if (strstr(ligne, "===== Sauvegarde") == ligne) {
+            strcpy(date_temp, ligne + 16);  
+            date_temp[strlen(date_temp)-1] = '\0';  
+        }
+        else if (sscanf(ligne, "Nom:%s", nom_temp) == 1) {
+        }
+        else if (sscanf(ligne, "Score:%d", &score_temp) == 1) {
+            strcpy(sauvegardes[nbSauvegardes].nom, nom_temp);
+            sauvegardes[nbSauvegardes].score = score_temp;
+            strcpy(sauvegardes[nbSauvegardes].date, date_temp);
+            nbSauvegardes++;
+        }
+    }
+    
+    fclose(fichier);
+
+    for (int i = 0; i < nbSauvegardes - 1; i++) {
+        for (int j = 0; j < nbSauvegardes - i - 1; j++) {
+            if (sauvegardes[j].score < sauvegardes[j + 1].score) {
+                
+                Sauvegarde temp = sauvegardes[j];
+                sauvegardes[j] = sauvegardes[j + 1];
+                sauvegardes[j + 1] = temp;
+            }
+        }
     }
 
-    fclose(fichier);
     
+    printf("+------+--------------------+--------+--------------------------------+\n");
+    printf("| Rang | Nom                | Score  | Date                           |\n");
+    printf("+------+--------------------+--------+--------------------------------+\n");
+
+    for (int i = 0; i < nbSauvegardes && i < 10; i++) {  
+        printf("| %4d  | %-18s | %6d | %-21s |\n", i + 1, sauvegardes[i].nom, sauvegardes[i].score, sauvegardes[i].date);
+    }
+    printf("+------+--------------------+--------+-----------------------+\n");
+
     printf("\nAppuyez sur une touche pour continuer...");
     _getch();
 }
-
+void resetScores() {
+    printf("Voulez-vous vraiment supprimer toutes les sauvegardes ? (o/n) : ");
+    char choix;
+    scanf(" %c", &choix);
+    
+    if (choix == 'o' || choix == 'O') {
+        FILE *fichier = fopen("sauvegarde.txt", "w");
+        if (fichier != NULL) {
+            fclose(fichier);
+            printf("Les scores ont ete reinitialises avec succes !\n");
+        }
+    }
+}
 void jouer(const char *fichierTemp, Personnage* perso) {
     FILE *fichier = fopen(fichierTemp, "r+");
     int largeur = 100;
