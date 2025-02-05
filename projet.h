@@ -21,6 +21,7 @@ typedef struct {
     int peut_reculer;
 } Personnage;
 
+
 typedef struct {
     char nom[100];
     int score;

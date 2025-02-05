@@ -293,7 +293,7 @@ int chargerPartie(Personnage *perso) {
     }
 
     fclose(fichier);
-    printf("Partie chargee avec succes!\n");
+    printf("Partie chargee avec succes !\n");
     printf("Bienvenue %s! Score: %d\n", perso->nom, perso->score);
     Sleep(1000);
     return 1;
