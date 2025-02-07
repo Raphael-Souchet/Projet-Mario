@@ -2,10 +2,6 @@
 
 int main() {
     const char *fichierOriginal = "Mario.txt";
-    const char *fichierTemp = "temp.txt";
-
-    copierFichier(fichierOriginal, fichierTemp);    
-    menuPrincipal(fichierTemp);
-    
+    menuPrincipal(fichierOriginal);
     return 0;
 }

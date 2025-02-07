@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <conio.h>
 #include <time.h>
+#include <ctype.h>
 
 
 typedef struct {
@@ -28,6 +29,7 @@ typedef struct {
     char date[100];
 } Sauvegarde;
 
+void viderBuffer();
 void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction);
 void effacer_position(FILE *fichier, Personnage *perso, int largeur);
 void mettre_position(FILE *fichier, Personnage *perso, int largeur);
@@ -44,5 +46,7 @@ void resetScores();
 void afficherScores();
 void verifier_collision(FILE *fichier, Personnage* perso, int largeur);
 void cacherCurseur();
+char* creerNomFichierTemp(const char* nomJoueur);
+
 
 #endif

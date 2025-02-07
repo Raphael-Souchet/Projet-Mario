@@ -1,5 +1,19 @@
 #include "projet.h"
 
+void viderBuffer() {
+    while (_kbhit()) _getch(); 
+}
+
+char* creerNomFichierTemp(const char* nomJoueur) {
+    char* fichierTemp = malloc(strlen(nomJoueur) + 9); 
+    if (fichierTemp == NULL) {
+        printf("Erreur d'allocation mémoire\n");
+        exit(1);
+    }
+    sprintf(fichierTemp, "temp_%s.txt", nomJoueur);
+    return fichierTemp;
+}
+
 void effacer_position(FILE *fichier, Personnage *perso, int largeur) {
     fseek(fichier, (perso->positionY) * largeur + perso->positionX, SEEK_SET);
     fputc(' ', fichier);
@@ -191,13 +205,15 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
     }
 
     if (GetAsyncKeyState('V') & 0x8000) {
+        viderBuffer(); 
         menuSauvegarde(perso, "temp.txt");
     }
 }
 
-void menuPrincipal(const char *fichierTemp) {
-    Personnage perso = {21, 5, "Mario"};
+void menuPrincipal(const char *fichierOriginal) {
+    Personnage perso = {21, 5, "", 0, 0, 0, 1, 1, 1};
     int choix;
+    char* fichierTemp = NULL;
     
     system("cls");
     printf("+---------------------------------------------+\n");
@@ -217,7 +233,7 @@ void menuPrincipal(const char *fichierTemp) {
     if (choix < 1 || choix > 5) {
         printf("Choix invalide, veuillez reessayer\n");
         Sleep(1000);
-        menuPrincipal(fichierTemp);
+        menuPrincipal(fichierOriginal);
         return;
     }
     
@@ -227,27 +243,35 @@ void menuPrincipal(const char *fichierTemp) {
         case 1:
             printf("Entrez votre nom: ");
             scanf("%s", perso.nom);
+            fichierTemp = creerNomFichierTemp(perso.nom);
+            copierFichier(fichierOriginal, fichierTemp);
             jouer(fichierTemp, &perso);
+            free(fichierTemp);
             break;
         case 2:
             if (chargerPartie(&perso)) {
+                fichierTemp = creerNomFichierTemp(perso.nom);
+                copierFichier(fichierOriginal, fichierTemp);
                 jouer(fichierTemp, &perso);
+                free(fichierTemp);
             } else {
-                menuPrincipal(fichierTemp);
+                menuPrincipal(fichierOriginal);
             }
             break;
         case 3:
             afficherScores();
-            menuPrincipal(fichierTemp);
+            menuPrincipal(fichierOriginal);
             break;
         case 4:
             resetScores();
-            menuPrincipal(fichierTemp);
+            menuPrincipal(fichierOriginal);
             break;
         case 5:
             exit(0);
     }
 }
+
+
 
 void sauvegarderPartie(Personnage *perso,const char *fichierTemp) {
     FILE *fichier = fopen("sauvegarde.txt", "a");
@@ -345,10 +369,12 @@ int chargerPartie(Personnage *perso) {
     return 1;
 }
 
+
 void menuSauvegarde(Personnage *perso, const char *fichierTemp) {
-    char choix;
-    do {
-        system("cls");
+    int choix;  
+    char* nouveauFichierTemp;
+    while (1) {  
+        system("cls");  
         printf("+---------------------------------------------+\n");
         printf("|              Menu Sauvegarde                |\n");
         printf("|                                             |\n");
@@ -359,32 +385,34 @@ void menuSauvegarde(Personnage *perso, const char *fichierTemp) {
         printf("+---------------------------------------------+\n");
         printf("Votre choix: ");
         
-        Sleep(1000);
-        scanf(" %c", &choix);
-        getchar();
-
-        switch(choix) {
-            case '1':
+        choix = _getch() - '0'; 
+        
+        switch (choix) {
+            case 1:
                 sauvegarderPartie(perso, fichierTemp);
                 break;
-            case '2':
+            case 2:
                 if (chargerPartie(perso)) {
-                    jouer(fichierTemp, perso);
+                    nouveauFichierTemp = creerNomFichierTemp(perso->nom);
+                    copierFichier("Mario.txt", nouveauFichierTemp);
+                    jouer(nouveauFichierTemp, perso);
+                    free(nouveauFichierTemp);
                 }
                 break;
-            case '3':
-                return;
-            case '4':
-                menuPrincipal(fichierTemp);
+            case 3:  
+                return;  
+            case 4:
+                remove(fichierTemp); 
+                menuPrincipal("Mario.txt");
                 break;
             default:
                 printf("Choix invalide !\n");
                 Sleep(1000);
                 break;
         }
-        
-    } while(choix != '3');
+    }
 }
+
 
 void afficherScores() {
     FILE *fichier = fopen("sauvegarde.txt", "r");
@@ -456,7 +484,7 @@ void resetScores() {
         }
     }
 }
-void jouer(const char *fichierTemp, Personnage* perso) {
+void jouer(const char *fichierTemp, Personnage* perso) {    
     FILE *fichier = fopen(fichierTemp, "r+");
     int largeur = 100;
 
