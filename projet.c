@@ -104,9 +104,7 @@ void afficherPaysage(FILE *fichier, int positionJoueur) {
         for (int i = 0; i < longueurLigne; i++) {
             if (i >= debutLecture && i < finLecture) {
                 caracterePaysage(ligne[i]);
-            } else {
-                continue;
-            }
+            } 
         }
         printf("\n"); 
     }
@@ -253,11 +251,6 @@ void menuPrincipal(const char *fichierTemp) {
 
 void sauvegarderPartie(Personnage *perso,const char *fichierTemp) {
     FILE *fichier = fopen("sauvegarde.txt", "a");
-    if (fichier == NULL) {
-        printf("Erreur lors de la creation du fichier de sauvegarde!\n");
-        return;
-    }
-
     time_t now;
     time(&now);
     
@@ -275,7 +268,7 @@ void sauvegarderPartie(Personnage *perso,const char *fichierTemp) {
 int chargerPartie(Personnage *perso) {
     FILE *fichier = fopen("sauvegarde.txt", "r");
     if (fichier == NULL) {
-        printf("Aucune sauvegarde trouvee!\n");
+        printf("Aucune sauvegarde trouvee !\n");
         Sleep(1000);
         return 0;
     }
@@ -353,47 +346,50 @@ int chargerPartie(Personnage *perso) {
 }
 
 void menuSauvegarde(Personnage *perso, const char *fichierTemp) {
-    system("cls");
-    printf("+---------------------------------------------+\n");
-    printf("|              Menu Sauvegarde                |\n");
-    printf("|                                             |\n");
-    printf("|           1. Sauvegarder la partie          |\n");
-    printf("|           2. Charger une partie             |\n");
-    printf("|           3. Retour au jeu                  |\n");
-    printf("|           4. Menu Principal                 |\n");
-    printf("+---------------------------------------------+\n");
-    printf("Votre choix: ");
-    
-    Sleep(1000);
-    int choix;
-    
-    scanf("%d", &choix);
+    char choix;
+    do {
+        system("cls");
+        printf("+---------------------------------------------+\n");
+        printf("|              Menu Sauvegarde                |\n");
+        printf("|                                             |\n");
+        printf("|           1. Sauvegarder la partie          |\n");
+        printf("|           2. Charger une partie             |\n");
+        printf("|           3. Retour au jeu                  |\n");
+        printf("|           4. Menu Principal                 |\n");
+        printf("+---------------------------------------------+\n");
+        printf("Votre choix: ");
+        
+        Sleep(1000);
+        scanf(" %c", &choix);
+        getchar();
 
-    switch(choix) {
-        case 1:
-            sauvegarderPartie(perso,fichierTemp);
-            break;
-        case 2:
-            if (chargerPartie(perso)) {
-                jouer(fichierTemp, perso);
-            }
-            break;
-        case 3:
-            break;
-        case 4:
-            menuPrincipal(fichierTemp);
-            break;
-        default:
-            printf("Choix invalide !\n");
-            Sleep(1000);
-            menuSauvegarde(perso, fichierTemp);
-    }       
+        switch(choix) {
+            case '1':
+                sauvegarderPartie(perso, fichierTemp);
+                break;
+            case '2':
+                if (chargerPartie(perso)) {
+                    jouer(fichierTemp, perso);
+                }
+                break;
+            case '3':
+                return;
+            case '4':
+                menuPrincipal(fichierTemp);
+                break;
+            default:
+                printf("Choix invalide !\n");
+                Sleep(1000);
+                break;
+        }
+        
+    } while(choix != '3');
 }
 
 void afficherScores() {
     FILE *fichier = fopen("sauvegarde.txt", "r");
     if (fichier == NULL) {
-        printf("Aucune sauvegarde trouvee!\n");
+        printf("Aucune sauvegarde trouvee !\n");
         Sleep(1000);
         return;
     }
@@ -471,11 +467,6 @@ void jouer(const char *fichierTemp, Personnage* perso) {
 
     while (1) {
         Sleep(50);
-        
-        if (_kbhit()) {
-            char touche = _getch();
-            if (touche == 'e') exit(0);
-        }
 
         system("cls");
         afficherPaysage(fichier, perso->positionX);
