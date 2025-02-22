@@ -1,9 +1,5 @@
 #include "projet.h"
 
-void viderBuffer() {
-    while (_kbhit()) _getch(); 
-}
-
 char* creerNomFichierTemp(const char* nomJoueur) {
     char* fichierTemp = malloc(strlen(nomJoueur) + 9); 
     if (fichierTemp == NULL) {
@@ -38,6 +34,14 @@ void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction) {
     for (int i = 0; i < 8; i++) {
         int nouv_x = perso->positionX + direction;
         int nouv_y = perso->positionY + hauteur_saut[i];
+        
+        fseek(fichier, nouv_y * largeur + nouv_x, SEEK_SET);
+        char c = fgetc(fichier);
+        if (c == 'c') {
+            perso->score++;
+            fseek(fichier, nouv_y * largeur + nouv_x, SEEK_SET);
+            fputc(' ', fichier);
+        }
         
         char caractere_destination;
         fseek(fichier, nouv_y * largeur + nouv_x, SEEK_SET);
@@ -179,17 +183,34 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
     verifier_collision(fichier, perso, largeur);
 
     if (perso->en_chute) {
+        int new_y = perso->positionY + 1;
+        // Vérifier la case en dessous pour les pièces
+        fseek(fichier, new_y * largeur + perso->positionX, SEEK_SET);
+        char c = fgetc(fichier);
+        if (c == 'c') {
+            perso->score++;
+            fseek(fichier, new_y * largeur + perso->positionX, SEEK_SET);
+            fputc(' ', fichier);
+        }
         effacer_position(fichier, perso, largeur);
-        perso->positionY++;
+        perso->positionY = new_y;
         mettre_position(fichier, perso, largeur);
         verifier_collision(fichier, perso, largeur);
     }
 
     if (deplacement_x != 0 && !perso->en_saut) {
+        int new_x = perso->positionX + deplacement_x;
+        fseek(fichier, perso->positionY * largeur + new_x, SEEK_SET);
+        char c = fgetc(fichier);
+        if (c == 'c') {
+            perso->score++;
+            fseek(fichier, perso->positionY * largeur + new_x, SEEK_SET);
+            fputc(' ', fichier);
+        }
         if ((deplacement_x > 0 && perso->peut_avancer && perso->positionX < largeur - 1) || 
             (deplacement_x < 0 && perso->peut_reculer && perso->positionX > 0)) {
             effacer_position(fichier, perso, largeur);
-            perso->positionX += deplacement_x;
+            perso->positionX = new_x;
             mettre_position(fichier, perso, largeur);
         }
     }
@@ -205,7 +226,7 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
     }
 
     if (GetAsyncKeyState('V') & 0x8000) {
-        viderBuffer(); 
+        while (_kbhit()) _getch(); 
         menuSauvegarde(perso, "temp.txt");
     }
 }
@@ -495,7 +516,6 @@ void jouer(const char *fichierTemp, Personnage* perso) {
 
     while (1) {
         Sleep(50);
-
         system("cls");
         afficherPaysage(fichier, perso->positionX);
         deplacer_joueur(fichier, perso, largeur);

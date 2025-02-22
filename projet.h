@@ -29,7 +29,6 @@ typedef struct {
     char date[100];
 } Sauvegarde;
 
-void viderBuffer();
 void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction);
 void effacer_position(FILE *fichier, Personnage *perso, int largeur);
 void mettre_position(FILE *fichier, Personnage *perso, int largeur);
