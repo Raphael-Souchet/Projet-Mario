@@ -67,9 +67,19 @@ void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction) {
     perso->en_saut = 0;
 }
 
-void copierFichier(const char *source, const char *destination) {
+int copierFichier(const char *source, const char *destination) {
     FILE *src = fopen(source, "r");
+    if (src == NULL) {
+        printf("Erreur: Impossible d'ouvrir le fichier source %s\n", source);
+        return 0;
+    }
+    
     FILE *dest = fopen(destination, "w");
+    if (dest == NULL) {
+        printf("Erreur: Impossible d'ouvrir le fichier destination %s\n", destination);
+        fclose(src);
+        return 0;
+    }
 
     char car;
     while ((car = fgetc(src)) != EOF) {
@@ -78,6 +88,7 @@ void copierFichier(const char *source, const char *destination) {
 
     fclose(src);
     fclose(dest);
+    return 1;
 }
 
 void caracterePaysage(char caractereActuel) {
@@ -184,7 +195,6 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
 
     if (perso->en_chute) {
         int new_y = perso->positionY + 1;
-        // Vérifier la case en dessous pour les pièces
         fseek(fichier, new_y * largeur + perso->positionX, SEEK_SET);
         char c = fgetc(fichier);
         if (c == 'c') {
@@ -227,7 +237,12 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
 
     if (GetAsyncKeyState('V') & 0x8000) {
         while (_kbhit()) _getch(); 
-        menuSauvegarde(perso, "temp.txt");
+        menuSauvegarde(perso, fichier);
+    }
+    
+    if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
+        while (_kbhit()) _getch();
+        menuPrincipal("Mario.txt");
     }
 }
 
@@ -265,14 +280,34 @@ void menuPrincipal(const char *fichierOriginal) {
             printf("Entrez votre nom: ");
             scanf("%s", perso.nom);
             fichierTemp = creerNomFichierTemp(perso.nom);
-            copierFichier(fichierOriginal, fichierTemp);
+            
+            remove(fichierTemp);
+            
+            if (!copierFichier(fichierOriginal, fichierTemp)) {
+                printf("Erreur lors de la copie du fichier original\n");
+                Sleep(1500);
+                free(fichierTemp);
+                menuPrincipal(fichierOriginal);
+                return;
+            }
+            
             jouer(fichierTemp, &perso);
             free(fichierTemp);
             break;
         case 2:
             if (chargerPartie(&perso)) {
                 fichierTemp = creerNomFichierTemp(perso.nom);
-                copierFichier(fichierOriginal, fichierTemp);
+                
+                remove(fichierTemp);
+                
+                if (!copierFichier(fichierOriginal, fichierTemp)) {
+                    printf("Erreur lors de la copie du fichier original\n");
+                    Sleep(1500);
+                    free(fichierTemp);
+                    menuPrincipal(fichierOriginal);
+                    return;
+                }
+                
                 jouer(fichierTemp, &perso);
                 free(fichierTemp);
             } else {
@@ -292,22 +327,30 @@ void menuPrincipal(const char *fichierOriginal) {
     }
 }
 
-
-
-void sauvegarderPartie(Personnage *perso,const char *fichierTemp) {
-    FILE *fichier = fopen("sauvegarde.txt", "a");
+void sauvegarderPartie(Personnage *perso, FILE *fichier) {
+    fclose(fichier);
+    
+    FILE *sauvegarde = fopen("sauvegarde.txt", "a");
+    if (sauvegarde == NULL) {
+        printf("Erreur: Impossible d'ouvrir le fichier de sauvegarde\n");
+        Sleep(1500);
+        return;
+    }
+    
     time_t now;
     time(&now);
     
-    fprintf(fichier, "===== Sauvegarde %s =====\n", ctime(&now));
-    fprintf(fichier, "Nom:%s\n", perso->nom);
-    fprintf(fichier, "PositionX:%d\n", perso->positionX);
-    fprintf(fichier, "PositionY:%d\n", perso->positionY);
-    fprintf(fichier, "Score:%d\n\n", perso->score);  
-    fclose(fichier);
+    fprintf(sauvegarde, "===== Sauvegarde %s =====\n", ctime(&now));
+    fprintf(sauvegarde, "Nom:%s\n", perso->nom);
+    fprintf(sauvegarde, "PositionX:%d\n", perso->positionX);
+    fprintf(sauvegarde, "PositionY:%d\n", perso->positionY);
+    fprintf(sauvegarde, "Score:%d\n\n", perso->score);  
+    fclose(sauvegarde);
+    
     printf("Partie sauvegardee avec succes!\n");
     Sleep(1000);
-    menuPrincipal(fichierTemp);
+    
+    menuPrincipal("Mario.txt");
 }
 
 int chargerPartie(Personnage *perso) {
@@ -390,10 +433,11 @@ int chargerPartie(Personnage *perso) {
     return 1;
 }
 
-
-void menuSauvegarde(Personnage *perso, const char *fichierTemp) {
+void menuSauvegarde(Personnage *perso, FILE *fichier) {
     int choix;  
     char* nouveauFichierTemp;
+    char* fichierTemp = creerNomFichierTemp(perso->nom);
+    
     while (1) {  
         system("cls");  
         printf("+---------------------------------------------+\n");
@@ -410,22 +454,56 @@ void menuSauvegarde(Personnage *perso, const char *fichierTemp) {
         
         switch (choix) {
             case 1:
-                sauvegarderPartie(perso, fichierTemp);
+                sauvegarderPartie(perso, fichier);
                 break;
             case 2:
+                fclose(fichier);
+                system("cls");
+                
                 if (chargerPartie(perso)) {
                     nouveauFichierTemp = creerNomFichierTemp(perso->nom);
-                    copierFichier("Mario.txt", nouveauFichierTemp);
-                    jouer(nouveauFichierTemp, perso);
+                    
+                    remove(nouveauFichierTemp);
+                    
+                    if (copierFichier("Mario.txt", nouveauFichierTemp)) {
+                        jouer(nouveauFichierTemp, perso);
+                    } else {
+                        printf("Erreur lors de la copie du fichier\n");
+                        Sleep(1500);
+                    }
                     free(nouveauFichierTemp);
+                }
+                
+                fichier = fopen(fichierTemp, "r+");
+                if (fichier == NULL) {
+                    printf("Erreur: Impossible de réouvrir le fichier de jeu\n");
+                    Sleep(1500);
+                    free(fichierTemp);
+                    menuPrincipal("Mario.txt");
+                    return;
                 }
                 break;
             case 3:  
+                if (fichier == NULL) {
+                    fichier = fopen(fichierTemp, "r+");
+                    if (fichier == NULL) {
+                        printf("Erreur: Impossible de réouvrir le fichier de jeu\n");
+                        Sleep(1500);
+                        free(fichierTemp);
+                        menuPrincipal("Mario.txt");
+                        return;
+                    }
+                }
+                free(fichierTemp);
                 return;  
             case 4:
-                remove(fichierTemp); 
+                if (fichier != NULL) {
+                    fclose(fichier);
+                }
+                remove(fichierTemp);
+                free(fichierTemp);
                 menuPrincipal("Mario.txt");
-                break;
+                return;
             default:
                 printf("Choix invalide !\n");
                 Sleep(1000);
@@ -433,7 +511,6 @@ void menuSauvegarde(Personnage *perso, const char *fichierTemp) {
         }
     }
 }
-
 
 void afficherScores() {
     FILE *fichier = fopen("sauvegarde.txt", "r");
@@ -492,6 +569,7 @@ void afficherScores() {
     printf("\nAppuyez sur une touche pour continuer...");
     _getch();
 }
+
 void resetScores() {
     printf("Voulez-vous vraiment supprimer toutes les sauvegardes ? (o/n) : ");
     char choix;
@@ -502,22 +580,45 @@ void resetScores() {
         if (fichier != NULL) {
             fclose(fichier);
             printf("Les scores ont ete reinitialises avec succes !\n");
+        } else {
+            printf("Erreur: Impossible d'ouvrir le fichier de sauvegarde\n");
         }
+        system("del temp_*.txt");
+        printf("Les fichiers temporaires ont ete supprimes avec succes !\n");
+        Sleep(1500);
     }
 }
+
 void jouer(const char *fichierTemp, Personnage* perso) {    
     FILE *fichier = fopen(fichierTemp, "r+");
+    if (fichier == NULL) {
+        printf("Erreur: Impossible d'ouvrir le fichier %s\n", fichierTemp);
+        Sleep(1500);
+        return;
+    }
+    
     int largeur = 100;
 
-    fseek(fichier, (perso->positionY) * 100 + perso->positionX, SEEK_SET);
+    if (perso->positionX < 0 || perso->positionX >= largeur || perso->positionY < 0) {
+        perso->positionX = 21;  
+        perso->positionY = 5;   
+    }
+
+    fseek(fichier, (perso->positionY) * largeur + perso->positionX, SEEK_SET);
     fputc('M', fichier);
+    fflush(fichier); 
 
     cacherCurseur();
 
     while (1) {
         Sleep(50);
         system("cls");
+        
+        rewind(fichier);
         afficherPaysage(fichier, perso->positionX);
+        printf("Score: %d | Position: (%d, %d) | Nom: %s\n", 
+               perso->score, perso->positionX, perso->positionY, perso->nom);
+        
         deplacer_joueur(fichier, perso, largeur);
         fflush(fichier);
     }
