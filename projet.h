@@ -28,6 +28,7 @@ typedef struct {
     char nom[100];
     int score;
     char date[100];
+    int vie;
 } Sauvegarde;
 
 void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction);

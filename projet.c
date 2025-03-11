@@ -426,7 +426,10 @@ int chargerPartie(Personnage *perso) {
             strcpy(sauvegardes[nbSauvegardes].date, date_temp);
             nbSauvegardes++;
         }
+        else if (sscanf(ligne, "Vie:%d", &sauvegardes[nbSauvegardes - 1].vie) == 1) {
+        }
     }
+
     fclose(fichier);
 
     if (nbSauvegardes == 0) {
@@ -435,14 +438,14 @@ int chargerPartie(Personnage *perso) {
         return 0;
     }
 
-    printf("+------+--------------------+--------+-----------------------------+\n");
-    printf("| #    | Nom                | Score  | Date                        |\n");
-    printf("+------+--------------------+--------+-----------------------------+\n");
+    printf("+------+--------------------+--------+------+-----------------------------+\n");
+    printf("| #    | Nom                | Score  | Vie  | Date                        |\n");
+    printf("+------+--------------------+--------+------+-----------------------------+\n");
 
     for (int i = 0; i < nbSauvegardes; i++) {
-        printf("| %3d  | %-18s | %6d | %-21s   |\n", i + 1, sauvegardes[i].nom, sauvegardes[i].score, sauvegardes[i].date);
+        printf("| %3d  | %-18s | %6d | %4d | %-21s   |\n", i + 1, sauvegardes[i].nom, sauvegardes[i].score, sauvegardes[i].vie, sauvegardes[i].date);
     }
-    printf("+------+--------------------+--------+-----------------------------+\n");
+    printf("+------+--------------------+--------+------+-----------------------------+\n");
 
     int choix;
     printf("Entrez le numero de la sauvegarde a charger: ");
@@ -468,7 +471,6 @@ int chargerPartie(Personnage *perso) {
             if (sscanf(ligne, "Nom:%s", perso->nom) == 1);
             else if (sscanf(ligne, "PositionX:%d", &perso->positionX) == 1); 
             else if (sscanf(ligne, "PositionY:%d", &perso->positionY) == 1); 
-            else if (sscanf(ligne, "EnSaut:%d", &perso->en_saut) == 1);
             else if (sscanf(ligne, "Score:%d", &perso->score) == 1); 
             else if (sscanf(ligne, "Vie:%d", &perso->vie) == 1);
         }
@@ -492,9 +494,8 @@ void menuSauvegarde(Personnage *perso, FILE *fichier) {
         printf("|               Menu Sauvegarde               |\n");
         printf("|                                             |\n");
         printf("|           1. Sauvegarder la partie          |\n");
-        printf("|           2. Charger une partie             |\n");
-        printf("|           3. Retour au jeu                  |\n");
-        printf("|           4. Menu Principal                 |\n");
+        printf("|           2. Retour au jeu                  |\n");
+        printf("|           3. Menu Principal                 |\n");
         printf("+---------------------------------------------+\n");
         printf("Votre choix: ");
         while (_kbhit()) _getch(); 
@@ -551,8 +552,8 @@ void afficherScores() {
 
     while (fgets(ligne, sizeof(ligne), fichier)) {
         if (strstr(ligne, "===== Sauvegarde") == ligne) {
-            strcpy(date_temp, ligne + 16);  
-            date_temp[strlen(date_temp)-1] = '\0';  
+            strcpy(date_temp, ligne + 16);
+            date_temp[strlen(date_temp)-1] = '\0';
         }
         else if (sscanf(ligne, "Nom:%s", nom_temp) == 1) {
         }
@@ -561,6 +562,8 @@ void afficherScores() {
             sauvegardes[nbSauvegardes].score = score_temp;
             strcpy(sauvegardes[nbSauvegardes].date, date_temp);
             nbSauvegardes++;
+        }
+        else if (sscanf(ligne, "Vie:%d", &sauvegardes[nbSauvegardes - 1].vie) == 1) {
         }
     }
     
@@ -578,14 +581,14 @@ void afficherScores() {
     }
 
     
-    printf("+------+--------------------+--------+-----------------------------+\n");
-    printf("| Rang | Nom                | Score  | Date                        |\n");
-    printf("+------+--------------------+--------+-----------------------------+\n");
+    printf("+------+--------------------+--------+------+-----------------------------+\n");
+    printf("| #    | Nom                | Score  | Vie  | Date                        |\n");
+    printf("+------+--------------------+--------+------+-----------------------------+\n");
 
     for (int i = 0; i < nbSauvegardes && i < 10; i++) {  
-        printf("| %3d  | %-18s | %6d | %-21s   |\n", i + 1, sauvegardes[i].nom, sauvegardes[i].score, sauvegardes[i].date);
+        printf("| %3d  | %-18s | %6d | %4d | %-21s   |\n", i + 1, sauvegardes[i].nom, sauvegardes[i].score, sauvegardes[i].vie, sauvegardes[i].date);
     }
-    printf("+------+--------------------+--------+-----------------------------+\n");
+    printf("+------+--------------------+--------+------+-----------------------------+\n");
 
     printf("\nAppuyez sur une touche pour continuer...");
     _getch();
