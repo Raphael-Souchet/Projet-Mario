@@ -489,7 +489,7 @@ void menuSauvegarde(Personnage *perso, FILE *fichier) {
     while (1) {  
         system("cls");  
         printf("+---------------------------------------------+\n");
-        printf("|              Menu Sauvegarde                |\n");
+        printf("|               Menu Sauvegarde               |\n");
         printf("|                                             |\n");
         printf("|           1. Sauvegarder la partie          |\n");
         printf("|           2. Charger une partie             |\n");
@@ -497,41 +497,14 @@ void menuSauvegarde(Personnage *perso, FILE *fichier) {
         printf("|           4. Menu Principal                 |\n");
         printf("+---------------------------------------------+\n");
         printf("Votre choix: ");
-        
-        choix = _getch() - '0'; 
+        while (_kbhit()) _getch(); 
+        scanf("%d", &choix);
         
         switch (choix) {
             case 1:
                 sauvegarderPartie(perso, fichier);
                 break;
-            case 2:
-                fclose(fichier);
-                system("cls");
-                
-                if (chargerPartie(perso)) {
-                    nouveauFichierTemp = creerNomFichierTemp(perso->nom);
-                    
-                    remove(nouveauFichierTemp);
-                    
-                    if (copierFichier("Mario.txt", nouveauFichierTemp)) {
-                        jouer(nouveauFichierTemp, perso);
-                    } else {
-                        printf("Erreur lors de la copie du fichier\n");
-                        Sleep(1500);
-                    }
-                    free(nouveauFichierTemp);
-                }
-                
-                fichier = fopen(fichierTemp, "r+");
-                if (fichier == NULL) {
-                    printf("Erreur: Impossible de réouvrir le fichier de jeu\n");
-                    Sleep(1500);
-                    free(fichierTemp);
-                    menuPrincipal("Mario.txt");
-                    return;
-                }
-                break;
-            case 3:  
+            case 2:  
                 if (fichier == NULL) {
                     fichier = fopen(fichierTemp, "r+");
                     if (fichier == NULL) {
@@ -544,7 +517,7 @@ void menuSauvegarde(Personnage *perso, FILE *fichier) {
                 }
                 free(fichierTemp);
                 return;  
-            case 4:
+            case 3:
                 if (fichier != NULL) {
                     fclose(fichier);
                 }
