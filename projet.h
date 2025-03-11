@@ -20,6 +20,7 @@ typedef struct {
     int peut_monter;
     int peut_avancer;
     int peut_reculer;
+    int vie;
 } Personnage;
 
 
@@ -46,6 +47,7 @@ void afficherScores();
 void verifier_collision(FILE *fichier, Personnage* perso, int largeur);
 void cacherCurseur();
 char* creerNomFichierTemp(const char* nomJoueur);
+void menu_mort(Personnage *perso, const char *fichierTemp);
 
 
 #endif

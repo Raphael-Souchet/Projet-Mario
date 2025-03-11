@@ -186,6 +186,10 @@ void verifier_collision(FILE *fichier, Personnage* perso, int largeur) {
 }
 
 void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
+    if (perso->positionY >= 12) {
+        return; 
+    }
+
     int deplacement_x = 0;
     
     if (GetAsyncKeyState('D') & 0x8000) deplacement_x = 1;
@@ -246,8 +250,50 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
     }
 }
 
+void menu_mort(Personnage *perso, const char *fichierTemp) {
+    system("cls");
+    if (perso->vie > 0) {
+        printf("+---------------------------------------------+\n");
+        printf("|                 VOUS ETES MORT!             |\n");
+        printf("|               Vies restantes : %d            |\n", perso->vie);
+        printf("|                                             |\n");
+        printf("|                1. Recommencer               |\n");
+        printf("|               2. Menu Principal             |\n");
+        printf("+---------------------------------------------+\n");
+        printf("Choix : ");
+        while (_kbhit()) _getch(); 
+        int choix;
+        scanf("%d", &choix);
+        
+        if (choix == 1) {
+            remove(fichierTemp);
+            if (!copierFichier("Mario.txt", fichierTemp)) {
+                printf("Erreur lors de la réinitialisation du niveau !\n");
+                Sleep(1500);
+                menuPrincipal("Mario.txt");
+                return;
+            }
+            perso->positionX = 21;
+            perso->positionY = 5;
+            perso->score = 0;
+            jouer(fichierTemp, perso);
+        } else {
+            menuPrincipal("Mario.txt");
+        }
+    } else {
+        printf("+---------------------------------------------+\n");
+        printf("|                 GAME OVER !                 |\n");
+        printf("|                                             |\n");
+        printf("|         Appuyez sur une touche pour         |\n");
+        printf("|         retourner au menu principal         |\n");
+        printf("+---------------------------------------------+\n");
+        while (_kbhit()) _getch(); 
+        menuPrincipal("Mario.txt");
+    }
+}
+
 void menuPrincipal(const char *fichierOriginal) {
-    Personnage perso = {21, 5, "", 0, 0, 0, 1, 1, 1};
+    Personnage perso = {21, 5, "", 0, 0, 0, 1, 1, 1, 3};
     int choix;
     char* fichierTemp = NULL;
     
@@ -257,11 +303,11 @@ void menuPrincipal(const char *fichierOriginal) {
     printf("|                                             |\n");  
     printf("|                   - Menu -                  |\n");  
     printf("|                                             |\n");  
-    printf("|                1. Nouvelle Partie           |\n");  
-    printf("|                2. Charger Partie            |\n");  
-    printf("|                3. Score                     |\n"); 
-    printf("|                4. Reset les scores          |\n");
-    printf("|                5. Quitter                   |\n"); 
+    printf("|              1. Nouvelle Partie             |\n");  
+    printf("|              2. Charger Partie              |\n");  
+    printf("|              3. Score                       |\n"); 
+    printf("|              4. Reset les scores            |\n");
+    printf("|              5. Quitter                     |\n"); 
     printf("+---------------------------------------------+\n");
     printf("Choisissez une option : ");
     scanf("%d", &choix);
@@ -344,7 +390,8 @@ void sauvegarderPartie(Personnage *perso, FILE *fichier) {
     fprintf(sauvegarde, "Nom:%s\n", perso->nom);
     fprintf(sauvegarde, "PositionX:%d\n", perso->positionX);
     fprintf(sauvegarde, "PositionY:%d\n", perso->positionY);
-    fprintf(sauvegarde, "Score:%d\n\n", perso->score);  
+    fprintf(sauvegarde, "Score:%d\n", perso->score);
+    fprintf(sauvegarde, "Vie:%d\n\n", perso->vie);
     fclose(sauvegarde);
     
     printf("Partie sauvegardee avec succes!\n");
@@ -423,6 +470,7 @@ int chargerPartie(Personnage *perso) {
             else if (sscanf(ligne, "PositionY:%d", &perso->positionY) == 1); 
             else if (sscanf(ligne, "EnSaut:%d", &perso->en_saut) == 1);
             else if (sscanf(ligne, "Score:%d", &perso->score) == 1); 
+            else if (sscanf(ligne, "Vie:%d", &perso->vie) == 1);
         }
     }
 
@@ -606,7 +654,7 @@ void jouer(const char *fichierTemp, Personnage* perso) {
 
     fseek(fichier, (perso->positionY) * largeur + perso->positionX, SEEK_SET);
     fputc('M', fichier);
-    fflush(fichier); 
+    fflush(fichier);
 
     cacherCurseur();
 
@@ -616,12 +664,16 @@ void jouer(const char *fichierTemp, Personnage* perso) {
         
         rewind(fichier);
         afficherPaysage(fichier, perso->positionX);
-        printf("Score: %d | Position: (%d, %d) | Nom: %s\n", 
-               perso->score, perso->positionX, perso->positionY, perso->nom);
+        printf("Score: %d | Nom: %s | Vies: %d\n", perso->score, perso->nom, perso->vie);
         
         deplacer_joueur(fichier, perso, largeur);
         fflush(fichier);
+
+        if (perso->positionY >= 12) {
+            perso->vie--;
+            fclose(fichier);
+            menu_mort(perso, fichierTemp);
+            return;
+        }
     }
-    
-    fclose(fichier);
 }
