@@ -60,6 +60,7 @@ void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction) {
             
             system("cls");
             afficherPaysage(fichier, perso->positionX);
+            printf("Score: %d | Nom: %s | Vies: %d\n", perso->score, perso->nom, perso->vie);
             Sleep(75); 
         }
     }
@@ -280,7 +281,8 @@ void menu_mort(Personnage *perso, const char *fichierTemp) {
         } else {
             menuPrincipal("Mario.txt");
         }
-    } else {
+    } 
+    else {
         printf("+---------------------------------------------+\n");
         printf("|                 GAME OVER !                 |\n");
         printf("|                                             |\n");
@@ -288,6 +290,7 @@ void menu_mort(Personnage *perso, const char *fichierTemp) {
         printf("|         retourner au menu principal         |\n");
         printf("+---------------------------------------------+\n");
         while (_kbhit()) _getch(); 
+        _getch();
         menuPrincipal("Mario.txt");
     }
 }
