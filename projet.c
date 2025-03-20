@@ -238,15 +238,10 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
         
         gerer_saut(fichier, perso, largeur, direction);
     }
-
-    if (GetAsyncKeyState('V') & 0x8000) {
-        while (_kbhit()) _getch(); 
-        menuSauvegarde(perso, fichier);
-    }
-    
+      
     if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
         while (_kbhit()) _getch();
-        menuPrincipal("Mario.txt");
+        menuSauvegarde(perso, fichier);
     }
 }
 
