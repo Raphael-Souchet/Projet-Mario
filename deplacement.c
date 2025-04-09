@@ -78,14 +78,14 @@ void caracterePaysage(char caractereActuel) {
 void afficherPaysage(FILE *fichier, int positionJoueur) {
     char ligne[1024];
 
-    int debutLecture = positionJoueur - 21;
-    int finLecture = positionJoueur + 21;
+    int debutLecture = positionJoueur - 41;
+    int finLecture = positionJoueur + 41;
 
     if (debutLecture < 0) {
         debutLecture = 0;
     }
-    if (finLecture < 42) {
-        finLecture = 42;
+    if (finLecture < 82) {
+        finLecture = 82;
     }
 
     rewind(fichier);
@@ -153,7 +153,7 @@ void verifier_collision(FILE *fichier, Personnage* perso, int largeur) {
 }
 
 void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
-    if (perso->positionY >= 12) {
+    if (perso->positionY >= MORT_Y) {
         return; 
     }
 
@@ -220,12 +220,7 @@ void jouer(const char *fichierTemp, Personnage* perso) {
         return;
     }
     
-    int largeur = 100;
-
-    if (perso->positionX < 0 || perso->positionX >= largeur || perso->positionY < 0) {
-        perso->positionX = 21;  
-        perso->positionY = 5;   
-    }
+    int largeur = LARGEUR_MAP;
 
     fseek(fichier, (perso->positionY) * largeur + perso->positionX, SEEK_SET);
     fputc('M', fichier);
@@ -244,7 +239,7 @@ void jouer(const char *fichierTemp, Personnage* perso) {
         deplacer_joueur(fichier, perso, largeur);
         fflush(fichier);
 
-        if (perso->positionY >= 12) {
+        if (perso->positionY >= MORT_Y) {
             perso->vie--;
             fclose(fichier);
             menu_mort(perso, fichierTemp);

@@ -9,6 +9,12 @@
 #include <time.h>
 #include <ctype.h>
 
+extern const int LARGEUR_MAP;
+extern const int SPAWN_X;
+extern const int SPAWN_Y;
+extern const int SPAWN_MORT_X;
+extern const int SPAWN_MORT_Y;
+extern const int MORT_Y;
 
 typedef struct {
     int positionX;

@@ -52,7 +52,7 @@ void menuSauvegarde(Personnage *perso, FILE *fichier) {
 }
 
 void menuPrincipal(const char *fichierOriginal) {
-    Personnage perso = {21, 5, "", 0, 0, 0, 1, 1, 1, 3};
+    Personnage perso = {SPAWN_X, SPAWN_Y, "", 0, 0, 0, 1, 1, 1, 3};
     int choix;
     char* fichierTemp = NULL;
     
@@ -155,8 +155,8 @@ void menu_mort(Personnage *perso, const char *fichierTemp) {
                 menuPrincipal("Mario.txt");
                 return;
             }
-            perso->positionX = 21;
-            perso->positionY = 5;
+            perso->positionX = SPAWN_MORT_X;
+            perso->positionY = SPAWN_Y;
             perso->score = 0;
             jouer(fichierTemp, perso);
         } else {
