@@ -37,11 +37,32 @@ int copierFichier(const char *source, const char *destination) {
 void sauvegarderPartie(Personnage *perso, FILE *fichier) {
     fclose(fichier);
     
-    FILE *sauvegarde = fopen("sauvegarde.txt", "a");
+    FILE *sauvegarde = fopen("sauvegarde.txt", "r");
+    char buffer[2048] = {0};
+    if (sauvegarde) {
+        fread(buffer, 1, sizeof(buffer)-1, sauvegarde);
+        fclose(sauvegarde);
+    }
+    
+    sauvegarde = fopen("sauvegarde.txt", "w");
     if (sauvegarde == NULL) {
         printf("Erreur: Impossible d'ouvrir le fichier de sauvegarde\n");
         Sleep(1500);
         return;
+    }
+    
+    char *ptr = buffer;
+    char *debut;
+    while ((debut = strstr(ptr, "===== Sauvegarde"))) {
+        char *fin = strstr(debut, "\n\n") + 2;
+        char *nom_pos = strstr(debut, "Nom:") + 4;
+        char nom[100];
+        sscanf(nom_pos, "%99[^\n]", nom);
+        
+        if (strcmp(nom, perso->nom) != 0) {
+            fwrite(fin, 1, fin - debut, sauvegarde);
+        }
+        ptr = fin;
     }
     
     time_t now;
@@ -78,8 +99,10 @@ int chargerPartie(Personnage *perso) {
 
     while (fgets(ligne, sizeof(ligne), fichier)) {
         if (strstr(ligne, "===== Sauvegarde") == ligne) {
-            strcpy(date_temp, ligne + 16);
-            date_temp[strlen(date_temp)-1] = '\0';
+            char *debut = strchr(ligne, ' ') + 1;
+            char *fin = strstr(debut, " =====");
+            if (fin) *fin = '\0';
+            strcpy(date_temp, debut);
         }
         else if (sscanf(ligne, "Nom:%s", nom_temp) == 1) {
         }
@@ -104,27 +127,25 @@ int chargerPartie(Personnage *perso) {
     printf("+------+--------------------+--------+------+-----------------------------+\n");
     printf("| #    | Nom                | Score  | Vie  | Date                        |\n");
     printf("+------+--------------------+--------+------+-----------------------------+\n");
-
     for (int i = 0; i < nbSauvegardes; i++) {
-        printf("| %3d  | %-18s | %6d | %4d | %-21s   |\n", i + 1, sauvegardes[i].nom, sauvegardes[i].score, sauvegardes[i].vie, sauvegardes[i].date);
+        printf("| %3d  | %-18s | %6d | %4d | %-27s |\n", 
+               i + 1, 
+               sauvegardes[i].nom, 
+               sauvegardes[i].score, 
+               sauvegardes[i].vie, 
+               sauvegardes[i].date);
     }
     printf("+------+--------------------+--------+------+-----------------------------+\n");
 
     int choix;
     printf("Entrez le numero de la sauvegarde a charger: ");
     scanf("%d", &choix);
-
     while (choix < 1 || choix > nbSauvegardes) {
         printf("Numero invalide. Entrez un numero valide: ");
         scanf("%d", &choix);
     }
 
     fichier = fopen("sauvegarde.txt", "r");
-    if (fichier == NULL) {
-        printf("Erreur lors de l'ouverture du fichier de sauvegarde !\n");
-        return 0;
-    }
-
     int currentSave = 0;
     while (fgets(ligne, sizeof(ligne), fichier)) {
         if (strstr(ligne, "===== Sauvegarde") == ligne) {
@@ -138,10 +159,8 @@ int chargerPartie(Personnage *perso) {
             else if (sscanf(ligne, "Vie:%d", &perso->vie) == 1);
         }
     }
-
     fclose(fichier);
     printf("Partie chargee avec succes !\n");
-    printf("Bienvenue %s! Score: %d\n", perso->nom, perso->score);
     Sleep(1500);
     return 1;
 }
@@ -175,7 +194,6 @@ void afficherScores() {
 
     Sauvegarde sauvegardes[100]; 
     int nbSauvegardes = 0;
-    
     char ligne[100];
     char nom_temp[100];
     int score_temp = 0;
@@ -183,8 +201,12 @@ void afficherScores() {
 
     while (fgets(ligne, sizeof(ligne), fichier)) {
         if (strstr(ligne, "===== Sauvegarde") == ligne) {
-            strcpy(date_temp, ligne + 16);
-            date_temp[strlen(date_temp)-1] = '\0';
+            char *start = ligne + 16;
+            char *end = strstr(start, " =====");
+            if (end) {
+                *end = '\0';
+                strcpy(date_temp, start);
+            }
         }
         else if (sscanf(ligne, "Nom:%s", nom_temp) == 1) {
         }
@@ -203,7 +225,6 @@ void afficherScores() {
     for (int i = 0; i < nbSauvegardes - 1; i++) {
         for (int j = 0; j < nbSauvegardes - i - 1; j++) {
             if (sauvegardes[j].score < sauvegardes[j + 1].score) {
-                
                 Sauvegarde temp = sauvegardes[j];
                 sauvegardes[j] = sauvegardes[j + 1];
                 sauvegardes[j + 1] = temp;
@@ -211,13 +232,17 @@ void afficherScores() {
         }
     }
 
-    
     printf("+------+--------------------+--------+------+-----------------------------+\n");
     printf("| #    | Nom                | Score  | Vie  | Date                        |\n");
     printf("+------+--------------------+--------+------+-----------------------------+\n");
 
-    for (int i = 0; i < nbSauvegardes && i < 10; i++) {  
-        printf("| %3d  | %-18s | %6d | %4d | %-21s   |\n", i + 1, sauvegardes[i].nom, sauvegardes[i].score, sauvegardes[i].vie, sauvegardes[i].date);
+    for (int i = 0; i < nbSauvegardes && i < 10; i++) {
+        printf("| %3d  | %-18s | %6d | %4d | %-27s |\n", 
+               i + 1, 
+               sauvegardes[i].nom, 
+               sauvegardes[i].score, 
+               sauvegardes[i].vie, 
+               sauvegardes[i].date);
     }
     printf("+------+--------------------+--------+------+-----------------------------+\n");
 
