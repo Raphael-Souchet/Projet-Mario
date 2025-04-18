@@ -152,6 +152,52 @@ void verifier_collision(FILE *fichier, Personnage* perso, int largeur) {
     if (perso->positionY < 0) perso->positionY = 0;
 }
 
+void verifier_collision_gumba(FILE *fichier, Gumba* gumba) {
+    char caractere_devant_dessous;
+    fseek(fichier, (gumba->positionY + 1) * LARGEUR_MAP + gumba->positionX + 1, SEEK_SET);
+    caractere_devant_dessous = fgetc(fichier);
+    
+    if (caractere_devant_dessous == ' ') {
+        gumba->peut_tomber_devant = 1;
+    } else {
+        gumba->peut_tomber_devant = 0;
+    }
+
+    char caractere_derriere_dessous;
+    fseek(fichier, (gumba->positionY - 1) * LARGEUR_MAP + gumba->positionX - 1, SEEK_SET);
+    caractere_derriere_dessous = fgetc(fichier);
+    
+    if (caractere_devant_dessous == ' ') {
+        gumba->peut_tomber_derriere = 1;
+    } else {
+        gumba->peut_tomber_derriere = 0;
+    }
+
+    char caractere_devant;
+    fseek(fichier, (gumba->positionY) * LARGEUR_MAP + gumba->positionX + 1, SEEK_SET);
+    caractere_devant = fgetc(fichier);
+    
+    if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == 'Q' || gumba->positionX == LARGEUR_MAP - 3) {
+        gumba->peut_avancer = 0;
+    } else {
+        gumba->peut_avancer = 1;
+    }
+
+    char caractere_derriere;
+    fseek(fichier, (gumba->positionY) * LARGEUR_MAP + gumba->positionX - 1, SEEK_SET);
+    caractere_derriere = fgetc(fichier);
+    
+    if (caractere_derriere == 'w' || caractere_derriere == '[' || caractere_devant == 'Q' || gumba->positionX == 0) {
+        gumba->peut_reculer = 0;
+    } else {
+        gumba->peut_reculer = 1;
+    }
+
+    if (gumba->positionX < 0) gumba->positionX = 0;
+    if (gumba->positionX >= LARGEUR_MAP) gumba->positionX = LARGEUR_MAP - 1;
+    if (gumba->positionY < 0) gumba->positionY = 0;
+}
+
 void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
     if (perso->positionY >= MORT_Y) {
         return; 
@@ -205,7 +251,7 @@ void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
         
         gerer_saut(fichier, perso, largeur, direction);
     }
-      
+
     if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
         while (_kbhit()) _getch();
         menuSauvegarde(perso, fichier);
@@ -226,6 +272,9 @@ void jouer(const char *fichierTemp, Personnage* perso) {
     fputc('M', fichier);
     fflush(fichier);
 
+    Tab_gumba tab_gumba = {NULL, 0};
+    initialiser_gumbas(fichier, &tab_gumba);
+
     cacherCurseur();
 
     while (1) {
@@ -233,6 +282,7 @@ void jouer(const char *fichierTemp, Personnage* perso) {
         system("cls");
         
         rewind(fichier);
+        bouger_gumba(fichier, &tab_gumba);
         afficherPaysage(fichier, perso->positionX);
         printf("Score: %d | Nom: %s | Vies: %d\n", perso->score, perso->nom, perso->vie);
         
@@ -246,4 +296,6 @@ void jouer(const char *fichierTemp, Personnage* perso) {
             return;
         }
     }
+    free(tab_gumba.gumbas);
+    tab_gumba.gumbas = NULL;
 }

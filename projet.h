@@ -29,6 +29,21 @@ typedef struct {
     int vie;
 } Personnage;
 
+typedef struct {
+    int positionX;
+    int positionY;
+    int peut_avancer;
+    int peut_reculer;
+    int peut_tomber_devant;
+    int peut_tomber_derriere;
+    int dernier_deplacement;
+    int compteur;
+} Gumba;
+
+typedef struct {
+    Gumba* gumbas;
+    int count;
+} Tab_gumba;
 
 typedef struct {
     char nom[100];
@@ -37,6 +52,9 @@ typedef struct {
     int vie;
 } Sauvegarde;
 
+void initialiser_gumbas(FILE* fichier, Tab_gumba* manager);
+void bouger_gumba(FILE* fichier, Tab_gumba* manager);
+void verifier_collision_gumba(FILE *fichier, Gumba* gumba);
 void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction);
 void effacer_position(FILE *fichier, Personnage *perso, int largeur);
 void mettre_position(FILE *fichier, Personnage *perso, int largeur);
