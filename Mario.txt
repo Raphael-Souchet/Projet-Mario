@@ -1,3 +1,4 @@
+<<<<<<< HEAD
                                                                                                                                                                 
                                                                                                                                                                 
                                                                                                                                                                 
@@ -15,4 +16,23 @@
 wwww                         wwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
+=======
+                                                                                                                                                                
+                                                                                                                                                                
+                                                                                                                                                                
+                                                                                                                                                                
+                                                                                                                                  c         c                   
+                                                                                                                                 www       www                  
+                                                                                                                    wwww                                    !   
+                                                                                                                 wwwwwww               *                wwwwwwww
+                                                                                                              wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+                                                                         wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+                                                      c c c c c c c c c                                                                                         
+                                                      wwwwwwwwwwwwwwwww                                                                                         
+                                                                                                           *                                                    
+                                                                                                                                                                
+wwww                         wwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
+>>>>>>> 6c4909ca7324f00a92116e96af1e11e90aebe101
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
