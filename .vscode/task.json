@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "build SDL2 project",
+        "type": "shell",
+        "command": "gcc",
+        "args": [
+          "main.c",
+          "-IC:/Users/duber/Downloads/sdl2_vsc2/include",
+          "-LC:/Users/duber/Downloads/sdl2_vsc2/lib",
+          "-lmingw32",
+          "-lSDL2main",
+          "-lSDL2",
+          "-o",
+          "main.exe"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      }
+    ]
+  }
+  

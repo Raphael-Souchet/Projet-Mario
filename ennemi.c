@@ -71,8 +71,8 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
         return;
     }
 
-    int tab_x[4] = {93, 98, 126, 143};
-    int tab_y[4] = {13, 8, 7, 7};
+    int tab_x[4] = {93, 98, 120, 150};
+    int tab_y[4] = {14, 9, 8, 8};
 
     for (int i = 0; i < tab_gumba->count; i++)
     {
