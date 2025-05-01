@@ -1,9 +1,8 @@
 #include "projet.h"
 
-void menuSauvegarde(Personnage *perso, FILE *fichier)
+void menuSauvegarde(Personnage *perso, Carte *carte)
 {
     int choix;
-    char *nouveauFichierTemp;
     char *fichierTemp = creerNomFichierTemp(perso->nom);
 
     while (1)
@@ -24,29 +23,14 @@ void menuSauvegarde(Personnage *perso, FILE *fichier)
         switch (choix)
         {
         case 1:
-            sauvegarderPartie(perso, fichier);
+            sauvegarderPartie(perso, carte, fichierTemp);
             break;
         case 2:
-            if (fichier == NULL)
-            {
-                fichier = fopen(fichierTemp, "r+");
-                if (fichier == NULL)
-                {
-                    printf("Erreur: Impossible de reouvrir le fichier de jeu\n");
-                    Sleep(1500);
-                    free(fichierTemp);
-                    menuPrincipal("Mario.txt");
-                    return;
-                }
-            }
             free(fichierTemp);
             return;
         case 3:
-            if (fichier != NULL)
-            {
-                fclose(fichier);
-            }
-            remove(fichierTemp);
+            sauvegarderCarteVersFichier(carte, fichierTemp);
+            libererCarte(carte);
             free(fichierTemp);
             menuPrincipal("Mario.txt");
             return;

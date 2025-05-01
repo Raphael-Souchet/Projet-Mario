@@ -45,6 +45,7 @@ typedef struct {
     int count;
 } Tab_gumba;
 
+
 typedef struct {
     char nom[100];
     int score;
@@ -52,27 +53,36 @@ typedef struct {
     int vie;
 } Sauvegarde;
 
-void initialiser_gumbas(FILE* fichier, Tab_gumba* manager);
-void bouger_gumba(FILE* fichier, Tab_gumba* manager);
-void verifier_collision_gumba(FILE *fichier, Gumba* gumba);
-void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction);
-void effacer_position(FILE *fichier, Personnage *perso, int largeur);
-void mettre_position(FILE *fichier, Personnage *perso, int largeur);
+typedef struct {
+    char** carte;
+    int hauteur;
+    int largeur;
+} Carte;
+
+Carte* chargerCarteEnMemoire(const char* fichierCarte);
+void libererCarte(Carte* carte);
+int sauvegarderCarteVersFichier(Carte* carte, const char* fichierCarte);
+void deplacerCurseur(int x, int y);
+void initialiser_gumbas(Carte* carte, Tab_gumba* tab_gumba);
+void bouger_gumba(Carte* carte, Tab_gumba* tab_gumba);
+void verifier_collision_gumba(Carte* carte, Gumba* gumba);
+void gerer_saut(Carte* carte, Personnage* perso, int direction);
+void effacer_position(Carte* carte, Personnage* perso);
+void mettre_position(Carte* carte, Personnage* perso);
 int copierFichier(const char *source, const char *destination);
-void deplacer_joueur(FILE *fichier, Personnage *perso, int largeur);
+void deplacer_joueur(Carte* carte, Personnage* perso);
 void caracterePaysage(char caractereActuel);
-void afficherPaysage(FILE *fichier, int positionJoueur);
+void afficherPaysage(Carte* carte, int positionJoueur);
 void menuPrincipal(const char *fichierTemp);
 void jouer(const char *fichierTemp, Personnage *perso);
-void sauvegarderPartie(Personnage *perso, FILE *fichier);
+void sauvegarderPartie(Personnage* perso, Carte* carte, const char* fichierTemp);
 int chargerPartie(Personnage *perso);
-void menuSauvegarde(Personnage *perso, FILE *fichier);
+void menuSauvegarde(Personnage* perso, Carte* carte);
 void resetScores();
 void afficherScores();
-void verifier_collision(FILE *fichier, Personnage* perso, int largeur);
+void verifier_collision(Carte* carte, Personnage* perso);
 void cacherCurseur();
 char* creerNomFichierTemp(const char* nomJoueur);
 void menu_mort(Personnage *perso, const char *fichierTemp);
-
 
 #endif

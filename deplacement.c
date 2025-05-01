@@ -1,16 +1,104 @@
 #include "projet.h"
 
-void effacer_position(FILE *fichier, Personnage *perso, int largeur) {
-    fseek(fichier, (perso->positionY) * largeur + perso->positionX, SEEK_SET);
-    fputc(' ', fichier);
+void effacer_position(Carte *carte, Personnage *perso)
+{
+    carte->carte[perso->positionY][perso->positionX] = ' ';
 }
 
-void mettre_position(FILE *fichier, Personnage *perso, int largeur) {
-    fseek(fichier, (perso->positionY) * largeur + perso->positionX, SEEK_SET);
-    fputc('M', fichier);
+void mettre_position(Carte *carte, Personnage *perso)
+{
+    carte->carte[perso->positionY][perso->positionX] = 'M';
 }
 
-void cacherCurseur() {
+void deplacerCurseur(int x, int y)
+{
+    COORD coord = {x, y};
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleCursorPosition(hConsole, coord);
+}
+
+void caracterePaysage(char caractereActuel)
+{
+    switch (caractereActuel)
+    {
+    case 'w':
+        printf("#");
+        break;
+    case 'c':
+        printf("o");
+        break;
+    case 'M':
+        printf("&");
+        break;
+    case 'Q':
+        printf("Q");
+        break;
+    default:
+        printf("%c", caractereActuel);
+        break;
+    }
+}
+
+void afficherPaysage(Carte *carte, int positionJoueur)
+{
+    int largeurAffichage = 82;
+    int demiLargeur = largeurAffichage / 2;
+    int debutX = positionJoueur - demiLargeur;
+    int finX = positionJoueur + demiLargeur;
+
+    if (debutX < 0)
+    {
+        debutX = 0;
+        finX = largeurAffichage;
+    }
+    if (finX > carte->largeur)
+    {
+        finX = carte->largeur;
+        debutX = finX - largeurAffichage;
+        if (debutX < 0)
+            debutX = 0;
+    }
+
+    char ligne[largeurAffichage + 1];
+    ligne[largeurAffichage] = '\0';
+
+    for (int y = 0; y < carte->hauteur; y++)
+    {
+        for (int x = debutX; x < finX; x++)
+        {
+            if (x < carte->largeur)
+            {
+                char c = carte->carte[y][x];
+                switch (c)
+                {
+                case 'w':
+                    ligne[x - debutX] = '#';
+                    break;
+                case 'c':
+                    ligne[x - debutX] = 'o';
+                    break;
+                case 'M':
+                    ligne[x - debutX] = '&';
+                    break;
+                case 'Q':
+                    ligne[x - debutX] = '@';
+                    break;
+                default:
+                    ligne[x - debutX] = c;
+                    break;
+                }
+            }
+            else
+            {
+                ligne[x - debutX] = ' ';
+            }
+        }
+        printf("%s\n", ligne);
+    }
+}
+
+void cacherCurseur()
+{
     HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_CURSOR_INFO info;
     info.bVisible = FALSE;
@@ -18,284 +106,283 @@ void cacherCurseur() {
     SetConsoleCursorInfo(console, &info);
 }
 
-void gerer_saut(FILE *fichier, Personnage *perso, int largeur, int direction) {
-    int hauteur_saut[8] = {-1, -1, -1, -1, 1, 1, 1, 1}; 
-    
-    for (int i = 0; i < 8; i++) {
+void gerer_saut(Carte *carte, Personnage *perso, int direction)
+{
+    int hauteur_saut[8] = {-1, -1, -1, -1, 1, 1, 1, 1};
+
+    for (int i = 0; i < 8; i++)
+    {
         int nouv_x = perso->positionX + direction;
         int nouv_y = perso->positionY + hauteur_saut[i];
-        
-        fseek(fichier, nouv_y * largeur + nouv_x, SEEK_SET);
-        char c = fgetc(fichier);
-        if (c == 'c') {
-            perso->score++;
-            fseek(fichier, nouv_y * largeur + nouv_x, SEEK_SET);
-            fputc(' ', fichier);
-        }
-        
-        char caractere_destination;
-        fseek(fichier, nouv_y * largeur + nouv_x, SEEK_SET);
-        caractere_destination = fgetc(fichier);
 
-        char caractere_lateral;
-        fseek(fichier, perso->positionY * largeur + nouv_x, SEEK_SET);
-        caractere_lateral = fgetc(fichier);
-        
-        if (nouv_x >= 0 && nouv_x < largeur && nouv_y >= 0 && 
-            caractere_destination != 'w' && caractere_lateral != 'w' && perso->peut_monter) {
-            effacer_position(fichier, perso, largeur);
+        if (nouv_x < 0 || nouv_x >= carte->largeur || nouv_y < 0 || nouv_y >= carte->hauteur)
+        {
+            continue;
+        }
+
+        if (carte->carte[nouv_y][nouv_x] == 'c')
+        {
+            perso->score++;
+            carte->carte[nouv_y][nouv_x] = ' ';
+        }
+
+        char caractere_destination = carte->carte[nouv_y][nouv_x];
+        char caractere_lateral = carte->carte[perso->positionY][nouv_x];
+
+        if (nouv_x >= 0 && nouv_x < carte->largeur && nouv_y >= 0 &&
+            caractere_destination != 'w' && caractere_lateral != 'w' && perso->peut_monter)
+        {
+
+            effacer_position(carte, perso);
             perso->positionX = nouv_x;
             perso->positionY = nouv_y;
-            mettre_position(fichier, perso, largeur);
-            
-            system("cls");
-            afficherPaysage(fichier, perso->positionX);
+            mettre_position(carte, perso);
+
+            deplacerCurseur(0, 0);
+            afficherPaysage(carte, perso->positionX);
             printf("Score: %d | Nom: %s | Vies: %d\n", perso->score, perso->nom, perso->vie);
-            Sleep(75); 
+            Sleep(85);
         }
     }
-    
+
     perso->en_saut = 0;
 }
 
-void caracterePaysage(char caractereActuel) {
-    switch (caractereActuel) {
-        case 'w':
-            printf("#");
-            break;
-        case 'c':
-            printf("o");
-            break;
-        case 'M':
-            printf("&");
-            break;
-        default:
-            printf("%c", caractereActuel);
-            break;
-    }
-}
+void verifier_collision(Carte *carte, Personnage *perso)
+{
+    char caractere_dessous = (perso->positionY + 1 < carte->hauteur) ? carte->carte[perso->positionY + 1][perso->positionX] : 'w';
 
-void afficherPaysage(FILE *fichier, int positionJoueur) {
-    char ligne[1024];
-
-    int debutLecture = positionJoueur - 41;
-    int finLecture = positionJoueur + 41;
-
-    if (debutLecture < 0) {
-        debutLecture = 0;
-    }
-    if (finLecture < 82) {
-        finLecture = 82;
-    }
-
-    rewind(fichier);
-
-    while (fgets(ligne, sizeof(ligne), fichier) != NULL) {
-        int longueurLigne = strlen(ligne);
-
-        if (ligne[longueurLigne - 1] == '\n') {
-            ligne[--longueurLigne] = '\0';
-        }
-
-        for (int i = 0; i < longueurLigne; i++) {
-            if (i >= debutLecture && i < finLecture) {
-                caracterePaysage(ligne[i]);
-            } 
-        }
-        printf("\n"); 
-    }
-}
-
-void verifier_collision(FILE *fichier, Personnage* perso, int largeur) {
-    char caractere_dessous;
-    fseek(fichier, (perso->positionY + 1) * largeur + perso->positionX, SEEK_SET);
-    caractere_dessous = fgetc(fichier);
-    
-    if (caractere_dessous == 'w') {
+    if (caractere_dessous == 'w')
+    {
         perso->en_chute = 0;
-    } else {
+    }
+    else
+    {
         perso->en_chute = 1;
     }
 
-    char caractere_dessus;
-    fseek(fichier, (perso->positionY - 1) * largeur + perso->positionX, SEEK_SET);
-    caractere_dessus = fgetc(fichier);
-    
-    if (caractere_dessus == 'w') {
+    char caractere_dessus = (perso->positionY - 1 >= 0) ? carte->carte[perso->positionY - 1][perso->positionX] : 'w';
+
+    if (caractere_dessus == 'w')
+    {
         perso->peut_monter = 0;
-    } else {
+    }
+    else
+    {
         perso->peut_monter = 1;
     }
 
-    char caractere_devant;
-    fseek(fichier, (perso->positionY) * largeur + perso->positionX + 1, SEEK_SET);
-    caractere_devant = fgetc(fichier);
-    
-    if (caractere_devant == 'w' || perso->positionX == largeur - 3) {
+    char caractere_devant = (perso->positionX + 1 < carte->largeur) ? carte->carte[perso->positionY][perso->positionX + 1] : 'w';
+
+    if (caractere_devant == 'w' || perso->positionX == carte->largeur - 3)
+    {
         perso->peut_avancer = 0;
-    } else {
+    }
+    else
+    {
         perso->peut_avancer = 1;
     }
 
-    char caractere_derriere;
-    fseek(fichier, (perso->positionY) * largeur + perso->positionX - 1, SEEK_SET);
-    caractere_derriere = fgetc(fichier);
-    
-    if (caractere_derriere == 'w' || perso->positionX == 0) {
+    char caractere_derriere = (perso->positionX - 1 >= 0) ? carte->carte[perso->positionY][perso->positionX - 1] : 'w';
+
+    if (caractere_derriere == 'w' || perso->positionX == 0)
+    {
         perso->peut_reculer = 0;
-    } else {
+    }
+    else
+    {
         perso->peut_reculer = 1;
     }
 
-    if (perso->positionX < 0) perso->positionX = 0;
-    if (perso->positionX >= largeur) perso->positionX = largeur - 1;
-    if (perso->positionY < 0) perso->positionY = 0;
+    if (perso->positionX < 0)
+        perso->positionX = 0;
+    if (perso->positionX >= carte->largeur)
+        perso->positionX = carte->largeur - 1;
+    if (perso->positionY < 0)
+        perso->positionY = 0;
 }
 
-void verifier_collision_gumba(FILE *fichier, Gumba* gumba) {
-    char caractere_devant_dessous;
-    fseek(fichier, (gumba->positionY + 1) * LARGEUR_MAP + gumba->positionX + 1, SEEK_SET);
-    caractere_devant_dessous = fgetc(fichier);
-    
-    if (caractere_devant_dessous == ' ') {
+void verifier_collision_gumba(Carte *carte, Gumba *gumba)
+{
+    char caractere_devant_dessous = (gumba->positionY + 1 < carte->hauteur && gumba->positionX + 1 < carte->largeur) ? carte->carte[gumba->positionY + 1][gumba->positionX + 1] : 'w';
+
+    if (caractere_devant_dessous == ' ')
+    {
         gumba->peut_tomber_devant = 1;
-    } else {
+    }
+    else
+    {
         gumba->peut_tomber_devant = 0;
     }
 
-    char caractere_derriere_dessous;
-    fseek(fichier, (gumba->positionY - 1) * LARGEUR_MAP + gumba->positionX - 1, SEEK_SET);
-    caractere_derriere_dessous = fgetc(fichier);
-    
-    if (caractere_devant_dessous == ' ') {
+    char caractere_derriere_dessous = (gumba->positionY + 1 < carte->hauteur && gumba->positionX - 1 >= 0) ? carte->carte[gumba->positionY + 1][gumba->positionX - 1] : 'w';
+
+    if (caractere_derriere_dessous == ' ')
+    {
         gumba->peut_tomber_derriere = 1;
-    } else {
+    }
+    else
+    {
         gumba->peut_tomber_derriere = 0;
     }
 
-    char caractere_devant;
-    fseek(fichier, (gumba->positionY) * LARGEUR_MAP + gumba->positionX + 1, SEEK_SET);
-    caractere_devant = fgetc(fichier);
-    
-    if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == 'Q' || gumba->positionX == LARGEUR_MAP - 3) {
+    char caractere_devant = (gumba->positionX + 1 < carte->largeur) ? carte->carte[gumba->positionY][gumba->positionX + 1] : 'w';
+
+    if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == 'Q' || gumba->positionX == carte->largeur - 3)
+    {
         gumba->peut_avancer = 0;
-    } else {
+    }
+    else
+    {
         gumba->peut_avancer = 1;
     }
+    char caractere_derriere = (gumba->positionX - 1 >= 0) ? carte->carte[gumba->positionY][gumba->positionX - 1] : 'w';
 
-    char caractere_derriere;
-    fseek(fichier, (gumba->positionY) * LARGEUR_MAP + gumba->positionX - 1, SEEK_SET);
-    caractere_derriere = fgetc(fichier);
-    
-    if (caractere_derriere == 'w' || caractere_derriere == '[' || caractere_devant == 'Q' || gumba->positionX == 0) {
+    if (caractere_derriere == 'w' || caractere_derriere == '[' || caractere_derriere == 'Q' || gumba->positionX == 0)
+    {
         gumba->peut_reculer = 0;
-    } else {
+    }
+    else
+    {
         gumba->peut_reculer = 1;
     }
 
-    if (gumba->positionX < 0) gumba->positionX = 0;
-    if (gumba->positionX >= LARGEUR_MAP) gumba->positionX = LARGEUR_MAP - 1;
-    if (gumba->positionY < 0) gumba->positionY = 0;
+    if (gumba->positionX < 0)
+        gumba->positionX = 0;
+    if (gumba->positionX >= carte->largeur)
+        gumba->positionX = carte->largeur - 1;
+    if (gumba->positionY < 0)
+        gumba->positionY = 0;
 }
 
-void deplacer_joueur(FILE *fichier, Personnage* perso, int largeur) {
-    if (perso->positionY >= MORT_Y) {
-        return; 
+void deplacer_joueur(Carte *carte, Personnage *perso)
+{
+    if (perso->positionY >= MORT_Y)
+    {
+        return;
     }
 
     int deplacement_x = 0;
-    
-    if (GetAsyncKeyState('D') & 0x8000) deplacement_x = 1;
-    if (GetAsyncKeyState('Q') & 0x8000) deplacement_x = -1; 
 
-    verifier_collision(fichier, perso, largeur);
+    if (GetAsyncKeyState('D') & 0x8000)
+        deplacement_x = 1;
+    if (GetAsyncKeyState('Q') & 0x8000)
+        deplacement_x = -1;
 
-    if (perso->en_chute) {
+    verifier_collision(carte, perso);
+
+    if (perso->en_chute)
+    {
         int new_y = perso->positionY + 1;
-        fseek(fichier, new_y * largeur + perso->positionX, SEEK_SET);
-        char c = fgetc(fichier);
-        if (c == 'c') {
-            perso->score++;
-            fseek(fichier, new_y * largeur + perso->positionX, SEEK_SET);
-            fputc(' ', fichier);
+        if (new_y < carte->hauteur)
+        {
+            if (carte->carte[new_y][perso->positionX] == 'c')
+            {
+                perso->score++;
+                carte->carte[new_y][perso->positionX] = ' ';
+            }
+            effacer_position(carte, perso);
+            perso->positionY = new_y;
+            mettre_position(carte, perso);
+            verifier_collision(carte, perso);
         }
-        effacer_position(fichier, perso, largeur);
-        perso->positionY = new_y;
-        mettre_position(fichier, perso, largeur);
-        verifier_collision(fichier, perso, largeur);
     }
 
-    if (deplacement_x != 0 && !perso->en_saut) {
+    if (deplacement_x != 0 && !perso->en_saut)
+    {
         int new_x = perso->positionX + deplacement_x;
-        fseek(fichier, perso->positionY * largeur + new_x, SEEK_SET);
-        char c = fgetc(fichier);
-        if (c == 'c') {
-            perso->score++;
-            fseek(fichier, perso->positionY * largeur + new_x, SEEK_SET);
-            fputc(' ', fichier);
-        }
-        if ((deplacement_x > 0 && perso->peut_avancer && perso->positionX < largeur - 1) || 
-            (deplacement_x < 0 && perso->peut_reculer && perso->positionX > 0)) {
-            effacer_position(fichier, perso, largeur);
-            perso->positionX = new_x;
-            mettre_position(fichier, perso, largeur);
+        if (new_x >= 0 && new_x < carte->largeur)
+        {
+            if (carte->carte[perso->positionY][new_x] == 'c')
+            {
+                perso->score++;
+                carte->carte[perso->positionY][new_x] = ' ';
+            }
+            if ((deplacement_x > 0 && perso->peut_avancer) ||
+                (deplacement_x < 0 && perso->peut_reculer))
+            {
+                effacer_position(carte, perso);
+                perso->positionX = new_x;
+                mettre_position(carte, perso);
+            }
         }
     }
 
-    if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_saut && !perso->en_chute) {
+    if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_saut && !perso->en_chute)
+    {
         perso->en_saut = 1;
         int direction = 0;
-        
-        if (deplacement_x > 0) direction = 1;
-        else if (deplacement_x < 0) direction = -1;
-        
-        gerer_saut(fichier, perso, largeur, direction);
-    }
 
-    if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
-        while (_kbhit()) _getch();
-        menuSauvegarde(perso, fichier);
+        if (deplacement_x > 0)
+            direction = 1;
+        else if (deplacement_x < 0)
+            direction = -1;
+
+        gerer_saut(carte, perso, direction);
+    }
+    if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+    {
+        while (_kbhit())
+            _getch();
+        menuSauvegarde(perso, carte);
     }
 }
 
-void jouer(const char *fichierTemp, Personnage* perso) {    
-    FILE *fichier = fopen(fichierTemp, "r+");
-    if (fichier == NULL) {
-        printf("Erreur: Impossible d'ouvrir le fichier %s\n", fichierTemp);
+void jouer(const char *fichierTemp, Personnage *perso)
+{
+    Carte *carte = chargerCarteEnMemoire(fichierTemp);
+    if (carte == NULL)
+    {
+        printf("Erreur: Impossible de charger la carte %s\n", fichierTemp);
         Sleep(1500);
         return;
     }
-    
-    int largeur = LARGEUR_MAP;
 
-    fseek(fichier, (perso->positionY) * largeur + perso->positionX, SEEK_SET);
-    fputc('M', fichier);
-    fflush(fichier);
+    if (perso->positionX < 0 || perso->positionX >= carte->largeur ||
+        perso->positionY < 0 || perso->positionY >= carte->hauteur)
+    {
+        perso->positionX = SPAWN_X;
+        perso->positionY = SPAWN_Y;
+    }
+
+    carte->carte[perso->positionY][perso->positionX] = 'M';
 
     Tab_gumba tab_gumba = {NULL, 0};
-    initialiser_gumbas(fichier, &tab_gumba);
+    initialiser_gumbas(carte, &tab_gumba);
 
     cacherCurseur();
 
-    while (1) {
-        Sleep(50);
-        system("cls");
-        
-        rewind(fichier);
-        bouger_gumba(fichier, &tab_gumba);
-        afficherPaysage(fichier, perso->positionX);
+    while (1)
+    {
+        Sleep(60);
+        deplacerCurseur(0, 0);
+        bouger_gumba(carte, &tab_gumba);
+        afficherPaysage(carte, perso->positionX);
         printf("Score: %d | Nom: %s | Vies: %d\n", perso->score, perso->nom, perso->vie);
-        
-        deplacer_joueur(fichier, perso, largeur);
-        fflush(fichier);
+        deplacer_joueur(carte, perso);
 
-        if (perso->positionY >= MORT_Y) {
+        if (perso->positionY >= MORT_Y)
+        {
             perso->vie--;
-            fclose(fichier);
+            sauvegarderCarteVersFichier(carte, fichierTemp);
+
+            if (tab_gumba.gumbas != NULL)
+            {
+                free(tab_gumba.gumbas);
+                tab_gumba.gumbas = NULL;
+            }
+
+            libererCarte(carte);
             menu_mort(perso, fichierTemp);
             return;
         }
     }
-    free(tab_gumba.gumbas);
-    tab_gumba.gumbas = NULL;
+
+    if (tab_gumba.gumbas != NULL)
+    {
+        free(tab_gumba.gumbas);
+        tab_gumba.gumbas = NULL;
+    }
+
+    libererCarte(carte);
 }
