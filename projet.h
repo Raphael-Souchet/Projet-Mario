@@ -9,6 +9,10 @@
 #include <time.h>
 #include <ctype.h>
 
+#include "SDL.h"
+
+#define TILE_SIZE 32
+
 extern const int LARGEUR_MAP;
 extern const int SPAWN_X;
 extern const int SPAWN_Y;
@@ -73,6 +77,7 @@ typedef struct {
     int largeur;
 } Carte;
 
+
 Carte* chargerCarteEnMemoire(const char* fichierCarte);
 void libererCarte(Carte* carte);
 int sauvegarderCarteVersFichier(Carte* carte, const char* fichierCarte);
@@ -85,10 +90,11 @@ void verifier_collision_gumba(Carte* carte, Gumba* gumba);
 void gerer_saut(Carte* carte, Personnage* perso, int direction);
 void effacer_position(Carte* carte, Personnage* perso);
 void mettre_position(Carte* carte, Personnage* perso);
+void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer);
 int copierFichier(const char *source, const char *destination);
 void deplacer_joueur(Carte* carte, Personnage* perso);
 void caracterePaysage(char caractereActuel);
-void afficherPaysage(Carte* carte, int positionJoueur);
+void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer);
 void menuPrincipal(const char *fichierTemp);
 void jouer(const char *fichierTemp, Personnage *perso);
 void sauvegarderPartie(Personnage* perso, Carte* carte, const char* fichierTemp);

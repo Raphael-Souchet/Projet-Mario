@@ -51,49 +51,41 @@ void caracterePaysage(char caractereActuel)
     }
 }
 
-void afficherPaysage(Carte *carte, int positionJoueur)
-{
+void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer) {
     int largeurAffichage = 82;
     int demiLargeur = largeurAffichage / 2;
     int debutX = positionJoueur - demiLargeur;
     int finX = positionJoueur + demiLargeur;
 
-    if (debutX < 0)
-    {
-        debutX = 0;
-        finX = largeurAffichage;
-    }
-    if (finX > carte->largeur)
-    {
-        finX = carte->largeur;
-        debutX = finX - largeurAffichage;
-        if (debutX < 0)
-            debutX = 0;
-    }
+    if (debutX < 0) debutX = 0;
+    if (finX > carte->largeur) finX = carte->largeur;
 
-    char ligne[largeurAffichage + 1];
-    ligne[largeurAffichage] = '\0';
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); 
+    SDL_RenderClear(renderer);
 
-    for (int y = 0; y < carte->hauteur; y++)
-    {
-        for (int x = debutX; x < finX; x++)
-        {
-            if (x < carte->largeur)
-            {
-                char c = carte->carte[y][x];
-                switch (c)
-                {
-                case 'w':
-                    ligne[x - debutX] = '#';
+    for (int y = 0; y < carte->hauteur; y++) {
+        for (int x = debutX; x < finX; x++) {
+            if (x >= carte->largeur) continue;
+
+            SDL_Rect tile = {
+                (x - debutX) * TILE_SIZE,
+                y * TILE_SIZE,
+                TILE_SIZE,
+                TILE_SIZE
+            };
+
+            switch(carte->carte[y][x]) {
+                case 'w': 
+                    SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255); 
                     break;
-                case 'c':
-                    ligne[x - debutX] = 'o';
+                case 'c': 
+                    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
                     break;
                 case 'M':
-                    ligne[x - debutX] = '&';
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
                     break;
-                case 'Q':
-                    ligne[x - debutX] = '@';
+                case 'Q': 
+                    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
                     break;
                 case 'u':
                     ligne[x - debutX] = 'u';
@@ -108,16 +100,12 @@ void afficherPaysage(Carte *carte, int positionJoueur)
                     ligne[x - debutX] = '|';
                     break;
                 default:
-                    ligne[x - debutX] = c;
+                    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); 
                     break;
-                }
             }
-            else
-            {
-                ligne[x - debutX] = ' ';
-            }
+            
+            SDL_RenderFillRect(renderer, &tile);
         }
-        printf("%s\n", ligne);
     }
 }
 
@@ -133,7 +121,9 @@ void cacherCurseur()
 void gerer_saut(Carte *carte, Personnage *perso, int direction)
 {
     int hauteur_saut[8] = {-1, -1, -1, -1, 1, 1, 1, 1};
-
+    
+    SDL_Renderer *renderer = SDL_GetRenderer(SDL_GetWindowFromID(1));
+    
     for (int i = 0; i < 8; i++)
     {
         int nouv_x = perso->positionX + direction;
@@ -156,15 +146,16 @@ void gerer_saut(Carte *carte, Personnage *perso, int direction)
         if (nouv_x >= 0 && nouv_x < carte->largeur && nouv_y >= 0 &&
             caractere_destination != 'w' && caractere_lateral != 'w' && perso->peut_monter)
         {
-
             effacer_position(carte, perso);
             perso->positionX = nouv_x;
             perso->positionY = nouv_y;
             mettre_position(carte, perso);
 
-            deplacerCurseur(0, 0);
-            afficherPaysage(carte, perso->positionX);
-            printf("Score: %d | Nom: %s | Vies: %d\n", perso->score, perso->nom, perso->vie);
+            if (renderer != NULL) {
+                afficherPaysageSDL(carte, perso->positionX, renderer);
+                SDL_RenderPresent(renderer);
+            }
+            
             Sleep(85);
         }
     }
@@ -279,10 +270,18 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
         gumba->positionY = 0;
 }
 
-void deplacer_joueur(Carte *carte, Personnage *perso)
-{
-    if (perso->positionY >= MORT_Y)
-    {
+void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer) {
+    if (renderer != NULL) {
+        SDL_DestroyRenderer(renderer);
+    }
+    if (window != NULL) {
+        SDL_DestroyWindow(window);
+    }
+    SDL_Quit();
+}
+
+void deplacer_joueur(Carte *carte, Personnage *perso) {
+    if (perso->positionY >= MORT_Y) {
         return;
     }
 
@@ -295,13 +294,10 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
 
     verifier_collision(carte, perso);
 
-    if (perso->en_chute)
-    {
+    if (perso->en_chute) {
         int new_y = perso->positionY + 1;
-        if (new_y < carte->hauteur)
-        {
-            if (carte->carte[new_y][perso->positionX] == 'c')
-            {
+        if (new_y < carte->hauteur) {
+            if (carte->carte[new_y][perso->positionX] == 'c') {
                 perso->score++;
                 carte->carte[new_y][perso->positionX] = ' ';
             }
@@ -312,19 +308,15 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
         }
     }
 
-    if (deplacement_x != 0 && !perso->en_saut)
-    {
+    if (deplacement_x != 0 && !perso->en_saut) {
         int new_x = perso->positionX + deplacement_x;
-        if (new_x >= 0 && new_x < carte->largeur)
-        {
-            if (carte->carte[perso->positionY][new_x] == 'c')
-            {
+        if (new_x >= 0 && new_x < carte->largeur) {
+            if (carte->carte[perso->positionY][new_x] == 'c') {
                 perso->score++;
                 carte->carte[perso->positionY][new_x] = ' ';
             }
             if ((deplacement_x > 0 && perso->peut_avancer) ||
-                (deplacement_x < 0 && perso->peut_reculer))
-            {
+                (deplacement_x < 0 && perso->peut_reculer)) {
                 effacer_position(carte, perso);
                 perso->positionX = new_x;
                 mettre_position(carte, perso);
@@ -332,8 +324,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
         }
     }
 
-    if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_saut && !perso->en_chute)
-    {
+    if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_saut && !perso->en_chute) {
         perso->en_saut = 1;
         int direction = 0;
 
@@ -344,27 +335,35 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
 
         gerer_saut(carte, perso, direction);
     }
-    if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
-    {
-        while (_kbhit())
-            _getch();
-        menuSauvegarde(perso, carte);
-    }
 }
 
-void jouer(const char *fichierTemp, Personnage *perso)
-{
+void jouer(const char *fichierTemp, Personnage *perso) {
+    if(SDL_Init(SDL_INIT_VIDEO) < 0) {
+        printf("Erreur SDL: %s\n", SDL_GetError());
+        return;
+    }
+
+    SDL_Window *window = SDL_CreateWindow(
+        "Super Mario",
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        82 * TILE_SIZE, 
+        20 * TILE_SIZE, 
+        0
+    );
+
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    
     Carte *carte = chargerCarteEnMemoire(fichierTemp);
-    if (carte == NULL)
-    {
+    if (carte == NULL) {
         printf("Erreur: Impossible de charger la carte %s\n", fichierTemp);
+        nettoyerSDL(window, renderer);
         Sleep(1500);
         return;
     }
 
     if (perso->positionX < 0 || perso->positionX >= carte->largeur ||
-        perso->positionY < 0 || perso->positionY >= carte->hauteur)
-    {
+        perso->positionY < 0 || perso->positionY >= carte->hauteur) {
         perso->positionX = SPAWN_X;
         perso->positionY = SPAWN_Y;
     }
@@ -377,24 +376,32 @@ void jouer(const char *fichierTemp, Personnage *perso)
     initialiser_gumbas(carte, &tab_gumba);
 
     cacherCurseur();
+    int quit = 0;
 
-    while (1)
-    {
+    while (!quit) {
+        SDL_Event event;
+        while(SDL_PollEvent(&event)) {
+            if(event.type == SDL_QUIT) {
+                quit = 1;
+            }
+        }
+
         Sleep(60);
-        deplacerCurseur(0, 0);
         bouger_gumba(carte, &tab_gumba);
-        bougerPlante(carte, &tab_plante);
         afficherPaysage(carte, perso->positionX);
         printf("Score: %d | Nom: %s | Vies: %d\n", perso->score, perso->nom, perso->vie);
         deplacer_joueur(carte, perso);
 
-        if (perso->positionY >= MORT_Y)
-        {
+        afficherPaysageSDL(carte, perso->positionX, renderer);
+        SDL_RenderPresent(renderer);
+
+        if (perso->positionY >= MORT_Y) {
             perso->vie--;
             sauvegarderCarteVersFichier(carte, fichierTemp);
 
-            if (tab_gumba.gumbas != NULL)
-            {
+            nettoyerSDL(window, renderer);
+            
+            if (tab_gumba.gumbas != NULL) {
                 free(tab_gumba.gumbas);
                 tab_gumba.gumbas = NULL;
             }
@@ -405,11 +412,12 @@ void jouer(const char *fichierTemp, Personnage *perso)
         }
     }
 
-    if (tab_gumba.gumbas != NULL)
-    {
+    nettoyerSDL(window, renderer);
+    
+    if (tab_gumba.gumbas != NULL) {
         free(tab_gumba.gumbas);
         tab_gumba.gumbas = NULL;
     }
-
+    
     libererCarte(carte);
 }
