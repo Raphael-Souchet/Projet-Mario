@@ -1,12 +1,10 @@
 #include "projet.h"
 
-void menuSauvegarde(Personnage *perso, Carte *carte)
-{
+void menuSauvegarde(Personnage *perso, Carte *carte) {
     int choix;
     char *fichierTemp = creerNomFichierTemp(perso->nom);
 
-    while (1)
-    {
+    while (1) {
         system("cls");
         printf("+---------------------------------------------+\n");
         printf("|               Menu Sauvegarde               |\n");
@@ -20,13 +18,13 @@ void menuSauvegarde(Personnage *perso, Carte *carte)
             _getch();
         scanf("%d", &choix);
 
-        switch (choix)
-        {
+        switch (choix) {
         case 1:
             sauvegarderPartie(perso, carte, fichierTemp);
             break;
         case 2:
             free(fichierTemp);
+            jouer(fichierTemp, perso);
             return;
         case 3:
             sauvegarderCarteVersFichier(carte, fichierTemp);
