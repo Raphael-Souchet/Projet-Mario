@@ -31,7 +31,19 @@ void caracterePaysage(char caractereActuel)
         printf("&");
         break;
     case 'Q':
-        printf("Q");
+        printf("@");
+        break;
+    case 'u':
+        printf("u");
+        break;
+    case ']':
+        printf("]");
+        break;
+    case '[':
+        printf("[");
+        break;
+    case '|':
+        printf("|");
         break;
     default:
         printf("%c", caractereActuel);
@@ -82,6 +94,18 @@ void afficherPaysage(Carte *carte, int positionJoueur)
                     break;
                 case 'Q':
                     ligne[x - debutX] = '@';
+                    break;
+                case 'u':
+                    ligne[x - debutX] = 'u';
+                    break;
+                case ']':
+                    ligne[x - debutX] = ']';
+                    break;
+                case '[':
+                    ligne[x - debutX] = '[';
+                    break;
+                case '|':
+                    ligne[x - debutX] = '|';
                     break;
                 default:
                     ligne[x - debutX] = c;
@@ -348,6 +372,8 @@ void jouer(const char *fichierTemp, Personnage *perso)
     carte->carte[perso->positionY][perso->positionX] = 'M';
 
     Tab_gumba tab_gumba = {NULL, 0};
+    Tab_plante tab_plante = {NULL, 0};
+    initialiserPlante(carte, &tab_plante);
     initialiser_gumbas(carte, &tab_gumba);
 
     cacherCurseur();
@@ -357,6 +383,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
         Sleep(60);
         deplacerCurseur(0, 0);
         bouger_gumba(carte, &tab_gumba);
+        bougerPlante(carte, &tab_plante);
         afficherPaysage(carte, perso->positionX);
         printf("Score: %d | Nom: %s | Vies: %d\n", perso->score, perso->nom, perso->vie);
         deplacer_joueur(carte, perso);

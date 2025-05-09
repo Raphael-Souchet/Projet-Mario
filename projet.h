@@ -45,6 +45,20 @@ typedef struct {
     int count;
 } Tab_gumba;
 
+typedef struct {
+    int positionX;
+    int positionY;
+    int peut_monter;
+    int peut_descendre;
+    int compteur;
+    int etat_tige;  
+    int positionY_base; 
+} Plante;
+
+typedef struct {
+    Plante* plantes;
+    int count;
+} Tab_plante;
 
 typedef struct {
     char nom[100];
@@ -65,6 +79,8 @@ int sauvegarderCarteVersFichier(Carte* carte, const char* fichierCarte);
 void deplacerCurseur(int x, int y);
 void initialiser_gumbas(Carte* carte, Tab_gumba* tab_gumba);
 void bouger_gumba(Carte* carte, Tab_gumba* tab_gumba);
+void initialiserPlante(Carte* carte, Tab_plante* tab_plante);
+void bougerPlante(Carte* carte, Tab_plante* tab_plante);
 void verifier_collision_gumba(Carte* carte, Gumba* gumba);
 void gerer_saut(Carte* carte, Personnage* perso, int direction);
 void effacer_position(Carte* carte, Personnage* perso);
