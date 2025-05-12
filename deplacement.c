@@ -39,48 +39,63 @@ void caracterePaysage(char caractereActuel)
     }
 }
 
-void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer) {
+void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer)
+{
     int largeurAffichage = 50;
     int demiLargeur = largeurAffichage / 2;
     int debutX = positionJoueur - demiLargeur;
     int finX = positionJoueur + demiLargeur;
 
-    if (debutX < 0) debutX = 0;
-    if (finX > carte->largeur) finX = carte->largeur;
+    if (debutX < 0)
+        debutX = 0;
+    if (finX > carte->largeur)
+        finX = carte->largeur;
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); 
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    for (int y = 0; y < carte->hauteur; y++) {
-        for (int x = debutX; x < finX; x++) {
-            if (x >= carte->largeur) continue;
+    for (int y = 0; y < carte->hauteur; y++)
+    {
+        for (int x = debutX; x < finX; x++)
+        {
+            if (x >= carte->largeur)
+                continue;
 
             SDL_Rect tile = {
                 (x - debutX) * TILE_SIZE,
                 y * TILE_SIZE,
                 TILE_SIZE,
-                TILE_SIZE
-            };
+                TILE_SIZE};
 
             switch(carte->carte[y][x]) {
-                case 'w': 
-                    SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255); 
-                    break;
-                case 'c': 
-                    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
-                    break;
-                case 'M':
-                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-                    break;
-                case 'Q': 
-                    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-                    break;
-                default:
-                    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); 
-                    break;
-            }
-            
-            SDL_RenderFillRect(renderer, &tile);
+        case 'w': 
+            SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255); 
+            break;
+        case 'c': 
+            SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255); 
+            break;
+        case 'M':
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); 
+            break;
+        case 'Q': 
+            SDL_SetRenderDrawColor(renderer, 128, 0, 128, 255); 
+            break;
+        case 'u':
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); 
+            break;
+        case ']':
+        case '[':
+            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); 
+            break;
+        case '|':
+            SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255); 
+            break;
+        default:
+            SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); 
+            break;
+    }
+    
+    SDL_RenderFillRect(renderer, &tile);
         }
     }
 }
@@ -335,7 +350,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
         return;
     }
 
-    int largeurAffichage = 50; 
+    int largeurAffichage = 50;
     SDL_Window *window = SDL_CreateWindow(
         "Super Mario",
         SDL_WINDOWPOS_CENTERED,
@@ -385,11 +400,9 @@ void jouer(const char *fichierTemp, Personnage *perso)
 
         Sleep(60);
         bouger_gumba(carte, &tab_gumba);
-
-        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
-        {
-            while (_kbhit())
-                _getch();
+        
+        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
+            while (_kbhit()) _getch();
             sauvegarderCarteVersFichier(carte, fichierTemp);
 
             nettoyerSDL(window, renderer);
@@ -399,7 +412,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
                 free(tab_gumba.gumbas);
                 tab_gumba.gumbas = NULL;
             }
-
+            
             menuSauvegarde(perso, carte);
             return;
         }
@@ -421,6 +434,12 @@ void jouer(const char *fichierTemp, Personnage *perso)
                 free(tab_gumba.gumbas);
                 tab_gumba.gumbas = NULL;
             }
+            
+            if (tab_plante.plantes != NULL)  
+            {
+                free(tab_plante.plantes);
+                tab_plante.plantes = NULL;
+            }
 
             libererCarte(carte);
             menu_mort(perso, fichierTemp);
@@ -434,6 +453,12 @@ void jouer(const char *fichierTemp, Personnage *perso)
     {
         free(tab_gumba.gumbas);
         tab_gumba.gumbas = NULL;
+    }
+    
+    if (tab_plante.plantes != NULL)  
+    {
+        free(tab_plante.plantes);
+        tab_plante.plantes = NULL;
     }
 
     libererCarte(carte);
