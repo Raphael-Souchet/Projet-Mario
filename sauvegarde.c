@@ -182,7 +182,6 @@ int chargerPartie(Personnage *perso)
             nbSauvegardes++;
             dans_sauvegarde = 1;
 
-            // Extraire la date
             char *dateStart = ligne + 16;
             char *dateEnd = strstr(dateStart, " =====");
             if (dateEnd)
@@ -202,7 +201,7 @@ int chargerPartie(Personnage *perso)
             else if (strncmp(ligne, "Vie:", 4) == 0)
             {
                 sauvegardes[sauvegarde_courante].vie = atoi(ligne + 4);
-                dans_sauvegarde = 0; // Fin de cette sauvegarde
+                dans_sauvegarde = 0; 
             }
         }
     }
@@ -401,6 +400,4 @@ void afficherScores()
     }
     printf("+------+--------------------+--------+------+-----------------------------+\n");
 
-    printf("\nAppuyez sur une touche pour continuer...");
-    _getch();
 }
