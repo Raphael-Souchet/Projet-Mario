@@ -11,7 +11,7 @@
 
 #include "SDL.h"
 
-#define TILE_SIZE 32
+#define TILE_SIZE 25
 
 extern const int LARGEUR_MAP;
 extern const int SPAWN_X;
