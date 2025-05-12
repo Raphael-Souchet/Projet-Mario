@@ -40,7 +40,7 @@ void caracterePaysage(char caractereActuel)
 }
 
 void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer) {
-    int largeurAffichage = 82;
+    int largeurAffichage = 50;
     int demiLargeur = largeurAffichage / 2;
     int debutX = positionJoueur - demiLargeur;
     int finX = positionJoueur + demiLargeur;
@@ -97,9 +97,9 @@ void cacherCurseur()
 void gerer_saut(Carte *carte, Personnage *perso, int direction)
 {
     int hauteur_saut[8] = {-1, -1, -1, -1, 1, 1, 1, 1};
-    
+
     SDL_Renderer *renderer = SDL_GetRenderer(SDL_GetWindowFromID(1));
-    
+
     for (int i = 0; i < 8; i++)
     {
         int nouv_x = perso->positionX + direction;
@@ -127,11 +127,12 @@ void gerer_saut(Carte *carte, Personnage *perso, int direction)
             perso->positionY = nouv_y;
             mettre_position(carte, perso);
 
-            if (renderer != NULL) {
+            if (renderer != NULL)
+            {
                 afficherPaysageSDL(carte, perso->positionX, renderer);
                 SDL_RenderPresent(renderer);
             }
-            
+
             Sleep(85);
         }
     }
@@ -246,18 +247,23 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
         gumba->positionY = 0;
 }
 
-void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer) {
-    if (renderer != NULL) {
+void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
+{
+    if (renderer != NULL)
+    {
         SDL_DestroyRenderer(renderer);
     }
-    if (window != NULL) {
+    if (window != NULL)
+    {
         SDL_DestroyWindow(window);
     }
     SDL_Quit();
 }
 
-void deplacer_joueur(Carte *carte, Personnage *perso) {
-    if (perso->positionY >= MORT_Y) {
+void deplacer_joueur(Carte *carte, Personnage *perso)
+{
+    if (perso->positionY >= MORT_Y)
+    {
         return;
     }
 
@@ -270,10 +276,13 @@ void deplacer_joueur(Carte *carte, Personnage *perso) {
 
     verifier_collision(carte, perso);
 
-    if (perso->en_chute) {
+    if (perso->en_chute)
+    {
         int new_y = perso->positionY + 1;
-        if (new_y < carte->hauteur) {
-            if (carte->carte[new_y][perso->positionX] == 'c') {
+        if (new_y < carte->hauteur)
+        {
+            if (carte->carte[new_y][perso->positionX] == 'c')
+            {
                 perso->score++;
                 carte->carte[new_y][perso->positionX] = ' ';
             }
@@ -284,15 +293,19 @@ void deplacer_joueur(Carte *carte, Personnage *perso) {
         }
     }
 
-    if (deplacement_x != 0 && !perso->en_saut) {
+    if (deplacement_x != 0 && !perso->en_saut)
+    {
         int new_x = perso->positionX + deplacement_x;
-        if (new_x >= 0 && new_x < carte->largeur) {
-            if (carte->carte[perso->positionY][new_x] == 'c') {
+        if (new_x >= 0 && new_x < carte->largeur)
+        {
+            if (carte->carte[perso->positionY][new_x] == 'c')
+            {
                 perso->score++;
                 carte->carte[perso->positionY][new_x] = ' ';
             }
             if ((deplacement_x > 0 && perso->peut_avancer) ||
-                (deplacement_x < 0 && perso->peut_reculer)) {
+                (deplacement_x < 0 && perso->peut_reculer))
+            {
                 effacer_position(carte, perso);
                 perso->positionX = new_x;
                 mettre_position(carte, perso);
@@ -300,7 +313,8 @@ void deplacer_joueur(Carte *carte, Personnage *perso) {
         }
     }
 
-    if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_saut && !perso->en_chute) {
+    if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_saut && !perso->en_chute)
+    {
         perso->en_saut = 1;
         int direction = 0;
 
@@ -313,25 +327,28 @@ void deplacer_joueur(Carte *carte, Personnage *perso) {
     }
 }
 
-void jouer(const char *fichierTemp, Personnage *perso) {
-    if(SDL_Init(SDL_INIT_VIDEO) < 0) {
+void jouer(const char *fichierTemp, Personnage *perso)
+{
+    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    {
         printf("Erreur SDL: %s\n", SDL_GetError());
         return;
     }
 
+    int largeurAffichage = 50; 
     SDL_Window *window = SDL_CreateWindow(
         "Super Mario",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        82 * TILE_SIZE, 
-        20 * TILE_SIZE, 
-        0
-    );
+        largeurAffichage * TILE_SIZE,
+        20 * TILE_SIZE,
+        0);
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    
+
     Carte *carte = chargerCarteEnMemoire(fichierTemp);
-    if (carte == NULL) {
+    if (carte == NULL)
+    {
         printf("Erreur: Impossible de charger la carte %s\n", fichierTemp);
         nettoyerSDL(window, renderer);
         Sleep(1500);
@@ -339,7 +356,8 @@ void jouer(const char *fichierTemp, Personnage *perso) {
     }
 
     if (perso->positionX < 0 || perso->positionX >= carte->largeur ||
-        perso->positionY < 0 || perso->positionY >= carte->hauteur) {
+        perso->positionY < 0 || perso->positionY >= carte->hauteur)
+    {
         perso->positionX = SPAWN_X;
         perso->positionY = SPAWN_Y;
     }
@@ -352,44 +370,52 @@ void jouer(const char *fichierTemp, Personnage *perso) {
     cacherCurseur();
     int quit = 0;
 
-    while (!quit) {
+    while (!quit)
+    {
         SDL_Event event;
-        while(SDL_PollEvent(&event)) {
-            if(event.type == SDL_QUIT) {
+        while (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_QUIT)
+            {
                 quit = 1;
             }
         }
 
         Sleep(60);
         bouger_gumba(carte, &tab_gumba);
-        
-        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
-            while (_kbhit()) _getch();
+
+        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+        {
+            while (_kbhit())
+                _getch();
             sauvegarderCarteVersFichier(carte, fichierTemp);
-            
+
             nettoyerSDL(window, renderer);
-            
-            if (tab_gumba.gumbas != NULL) {
+
+            if (tab_gumba.gumbas != NULL)
+            {
                 free(tab_gumba.gumbas);
                 tab_gumba.gumbas = NULL;
             }
-            
+
             menuSauvegarde(perso, carte);
             return;
         }
-        
+
         deplacer_joueur(carte, perso);
 
         afficherPaysageSDL(carte, perso->positionX, renderer);
         SDL_RenderPresent(renderer);
 
-        if (perso->positionY >= MORT_Y) {
+        if (perso->positionY >= MORT_Y)
+        {
             perso->vie--;
             sauvegarderCarteVersFichier(carte, fichierTemp);
 
             nettoyerSDL(window, renderer);
-            
-            if (tab_gumba.gumbas != NULL) {
+
+            if (tab_gumba.gumbas != NULL)
+            {
                 free(tab_gumba.gumbas);
                 tab_gumba.gumbas = NULL;
             }
@@ -401,11 +427,12 @@ void jouer(const char *fichierTemp, Personnage *perso) {
     }
 
     nettoyerSDL(window, renderer);
-    
-    if (tab_gumba.gumbas != NULL) {
+
+    if (tab_gumba.gumbas != NULL)
+    {
         free(tab_gumba.gumbas);
         tab_gumba.gumbas = NULL;
     }
-    
+
     libererCarte(carte);
 }
