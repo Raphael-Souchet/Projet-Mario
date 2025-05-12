@@ -75,36 +75,34 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
             };
 
             switch(carte->carte[y][x]) {
-                case 'w': 
-                    SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255); 
-                    break;
-                case 'c': 
-                    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
-                    break;
-                case 'M':
-                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-                    break;
-                case 'Q': 
-                    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-                    break;
-                case 'u':
-                    ligne[x - debutX] = 'u';
-                    break;
-                case ']':
-                    ligne[x - debutX] = ']';
-                    break;
-                case '[':
-                    ligne[x - debutX] = '[';
-                    break;
-                case '|':
-                    ligne[x - debutX] = '|';
-                    break;
-                default:
-                    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); 
-                    break;
-            }
-            
-            SDL_RenderFillRect(renderer, &tile);
+        case 'w': 
+            SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255); 
+            break;
+        case 'c': 
+            SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255); 
+            break;
+        case 'M':
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); 
+            break;
+        case 'Q': 
+            SDL_SetRenderDrawColor(renderer, 128, 0, 128, 255); 
+            break;
+        case 'u':
+            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); 
+            break;
+        case ']':
+        case '[':
+            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); 
+            break;
+        case '|':
+            SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255); 
+            break;
+        default:
+            SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); 
+            break;
+    }
+    
+    SDL_RenderFillRect(renderer, &tile);
         }
     }
 }
@@ -388,11 +386,11 @@ void jouer(const char *fichierTemp, Personnage *perso) {
 
         Sleep(60);
         bouger_gumba(carte, &tab_gumba);
-        afficherPaysage(carte, perso->positionX);
+        afficherPaysageSDL(carte, perso->positionX, renderer);
         printf("Score: %d | Nom: %s | Vies: %d\n", perso->score, perso->nom, perso->vie);
         deplacer_joueur(carte, perso);
 
-        afficherPaysageSDL(carte, perso->positionX, renderer);
+        afficherPaysageSDL(carte, perso->positionX, renderer);  
         SDL_RenderPresent(renderer);
 
         if (perso->positionY >= MORT_Y) {
