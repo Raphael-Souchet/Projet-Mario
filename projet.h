@@ -31,6 +31,7 @@ typedef struct {
     int peut_avancer;
     int peut_reculer;
     int vie;
+    int etape_saut;
 } Personnage;
 
 typedef struct {

@@ -61,7 +61,7 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
         return;
     }
 
-    tab_gumba->count = 4;
+    tab_gumba->count = 3;
     tab_gumba->gumbas = malloc(tab_gumba->count * sizeof(Gumba));
 
     if (tab_gumba->gumbas == NULL)
@@ -71,8 +71,8 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
         return;
     }
 
-    int tab_x[4] = {93, 98, 120, 150};
-    int tab_y[4] = {14, 9, 8, 8};
+    int tab_x[4] = {74, 80, 120};
+    int tab_y[4] = {14, 9, 8};
 
     for (int i = 0; i < tab_gumba->count; i++)
     {
