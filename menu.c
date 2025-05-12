@@ -183,6 +183,7 @@ void menuPrincipal(const char *fichierOriginal) {
                     return;
                     
                 case 2: 
+                    system("cls");
                     if (chargerPartie(&perso)) {
                         fichierTemp = creerNomFichierTemp(perso.nom);
 
@@ -195,23 +196,31 @@ void menuPrincipal(const char *fichierOriginal) {
                             Sleep(1500);
                         }
                         free(fichierTemp);
+                        Sleep(1500);
+                        system("cls");
                         return;
                     }
                     break;
                     
                 case 3: 
+                    system("cls");
                     afficherScores();
                     printf("\nAppuyez sur une touche pour revenir au menu...");
                     _getch();
+                    system("cls");
                     break;
                     
                 case 4: 
+                    system("cls");
                     resetScores();
-                    printf("Scores réinitialisés avec succès!\n");
+                    printf("Scores reinitialises avec succes!\n");
                     Sleep(1500);
+                    system("cls");
                     break;
                     
                 case 5: 
+                    system("cls");
+                    printf("Adios !\n");
                     exit(0);
             }
         }
