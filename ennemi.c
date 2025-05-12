@@ -129,3 +129,6 @@ void bouger_gumba(Carte *carte, Tab_gumba *tab_gumba)
         carte->carte[tab_gumba->gumbas[i].positionY][tab_gumba->gumbas[i].positionX] = 'Q';
     }
 }
+
+
+
