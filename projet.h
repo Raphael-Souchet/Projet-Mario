@@ -10,6 +10,7 @@
 #include <ctype.h>
 
 #include "SDL.h"
+#include "SDL_image.h"  // Pour gérer les images PNG
 
 #define TILE_SIZE 25
 
@@ -31,6 +32,7 @@ typedef struct {
     int peut_avancer;
     int peut_reculer;
     int vie;
+    int est_en_mouvement;  // Pour suivre l'état de mouvement
 } Personnage;
 
 typedef struct {
@@ -106,5 +108,9 @@ void verifier_collision(Carte* carte, Personnage* perso);
 void cacherCurseur();
 char* creerNomFichierTemp(const char* nomJoueur);
 void menu_mort(Personnage *perso, const char *fichierTemp);
+
+// Fonctions pour la gestion des textures
+void chargerTextures(SDL_Renderer *renderer);
+void libererTextures();
 
 #endif
