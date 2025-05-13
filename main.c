@@ -1,6 +1,6 @@
 #include "projet.h"
 
-const int LARGEUR_MAP = 162;
+const int LARGEUR_MAP = 163;
 const int SPAWN_X = 21;
 const int SPAWN_Y = 15;
 const int SPAWN_MORT_X = 21;

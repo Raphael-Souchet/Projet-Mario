@@ -32,7 +32,6 @@ typedef struct {
     int peut_avancer;
     int peut_reculer;
     int vie;
-    int est_en_mouvement;  // Pour suivre l'état de mouvement
 } Personnage;
 
 typedef struct {
@@ -43,12 +42,12 @@ typedef struct {
     int peut_tomber_devant;
     int peut_tomber_derriere;
     int dernier_deplacement;
-    int compteur;
 } Gumba;
 
 typedef struct {
     Gumba* gumbas;
     int count;
+    int compteur;
 } Tab_gumba;
 
 typedef struct {
@@ -108,9 +107,5 @@ void verifier_collision(Carte* carte, Personnage* perso);
 void cacherCurseur();
 char* creerNomFichierTemp(const char* nomJoueur);
 void menu_mort(Personnage *perso, const char *fichierTemp);
-
-// Fonctions pour la gestion des textures
-void chargerTextures(SDL_Renderer *renderer);
-void libererTextures();
 
 #endif
