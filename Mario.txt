@@ -4,17 +4,17 @@
                                                                                                                                                                 
                                                                                                                                                                 
                                                                                                                                   c         c                   
-                                                                                                                                 www       www                  
-                                                                                                                    wwww                                    !   
-                                                                                                                 wwwwwww               *                wwwwwwww
-                                                                                                              wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
-                                                                         wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+                                                                                                                                 bbb       bbb                  
+                                                                                                                    dddd                                    !   
+                                                                                                                 dddwwww               *                dddddddd
+                                                                                                              dddwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+                                                                         dddddddddddddddddddddddddddddddddddddwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
                                                       c c c c c c c c c                                                                                         
                                                       wwwwwwwwwwwwwwwww                                                                                         
                                                                                                            *                                                    
                                                                                                                                                                 
-wwww                         wwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
+dddd                         dddddddddd     ddddddddddddddddddddddddddddddddddddddddddddddddddddddd     dddddddd                                                
+wwwwdddddddddddddddddddddddddwwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww     wwwwwwww                                                
