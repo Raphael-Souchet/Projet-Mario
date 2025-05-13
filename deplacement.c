@@ -435,8 +435,8 @@ void jouer(const char *fichierTemp, Personnage *perso)
     
     int quit = 0;
     Uint32 lastTime = SDL_GetTicks();
-    const int FPS = 15;
-    const int frameDelay = 1000 / FPS;
+    const int FPS = 22;
+    const int frameDelay = 1500 / FPS;
 
     while (!quit)
     {
@@ -485,6 +485,8 @@ void jouer(const char *fichierTemp, Personnage *perso)
             }
 
             deplacer_joueur(carte, perso);
+
+            gerer_collisions(carte, perso, &tab_gumba, &tab_plante);
 
             afficherPaysageSDL(carte, perso->positionX, renderer);
             SDL_RenderPresent(renderer);

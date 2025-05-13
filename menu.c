@@ -23,15 +23,15 @@ void afficherMenuSauvegarde(int selection) {
     
     setCouleur(7);
     if (selection == 1) setCouleur(240 );
-    printf("|             Sauvegarder la partie          |\n");
+    printf("|             Sauvegarder la partie           |\n");
     setCouleur(7);
     
     if (selection == 2) setCouleur(240);
-    printf("|             Retour au jeu                  |\n");
+    printf("|             Retour au jeu                   |\n");
     setCouleur(7);
     
     if (selection == 3) setCouleur(240 );
-    printf("|             Menu Principal                 |\n");
+    printf("|             Menu Principal                  |\n");
     setCouleur(7);
     
     printf("+---------------------------------------------+\n");
@@ -236,11 +236,11 @@ void afficherMenuMort(Personnage *perso, int selection) {
         printf("|                                             |\n");
         
         if (selection == 1) setCouleur(240  );
-        printf("|                  Recommencer               |\n");
+        printf("|                  Recommencer                |\n");
         setCouleur(7);
         
         if (selection == 2) setCouleur(240 );
-        printf("|                  Menu Principal            |\n");
+        printf("|                 Menu Principal              |\n");
         setCouleur(7);
         
         printf("+---------------------------------------------+\n");

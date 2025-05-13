@@ -13,6 +13,7 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
         free(tab_gumba->gumbas);
         tab_gumba->gumbas = NULL;
         tab_gumba->count = 0;
+        tab_gumba->compteur = 0;
     }
 
     int nbGumbas = 0;
@@ -53,7 +54,6 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
                     tab_gumba->gumbas[index].peut_tomber_devant = 0;
                     tab_gumba->gumbas[index].peut_tomber_derriere = 0;
                     tab_gumba->gumbas[index].dernier_deplacement = 1;
-                    tab_gumba->gumbas[index].compteur = 0;
                     index++;
                 }
             }
@@ -83,7 +83,6 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
         tab_gumba->gumbas[i].peut_tomber_devant = 0;
         tab_gumba->gumbas[i].peut_tomber_derriere = 0;
         tab_gumba->gumbas[i].dernier_deplacement = 1;
-        tab_gumba->gumbas[i].compteur = 0;
 
         carte->carte[tab_gumba->gumbas[i].positionY][tab_gumba->gumbas[i].positionX] = 'Q';
     }
@@ -96,37 +95,43 @@ void bouger_gumba(Carte *carte, Tab_gumba *tab_gumba)
         return;
     }
 
-    for (int i = 0; i < tab_gumba->count; i++)
-    {
-        carte->carte[tab_gumba->gumbas[i].positionY][tab_gumba->gumbas[i].positionX] = ' ';
-        verifier_collision_gumba(carte, &tab_gumba->gumbas[i]);
-
-        if (tab_gumba->gumbas[i].dernier_deplacement)
+    if (tab_gumba->compteur != 0 && tab_gumba->compteur <= 3) {
+        for (int i = 0; i < tab_gumba->count; i++)
         {
-            if (!tab_gumba->gumbas[i].peut_tomber_devant && tab_gumba->gumbas[i].peut_avancer)
+            carte->carte[tab_gumba->gumbas[i].positionY][tab_gumba->gumbas[i].positionX] = ' ';
+            verifier_collision_gumba(carte, &tab_gumba->gumbas[i]);
+
+            if (tab_gumba->gumbas[i].dernier_deplacement)
             {
-                tab_gumba->gumbas[i].positionX++;
+                if (!tab_gumba->gumbas[i].peut_tomber_devant && tab_gumba->gumbas[i].peut_avancer)
+                {
+                    tab_gumba->gumbas[i].positionX++;
+                }
+                else
+                {
+                    tab_gumba->gumbas[i].positionX--;
+                    tab_gumba->gumbas[i].dernier_deplacement = 0;
+                }
             }
             else
             {
-                tab_gumba->gumbas[i].positionX--;
-                tab_gumba->gumbas[i].dernier_deplacement = 0;
+                if (!tab_gumba->gumbas[i].peut_tomber_derriere && tab_gumba->gumbas[i].peut_reculer)
+                {
+                    tab_gumba->gumbas[i].positionX--;
+                }
+                else
+                {
+                    tab_gumba->gumbas[i].positionX++;
+                    tab_gumba->gumbas[i].dernier_deplacement = 1;
+                }
             }
-        }
-        else
-        {
-            if (!tab_gumba->gumbas[i].peut_tomber_derriere && tab_gumba->gumbas[i].peut_reculer)
-            {
-                tab_gumba->gumbas[i].positionX--;
-            }
-            else
-            {
-                tab_gumba->gumbas[i].positionX++;
-                tab_gumba->gumbas[i].dernier_deplacement = 1;
-            }
-        }
 
-        carte->carte[tab_gumba->gumbas[i].positionY][tab_gumba->gumbas[i].positionX] = 'Q';
+            carte->carte[tab_gumba->gumbas[i].positionY][tab_gumba->gumbas[i].positionX] = 'Q';
+        }
+        tab_gumba->compteur = 0;
+    }
+    else {
+        tab_gumba->compteur = 1;
     }
 }
 
@@ -339,5 +344,94 @@ void bougerPlante(Carte *carte, Tab_plante *tab_plante)
         {
             printf("Erreur: Plante %d hors limites!\n", i);
         }
+    }
+}
+
+int ecraser_gumba(Carte *carte, Tab_gumba *tab_gumba, Personnage *perso)
+{
+    if (perso->en_chute || (perso->en_saut && perso->etape_saut > 4))
+    {
+        for (int i = 0; i < tab_gumba->count; i++)
+        {
+            if (perso->positionX == tab_gumba->gumbas[i].positionX &&
+                perso->positionY + 1 == tab_gumba->gumbas[i].positionY)
+            {
+                carte->carte[tab_gumba->gumbas[i].positionY][tab_gumba->gumbas[i].positionX] = ' ';
+                
+                if (i < tab_gumba->count - 1)
+                {
+                    tab_gumba->gumbas[i] = tab_gumba->gumbas[tab_gumba->count - 1];
+                }
+                
+                tab_gumba->count--;
+                
+                if (tab_gumba->count > 0)
+                {
+                    Gumba *temp = realloc(tab_gumba->gumbas, tab_gumba->count * sizeof(Gumba));
+                    if (temp != NULL)
+                    {
+                        tab_gumba->gumbas = temp;
+                    }
+                }
+                else
+                {
+                    free(tab_gumba->gumbas);
+                    tab_gumba->gumbas = NULL;
+                }
+                
+                perso->score += 5;
+                
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+int collision_avec_gumba(Tab_gumba *tab_gumba, Personnage *perso)
+{
+    for (int i = 0; i < tab_gumba->count; i++)
+    {
+        if (perso->positionY == tab_gumba->gumbas[i].positionY &&
+            (perso->positionX == tab_gumba->gumbas[i].positionX ||
+             perso->positionX + 1 == tab_gumba->gumbas[i].positionX ||
+             perso->positionX - 1 == tab_gumba->gumbas[i].positionX))
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int collision_avec_plante(Tab_plante *tab_plante, Personnage *perso)
+{
+    for (int i = 0; i < tab_plante->count; i++)
+    {
+        if (perso->positionY == tab_plante->plantes[i].positionY &&
+            perso->positionX == tab_plante->plantes[i].positionX)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void gerer_collisions(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, Tab_plante *tab_plante)
+{
+    if (ecraser_gumba(carte, tab_gumba, perso))
+    {
+        return;
+    }
+    
+    if (collision_avec_gumba(tab_gumba, perso))
+    {
+        perso->positionY = MORT_Y + 1;
+        return;
+    }
+    
+    if (collision_avec_plante(tab_plante, perso))
+    {
+        perso->positionY = MORT_Y + 1;
+        return;
     }
 }

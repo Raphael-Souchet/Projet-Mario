@@ -42,12 +42,12 @@ typedef struct {
     int peut_tomber_devant;
     int peut_tomber_derriere;
     int dernier_deplacement;
-    int compteur;
 } Gumba;
 
 typedef struct {
     Gumba* gumbas;
     int count;
+    int compteur;
 } Tab_gumba;
 
 typedef struct {
@@ -107,5 +107,10 @@ void verifier_collision(Carte* carte, Personnage* perso);
 void cacherCurseur();
 char* creerNomFichierTemp(const char* nomJoueur);
 void menu_mort(Personnage *perso, const char *fichierTemp);
+
+int ecraser_gumba(Carte *carte, Tab_gumba *tab_gumba, Personnage *perso);
+int collision_avec_gumba(Tab_gumba *tab_gumba, Personnage *perso);
+int collision_avec_plante(Tab_plante *tab_plante, Personnage *perso);
+void gerer_collisions(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, Tab_plante *tab_plante);
 
 #endif
