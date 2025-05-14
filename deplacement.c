@@ -157,10 +157,8 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
     }
 
     int input_deplacement = 0;
-    const float ACCELERATION = 0.4f;      
-    const float DECELERATION = 0.3f; 
-    const float VITESSE_MAX = 1.4f;  
-
+    const int VITESSE_FIXE = 1; // Vitesse fixe pour des mouvements plus directs
+    
     *isMoving = 0;
 
     if (GetAsyncKeyState('D') & 0x8000) {
@@ -178,27 +176,12 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
         }
     }
 
+    // Application directe de la vitesse sans accélération ni décélération
     if (input_deplacement != 0) {
-        perso->vitesse_x += input_deplacement * ACCELERATION;
-        
-        if (perso->vitesse_x > VITESSE_MAX)
-            perso->vitesse_x = VITESSE_MAX;
-        else if (perso->vitesse_x < -VITESSE_MAX)
-            perso->vitesse_x = -VITESSE_MAX;
-    } else {
-        if (perso->vitesse_x > 0) {
-            perso->vitesse_x -= DECELERATION;
-            if (perso->vitesse_x < 0)
-                perso->vitesse_x = 0;
-        } else if (perso->vitesse_x < 0) {
-            perso->vitesse_x += DECELERATION;
-            if (perso->vitesse_x > 0)
-                perso->vitesse_x = 0;
-        }
-    }
-
-    if (perso->vitesse_x != 0) {
+        perso->vitesse_x = input_deplacement * VITESSE_FIXE;
         *isMoving = 1;
+    } else {
+        perso->vitesse_x = 0; // Arrêt immédiat quand aucune touche n'est pressée
     }
 
     verifier_collision(carte, perso);
@@ -223,9 +206,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
     }
 
     if (perso->vitesse_x != 0) {
-        int deplacement_x = (perso->vitesse_x > 0) ? 
-                            ((int)(perso->vitesse_x + 0.5)) : 
-                            ((int)(perso->vitesse_x - 0.5));
+        int deplacement_x = (perso->vitesse_x > 0) ? VITESSE_FIXE : -VITESSE_FIXE;
         
         if (deplacement_x != 0) {
             int new_x = perso->positionX + deplacement_x;
