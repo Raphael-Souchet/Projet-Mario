@@ -155,7 +155,7 @@ PlayerAnimations* loadPlayerAnimations(SDL_Renderer* renderer) {
     animations->idle_left = NULL;
     animations->run = NULL;
     animations->run_left = NULL;
-    animations->facingRight = 1; 
+    animations->facingRight = 1;  
     
     const char* paths[][4] = {
         {
@@ -244,6 +244,7 @@ PlayerAnimations* loadPlayerAnimations(SDL_Renderer* renderer) {
     animations->idle = loadedIdle;
     animations->run = loadedRun;
     
+
     animations->idle_left = animations->idle;
     animations->run_left = animations->run;
     
@@ -278,6 +279,7 @@ void renderAnimation(SDL_Renderer* renderer, Animation* animation, int x, int y,
         animation->frameWidth,
         animation->frameHeight
     };
+    
     
     SDL_RendererFlip flip = flipHorizontal ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
     
@@ -421,6 +423,7 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         }
     }
     
+    
     for (int y = 0; y < carte->hauteur; y++) {
         for (int x = debutX; x < finX; x++) {
             if (x >= carte->largeur)
@@ -430,6 +433,7 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                 Animation* currentAnimation = NULL;
                 
                 if (playerAnimations != NULL) {
+                    
                     if (playerMoving && playerAnimations->run != NULL) {
                         currentAnimation = playerAnimations->run;
                     } else if (playerAnimations->idle != NULL) {
@@ -442,9 +446,11 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                         int screenX = (x - debutX) * TILE_SIZE + (TILE_SIZE / 2);
                         int screenY = y * TILE_SIZE + TILE_SIZE;
                         
+                        
                         renderAnimation(renderer, currentAnimation, screenX, screenY, !playerAnimations->facingRight);
                     }
                 } else {
+                    
                     SDL_Rect tile = {
                         (x - debutX) * TILE_SIZE,
                         y * TILE_SIZE,

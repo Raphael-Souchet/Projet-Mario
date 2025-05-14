@@ -161,18 +161,20 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
     
     *isMoving = 0;
 
+    
     if (GetAsyncKeyState('D') & 0x8000) {
         input_deplacement = 1;
         *isMoving = 1;
+        
         if (playerAnimations != NULL) {
-            playerAnimations->facingRight = 1;
+            playerAnimations->facingRight = 1;  
         }
     }
     else if (GetAsyncKeyState('Q') & 0x8000) {
         input_deplacement = -1;
         *isMoving = 1;
         if (playerAnimations != NULL) {
-            playerAnimations->facingRight = 0;
+            playerAnimations->facingRight = 0;  
         }
     }
 
@@ -212,6 +214,15 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
 
     if (perso->vitesse_x != 0) {
         int deplacement_x = (perso->vitesse_x > 0) ? VITESSE_FIXE : -VITESSE_FIXE;
+        
+       
+        if (playerAnimations != NULL) {
+            if (deplacement_x > 0) {
+                playerAnimations->facingRight = 1; 
+            } else if (deplacement_x < 0) {
+                playerAnimations->facingRight = 0;  
+            }
+        }
         
         if (deplacement_x != 0) {
             int new_x = perso->positionX + deplacement_x;
@@ -414,7 +425,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
 
             if (perso->positionY >= MORT_Y)
             {
-                // animation de mort
+                
                 playSoundEffect("asset/sound/death.wav", 64);
                 Sleep(2500);
                 perso->vie--;

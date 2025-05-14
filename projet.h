@@ -110,9 +110,9 @@ typedef struct {
     int facingRight;         
 } PlayerAnimations;
 
-static BackgroundTexture* globalBackground = NULL;
-static GameTextures* gameTextures = NULL;
-static PlayerAnimations* playerAnimations = NULL;
+extern BackgroundTexture* globalBackground;
+extern GameTextures* gameTextures;
+extern PlayerAnimations* playerAnimations;
 
 
 Carte* chargerCarteEnMemoire(const char* fichierCarte);
@@ -160,7 +160,6 @@ void playSoundEffect(const char *soundPath, int volume);
 int initGameAudio();
 void cleanupAudio();
 
-// Nouvelles fonctions pour gérer les textures
 GameTextures* loadGameTextures(SDL_Renderer *renderer);
 void freeGameTextures(GameTextures* textures);
 
@@ -172,7 +171,5 @@ void freeAnimation(Animation* animation);
 Animation* loadAnimation(SDL_Renderer* renderer, const char* path, int frameCount, int frameWidth, int frameHeight, Uint32 frameDuration);
 PlayerAnimations* loadPlayerAnimations(SDL_Renderer* renderer);
 void freePlayerAnimations(PlayerAnimations* animations);
-
-// Ajout au fichier affichage.c - Fonctions pour gérer l'animation
 
 #endif
