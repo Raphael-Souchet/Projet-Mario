@@ -20,6 +20,7 @@ extern const int SPAWN_MORT_X;
 extern const int SPAWN_MORT_Y;
 extern const int MORT_Y;
 
+
 typedef struct {
     int positionX;
     int positionY;
@@ -78,6 +79,13 @@ typedef struct {
     int largeur;
 } Carte;
 
+typedef struct {
+    SDL_Texture* texture;
+    int width;
+    int height;
+} BackgroundTexture;
+
+static BackgroundTexture* globalBackground = NULL;
 
 Carte* chargerCarteEnMemoire(const char* fichierCarte);
 void libererCarte(Carte* carte);
