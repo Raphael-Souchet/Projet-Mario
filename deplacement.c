@@ -150,35 +150,45 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
         gumba->positionY = 0;
 }
 
-void deplacer_joueur(Carte *carte, Personnage *perso)
-{
-    if (perso->positionY >= MORT_Y)
-    {
+void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
+    if (perso->positionY >= MORT_Y) {
+        *isMoving = 0;
         return;
     }
 
     int deplacement_x = 0;
+    *isMoving = 0; // Par défaut, le joueur ne bouge pas
 
-    if (GetAsyncKeyState('D') & 0x8000)
+    // Détection des touches de déplacement
+    if (GetAsyncKeyState('D') & 0x8000) {
         deplacement_x = 1;
-    if (GetAsyncKeyState('Q') & 0x8000)
+        *isMoving = 1;
+        // Direction: face à droite (1)
+        if (playerAnimations != NULL) {
+            playerAnimations->facingRight = 1;
+        }
+    }
+    else if (GetAsyncKeyState('Q') & 0x8000) {
         deplacement_x = -1;
+        *isMoving = 1;
+        // Direction: face à gauche (0)
+        if (playerAnimations != NULL) {
+            playerAnimations->facingRight = 0;
+        }
+    }
 
     verifier_collision(carte, perso);
 
-    if (perso->en_chute && !perso->en_saut)
-    {
+    // Gestion de la chute
+    if (perso->en_chute && !perso->en_saut) {
         int new_y = perso->positionY + 1;
-        if (new_y < carte->hauteur)
-        {
-            if (carte->carte[new_y][perso->positionX] == 'c')
-            {
+        if (new_y < carte->hauteur) {
+            if (carte->carte[new_y][perso->positionX] == 'c') {
                 perso->score++;
                 carte->carte[new_y][perso->positionX] = ' ';
             }
             
-            if (carte->carte[new_y][perso->positionX] != 'w')
-            {
+            if (carte->carte[new_y][perso->positionX] != 'w') {
                 effacer_position(carte, perso);
                 perso->positionY = new_y;
                 mettre_position(carte, perso);
@@ -187,22 +197,18 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
         }
     }
 
-    if (deplacement_x != 0)
-    {
+    // Gestion du déplacement horizontal
+    if (deplacement_x != 0) {
         int new_x = perso->positionX + deplacement_x;
-        if (new_x >= 0 && new_x < carte->largeur)
-        {
-            if (carte->carte[perso->positionY][new_x] == 'c')
-            {
+        if (new_x >= 0 && new_x < carte->largeur) {
+            if (carte->carte[perso->positionY][new_x] == 'c') {
                 perso->score++;
                 carte->carte[perso->positionY][new_x] = ' ';
             }
             
             if ((deplacement_x > 0 && perso->peut_avancer) ||
-                (deplacement_x < 0 && perso->peut_reculer))
-            {
-                if (carte->carte[perso->positionY][new_x] != 'w')
-                {
+                (deplacement_x < 0 && perso->peut_reculer)) {
+                if (carte->carte[perso->positionY][new_x] != 'w') {
                     effacer_position(carte, perso);
                     perso->positionX = new_x;
                     mettre_position(carte, perso);
@@ -212,12 +218,13 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
         }
     }
 
-    if (perso->en_saut)
-    {
+    // Gestion du saut
+    if (perso->en_saut) {
+        *isMoving = 1; // Le joueur est en mouvement pendant un saut
         gerer_saut(carte, perso, deplacement_x);
     }
-    else if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_chute)
-    {
+    else if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_chute) {
+        *isMoving = 1; // Le joueur est en mouvement pendant un saut
         perso->en_saut = 1;
         perso->etape_saut = 0;
         gerer_saut(carte, perso, deplacement_x);
@@ -226,7 +233,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
 
 void jouer(const char *fichierTemp, Personnage *perso)
 {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
     {
         printf("Erreur SDL: %s\n", SDL_GetError());
         return;
@@ -237,6 +244,13 @@ void jouer(const char *fichierTemp, Personnage *perso)
         printf("Erreur IMG_Init: %s\n", IMG_GetError());
         SDL_Quit();
         return;
+    }
+
+    // Initialiser le système audio et démarrer la musique de fond
+    if (!initGameAudio())
+    {
+        printf("Avertissement: L'audio n'a pas pu être initialisé. Le jeu continuera sans son.\n");
+        // On continue quand même sans son
     }
 
     int largeurAffichage = 50;
@@ -251,6 +265,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
     if (window == NULL)
     {
         printf("Erreur de création de la fenêtre: %s\n", SDL_GetError());
+        cleanupAudio();  // Nettoyer les ressources audio
         IMG_Quit();
         SDL_Quit();
         return;
@@ -261,6 +276,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
     {
         printf("Erreur de création du renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
+        cleanupAudio();  // Nettoyer les ressources audio
         IMG_Quit();
         SDL_Quit();
         return;
@@ -271,8 +287,8 @@ void jouer(const char *fichierTemp, Personnage *perso)
     {
         printf("Erreur: Impossible de charger la carte %s\n", fichierTemp);
         nettoyerSDL(window, renderer);
-        Sleep(1500);
-        IMG_Quit();
+        cleanupAudio();  // Nettoyer les ressources audio
+        SDL_Quit();
         return;
     }
 
@@ -296,6 +312,8 @@ void jouer(const char *fichierTemp, Personnage *perso)
     Uint32 lastTime = SDL_GetTicks();
     const int FPS = 22;
     const int frameDelay = 1500 / FPS;
+    
+    int playerMoving = 0; // Nouvel indicateur pour l'état du mouvement
 
     while (!quit)
     {
@@ -325,6 +343,10 @@ void jouer(const char *fichierTemp, Personnage *perso)
                 
                 sauvegarderCarteVersFichier(carte, fichierTemp);
 
+                // Arrêter la musique avant de quitter
+                stopBackgroundMusic();
+                cleanupAudio();
+
                 nettoyerSDL(window, renderer);
                 IMG_Quit();
 
@@ -344,17 +366,21 @@ void jouer(const char *fichierTemp, Personnage *perso)
                 return;
             }
 
-            deplacer_joueur(carte, perso);
+            deplacer_joueur(carte, perso, &playerMoving); // Passage du nouvel indicateur
 
             gerer_collisions(carte, perso, &tab_gumba, &tab_plante);
 
-            afficherPaysageSDL(carte, perso->positionX, renderer);
+            afficherPaysageSDL(carte, perso->positionX, renderer, playerMoving); // Passage de l'état de mouvement
             SDL_RenderPresent(renderer);
 
             if (perso->positionY >= MORT_Y)
             {
                 perso->vie--;
                 sauvegarderCarteVersFichier(carte, fichierTemp);
+
+                // Arrêter la musique avant de quitter
+                stopBackgroundMusic();
+                cleanupAudio();
 
                 nettoyerSDL(window, renderer);
                 IMG_Quit();
@@ -378,6 +404,10 @@ void jouer(const char *fichierTemp, Personnage *perso)
             }
         }
     }
+
+    // Arrêter la musique et nettoyer les ressources audio
+    stopBackgroundMusic();
+    cleanupAudio();
 
     nettoyerSDL(window, renderer);
     IMG_Quit();
