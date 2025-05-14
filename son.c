@@ -163,10 +163,10 @@ int initGameAudio()
     }
     
     // Charger la musique d'arrière-plan du jeu avec le bon nom de fichier
-    if (!loadBackgroundMusic("asset/music/ost.mp3"))
+    if (!loadBackgroundMusic("asset/music/main.mp3"))
     {
         // Essayer un format alternatif si MP3 échoue
-        if (!loadBackgroundMusic("asset/music/ost.wav"))
+        if (!loadBackgroundMusic("asset/music/main.wav"))
         {
             printf("Impossible de charger la musique d'arrière-plan\n");
             return 0;
