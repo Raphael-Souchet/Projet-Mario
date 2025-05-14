@@ -19,13 +19,13 @@ void gerer_saut(Carte *carte, Personnage *perso, int direction)
         if ((hauteur_actuelle < 0 && perso->peut_monter) || 
             (hauteur_actuelle > 0 && !perso->en_chute))
         {
-            if (carte->carte[nouv_y][perso->positionX] == 'c')
+            if (carte->carte[nouv_y][perso->positionX] == 'c' || carte->carte[nouv_y][perso->positionX] == '*')
             {
                 perso->score++;
                 carte->carte[nouv_y][perso->positionX] = ' ';
             }
             
-            if (carte->carte[nouv_y][perso->positionX] != 'w')
+            if (carte->carte[nouv_y][perso->positionX] != 'w' || carte->carte[nouv_y][perso->positionX] != ']' || carte->carte[nouv_y][perso->positionX] != '[')
             {
                 effacer_position(carte, perso);
                 perso->positionY = nouv_y;
@@ -47,7 +47,7 @@ void verifier_collision(Carte *carte, Personnage *perso)
 {
     char caractere_dessous = (perso->positionY + 1 < carte->hauteur) ? carte->carte[perso->positionY + 1][perso->positionX] : 'w';
 
-    if (caractere_dessous == 'w')
+    if (caractere_dessous == 'w' || caractere_dessous == ']' || caractere_dessous == '[')
     {
         perso->en_chute = 0;
     }
@@ -58,7 +58,7 @@ void verifier_collision(Carte *carte, Personnage *perso)
 
     char caractere_dessus = (perso->positionY - 1 >= 0) ? carte->carte[perso->positionY - 1][perso->positionX] : 'w';
 
-    if (caractere_dessus == 'w')
+    if (caractere_dessus == 'w' || caractere_dessus == ']' || caractere_dessus == '[')
     {
         perso->peut_monter = 0;
     }
@@ -69,7 +69,7 @@ void verifier_collision(Carte *carte, Personnage *perso)
 
     char caractere_devant = (perso->positionX + 1 < carte->largeur) ? carte->carte[perso->positionY][perso->positionX + 1] : 'w';
 
-    if (caractere_devant == 'w' || perso->positionX == carte->largeur - 3)
+    if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == '['  || perso->positionX == carte->largeur - 3)
     {
         perso->peut_avancer = 0;
     }
@@ -80,7 +80,7 @@ void verifier_collision(Carte *carte, Personnage *perso)
 
     char caractere_derriere = (perso->positionX - 1 >= 0) ? carte->carte[perso->positionY][perso->positionX - 1] : 'w';
 
-    if (caractere_derriere == 'w' || perso->positionX == 0)
+    if (caractere_derriere == 'w' || caractere_derriere == ']' || caractere_derriere == '[' || perso->positionX == 0)
     {
         perso->peut_reculer = 0;
     }
@@ -157,7 +157,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
     }
 
     int input_deplacement = 0;
-    const int VITESSE_FIXE = 1; // Vitesse fixe pour des mouvements plus directs
+    const int VITESSE_FIXE = 1;
     
     *isMoving = 0;
 
@@ -176,12 +176,11 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
         }
     }
 
-    // Application directe de la vitesse sans accélération ni décélération
     if (input_deplacement != 0) {
         perso->vitesse_x = input_deplacement * VITESSE_FIXE;
         *isMoving = 1;
     } else {
-        perso->vitesse_x = 0; // Arrêt immédiat quand aucune touche n'est pressée
+        perso->vitesse_x = 0;
     }
 
     verifier_collision(carte, perso);
@@ -194,8 +193,14 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
                 carte->carte[new_y][perso->positionX] = ' ';
                 playSoundEffect("asset/sound/coin.wav", 64);
             }
+
+            if (carte->carte[new_y][perso->positionX] == '*') {
+                perso->score++;
+                carte->carte[new_y][perso->positionX] = ' ';
+                playSoundEffect("asset/sound/piece_etoile.wav", 64);
+            }
             
-            if (carte->carte[new_y][perso->positionX] != 'w') {
+            if (carte->carte[new_y][perso->positionX] != 'w' || carte->carte[new_y][perso->positionX] == ']' || carte->carte[new_y][perso->positionX] == '[') {
                 effacer_position(carte, perso);
                 perso->positionY = new_y;
                 mettre_position(carte, perso);
@@ -226,8 +231,14 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
                                 carte->carte[perso->positionY][next_x] = ' ';
                                 playSoundEffect("asset/sound/coin.wav", 64);
                             }
+
+                            if (carte->carte[perso->positionY][next_x] == '*') {
+                                perso->score = perso->score + 5;
+                                carte->carte[perso->positionY][next_x] = ' ';
+                                playSoundEffect("asset/sound/piece_etoile.wav", 64);
+                            }
                             
-                            if (carte->carte[perso->positionY][next_x] != 'w') {
+                            if (carte->carte[perso->positionY][next_x] != 'w' || carte->carte[perso->positionY][next_x] == ']' || carte->carte[perso->positionY][next_x] == '[') {
                                 effacer_position(carte, perso);
                                 perso->positionX = next_x;
                                 mettre_position(carte, perso);
