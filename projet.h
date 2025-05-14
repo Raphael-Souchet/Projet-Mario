@@ -8,9 +8,8 @@
 #include <conio.h>
 #include <time.h>
 #include <ctype.h>
-
+#include "SDL_image.h"
 #include "SDL.h"
-#include "SDL_image.h"  // Pour gérer les images PNG
 
 #define TILE_SIZE 25
 
@@ -32,6 +31,7 @@ typedef struct {
     int peut_avancer;
     int peut_reculer;
     int vie;
+    int etape_saut;
 } Personnage;
 
 typedef struct {
@@ -107,5 +107,10 @@ void verifier_collision(Carte* carte, Personnage* perso);
 void cacherCurseur();
 char* creerNomFichierTemp(const char* nomJoueur);
 void menu_mort(Personnage *perso, const char *fichierTemp);
+
+int ecraser_gumba(Carte *carte, Tab_gumba *tab_gumba, Personnage *perso);
+int collision_avec_gumba(Tab_gumba *tab_gumba, Personnage *perso);
+int collision_avec_plante(Tab_plante *tab_plante, Personnage *perso);
+void gerer_collisions(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, Tab_plante *tab_plante);
 
 #endif

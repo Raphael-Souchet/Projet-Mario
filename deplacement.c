@@ -1,20 +1,5 @@
 #include "projet.h"
 
-// Structure pour les textures du jeu
-typedef struct {
-    SDL_Texture* texture_player_idle;  // Sprite fixe du joueur (tile_0000)
-    SDL_Texture* texture_player_move1; // Premier sprite d'animation (tile_0000)
-    SDL_Texture* texture_player_move2; // Deuxième sprite d'animation (tile_0001)
-    SDL_Texture* texture_grass;        // Texture pour l'herbe (tile_0000)
-    SDL_Texture* texture_block;        // Texture pour les blocs (tile_0006)
-    int animation_frame;               // Compteur pour alterner les frames
-    int est_en_mouvement;              // 1 si en mouvement, 0 sinon
-    int direction;                     // 1 pour droite, -1 pour gauche
-} GameTextures;
-
-// Variable globale pour les textures du jeu
-GameTextures gameTextures = {NULL, NULL, NULL, NULL, NULL, 0, 0, 1};
-
 void effacer_position(Carte *carte, Personnage *perso)
 {
     carte->carte[perso->positionY][perso->positionX] = ' ';
@@ -37,8 +22,6 @@ void caracterePaysage(char caractereActuel)
     switch (caractereActuel)
     {
     case 'w':
-    case 'b':
-    case 'd':
         printf("#");
         break;
     case 'c':
@@ -68,90 +51,52 @@ void caracterePaysage(char caractereActuel)
     }
 }
 
-// Fonction pour charger toutes les textures du jeu
-void chargerTextures(SDL_Renderer *renderer) {
-    // Base du chemin vers les assets
-    const char* base_path = "C:\\Users\\duber\\cours L1\\programation\\mario_vscode\\Projet-Mario\\asset\\sprit\\";
-    
-    // Chemins vers les sprites
-    const char* chemin_player1 = "C:\\Users\\duber\\cours L1\\programation\\mario_vscode\\Projet-Mario\\asset\\Tiles\\Characters\\tile_0000.png";
-    const char* chemin_player2 = "C:\\Users\\duber\\cours L1\\programation\\mario_vscode\\Projet-Mario\\asset\\Tiles\\Characters\\tile_0001.png";
-    const char* chemin_grass = "C:\\Users\\duber\\cours L1\\programation\\mario_vscode\\Projet-Mario\\asset\\Tiles\\tile_0000.png";
-    const char* chemin_block = "C:\\Users\\duber\\cours L1\\programation\\mario_vscode\\Projet-Mario\\asset\\Tiles\\tile_0006.png";
-    
-    // Initialiser SDL_image
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        printf("Erreur lors de l'initialisation de SDL_image: %s\n", IMG_GetError());
-        return;
+typedef struct {
+    SDL_Texture* texture;
+    int width;
+    int height;
+} BackgroundTexture;
+
+static BackgroundTexture* globalBackground = NULL;
+
+BackgroundTexture* loadBackgroundTexture(SDL_Renderer *renderer, const char *path)
+{
+    BackgroundTexture* bg = (BackgroundTexture*)malloc(sizeof(BackgroundTexture));
+    if (bg == NULL) {
+        printf("Erreur: Impossible d'allouer la mémoire pour la texture de fond\n");
+        return NULL;
     }
     
-    // Charger les images PNG
-    SDL_Surface* surface_player1 = IMG_Load(chemin_player1);
-    SDL_Surface* surface_player2 = IMG_Load(chemin_player2);
-    SDL_Surface* surface_grass = IMG_Load(chemin_grass);
-    SDL_Surface* surface_block = IMG_Load(chemin_block);
-    
-    if (surface_player1 == NULL) {
-        printf("Erreur lors du chargement de l'image %s: %s\n", chemin_player1, IMG_GetError());
+    SDL_Surface* surface = IMG_Load(path);
+    if (surface == NULL) {
+        printf("Erreur: Impossible de charger l'image %s: %s\n", path, IMG_GetError());
+        free(bg);
+        return NULL;
     }
     
-    if (surface_player2 == NULL) {
-        printf("Erreur lors du chargement de l'image %s: %s\n", chemin_player2, IMG_GetError());
+    bg->texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (bg->texture == NULL) {
+        printf("Erreur: Impossible de créer la texture: %s\n", SDL_GetError());
+        SDL_FreeSurface(surface);
+        free(bg);
+        return NULL;
     }
     
-    if (surface_grass == NULL) {
-        printf("Erreur lors du chargement de l'image %s: %s\n", chemin_grass, IMG_GetError());
-    }
+    bg->width = surface->w;
+    bg->height = surface->h;
     
-    if (surface_block == NULL) {
-        printf("Erreur lors du chargement de l'image %s: %s\n", chemin_block, IMG_GetError());
-    }
+    SDL_FreeSurface(surface);
     
-    if (surface_player1 == NULL || surface_player2 == NULL || 
-        surface_grass == NULL || surface_block == NULL) {
-        return;
-    }
-    
-    // Créer les textures à partir des surfaces
-    gameTextures.texture_player_idle = SDL_CreateTextureFromSurface(renderer, surface_player1);
-    gameTextures.texture_player_move1 = SDL_CreateTextureFromSurface(renderer, surface_player1);
-    gameTextures.texture_player_move2 = SDL_CreateTextureFromSurface(renderer, surface_player2);
-    gameTextures.texture_grass = SDL_CreateTextureFromSurface(renderer, surface_grass);
-    gameTextures.texture_block = SDL_CreateTextureFromSurface(renderer, surface_block);
-    
-    // Libérer les surfaces
-    SDL_FreeSurface(surface_player1);
-    SDL_FreeSurface(surface_player2);
-    SDL_FreeSurface(surface_grass);
-    SDL_FreeSurface(surface_block);
-    
-    // Initialiser les variables d'animation
-    gameTextures.animation_frame = 0;
-    gameTextures.est_en_mouvement = 0;
-    gameTextures.direction = 1; // Par défaut, le personnage regarde à droite
+    return bg;
 }
 
-// Fonction pour libérer les textures
-void libererTextures() {
-    if (gameTextures.texture_player_idle != NULL) {
-        SDL_DestroyTexture(gameTextures.texture_player_idle);
-        gameTextures.texture_player_idle = NULL;
-    }
-    if (gameTextures.texture_player_move1 != NULL) {
-        SDL_DestroyTexture(gameTextures.texture_player_move1);
-        gameTextures.texture_player_move1 = NULL;
-    }
-    if (gameTextures.texture_player_move2 != NULL) {
-        SDL_DestroyTexture(gameTextures.texture_player_move2);
-        gameTextures.texture_player_move2 = NULL;
-    }
-    if (gameTextures.texture_grass != NULL) {
-        SDL_DestroyTexture(gameTextures.texture_grass);
-        gameTextures.texture_grass = NULL;
-    }
-    if (gameTextures.texture_block != NULL) {
-        SDL_DestroyTexture(gameTextures.texture_block);
-        gameTextures.texture_block = NULL;
+void freeBackgroundTexture(BackgroundTexture* bg)
+{
+    if (bg != NULL) {
+        if (bg->texture != NULL) {
+            SDL_DestroyTexture(bg->texture);
+        }
+        free(bg);
     }
 }
 
@@ -162,13 +107,62 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
     
     int debutX = positionJoueur - demiLargeur;
     int finX = positionJoueur + demiLargeur;
+    
+    if (debutX < 0) {
+        finX -= debutX; 
+        debutX = 0;
+    }
+    
+    if (finX > carte->largeur) {
+        debutX -= (finX - carte->largeur);
+        finX = carte->largeur;
+    }
+    
+    if (debutX < 0) {
+        debutX = 0;
+    }
+    
+    
+    if (globalBackground == NULL) {
+        
+        const char* bgPath = "C:\\Users\\duber\\cours L1\\programation\\mario_vscode\\Projet-Mario\\asset\\sprit\\Mondstadt Tileset Platform - Basic\\windrise-background.png";
+        globalBackground = loadBackgroundTexture(renderer, bgPath);
+        
+        
+        if (globalBackground == NULL) {
+            printf("Impossible de charger l'image PNG. Tentative avec un fichier BMP...\n");
+            bgPath = "C:\\Users\\duber\\cours L1\\programation\\mario_vscode\\Projet-Mario\\asset\\sprit\\Mondstadt Tileset Platform - Basic\\windrise-background.bmp";
+            globalBackground = loadBackgroundTexture(renderer, bgPath);
+        }
+    }
 
-    if (debutX < 0) debutX = 0;
-    if (finX > carte->largeur) finX = carte->largeur;
-
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); 
+    
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+    
+    
+    if (globalBackground != NULL && globalBackground->texture != NULL) {
+        
+        int backgroundOffset = (debutX * 3) % globalBackground->width;  
+        
+        
+        SDL_Rect srcRect = {backgroundOffset, 0, globalBackground->width - backgroundOffset, globalBackground->height};
+        SDL_Rect dstRect = {0, 0, largeurAffichage * TILE_SIZE, 20 * TILE_SIZE};
+        
+        
+        SDL_RenderCopy(renderer, globalBackground->texture, &srcRect, &dstRect);
+        
+       
+        if (backgroundOffset > 0) {
+            srcRect.x = 0;
+            srcRect.w = backgroundOffset;
+            dstRect.x = (globalBackground->width - backgroundOffset) * (largeurAffichage * TILE_SIZE) / globalBackground->width;
+            dstRect.w = largeurAffichage * TILE_SIZE - dstRect.x;
+            SDL_RenderCopy(renderer, globalBackground->texture, &srcRect, &dstRect);
+        }
+    }
 
+    
     for (int y = 0; y < carte->hauteur; y++)
     {
         for (int x = debutX; x < finX; x++)
@@ -182,35 +176,49 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                 TILE_SIZE,
                 TILE_SIZE};
 
-            switch(carte->carte[y][x]) {
-        case 'w': 
-            SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255); 
-            break;
-        case 'c': 
-            SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255); 
-            break;
-        case 'M':
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); 
-            break;
-        case 'Q': 
-            SDL_SetRenderDrawColor(renderer, 128, 0, 128, 255); 
-            break;
-        case 'u':
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); 
-            break;
-        case ']':
-        case '[':
-            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); 
-            break;
-        case '|':
-            SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255); 
-            break;
-        default:
-            SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); 
-            break;
-    }
-    
-    SDL_RenderFillRect(renderer, &tile);
+            switch (carte->carte[y][x])
+            {
+            case 'w':
+                SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255);
+                SDL_RenderFillRect(renderer, &tile);
+                break;
+            case 'c':
+                SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
+                SDL_RenderFillRect(renderer, &tile);
+                break;
+            case 'M':
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                SDL_RenderFillRect(renderer, &tile);
+                break;
+            case 'Q':
+                SDL_SetRenderDrawColor(renderer, 128, 0, 128, 255);
+                SDL_RenderFillRect(renderer, &tile);
+                break;
+            case ']':
+            case '[':
+                SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255);
+                SDL_RenderFillRect(renderer, &tile);
+                break;
+            case 'u':
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                SDL_RenderFillRect(renderer, &tile);
+                break;
+            case '|':
+                SDL_SetRenderDrawColor(renderer, 144, 238, 144, 255);
+                SDL_RenderFillRect(renderer, &tile);
+                break;
+            case '*':
+                SDL_SetRenderDrawColor(renderer, 241, 255, 65, 255);
+                SDL_RenderFillRect(renderer, &tile);
+                break;
+            case '!':
+                SDL_SetRenderDrawColor(renderer, 25, 65, 199, 255);
+                SDL_RenderFillRect(renderer, &tile);
+                break;
+            default:
+                
+                break;
+            }
         }
     }
 }
@@ -227,91 +235,92 @@ void cacherCurseur()
 void gerer_saut(Carte *carte, Personnage *perso, int direction)
 {
     int hauteur_saut[8] = {-1, -1, -1, -1, 1, 1, 1, 1};
-
-    SDL_Renderer *renderer = SDL_GetRenderer(SDL_GetWindowFromID(1));
-
-    for (int i = 0; i < 8; i++)
+    
+    if (perso->etape_saut == 0 && perso->en_saut == 1)
     {
-        int nouv_x = perso->positionX + direction;
-        int nouv_y = perso->positionY + hauteur_saut[i];
-
-        if (nouv_x < 0 || nouv_x >= carte->largeur || nouv_y < 0 || nouv_y >= carte->hauteur)
+        perso->etape_saut = 1;
+        return;
+    }
+    
+    int hauteur_actuelle = hauteur_saut[perso->etape_saut - 1];
+    
+    int nouv_y = perso->positionY + hauteur_actuelle;
+    
+    if (nouv_y >= 0 && nouv_y < carte->hauteur)
+    {
+        if ((hauteur_actuelle < 0 && perso->peut_monter) || 
+            (hauteur_actuelle > 0 && !perso->en_chute))
         {
-            continue;
-        }
-
-        if (carte->carte[nouv_y][nouv_x] == 'c')
-        {
-            perso->score++;
-            carte->carte[nouv_y][nouv_x] = ' ';
-        }
-
-        char caractere_destination = carte->carte[nouv_y][nouv_x];
-        char caractere_lateral = carte->carte[perso->positionY][nouv_x];
-
-        if (nouv_x >= 0 && nouv_x < carte->largeur && nouv_y >= 0 &&
-            caractere_destination != 'w' && caractere_lateral != 'w' && perso->peut_monter)
-        {
-            effacer_position(carte, perso);
-            perso->positionX = nouv_x;
-            perso->positionY = nouv_y;
-            mettre_position(carte, perso);
-
-            if (renderer != NULL)
+            if (carte->carte[nouv_y][perso->positionX] == 'c')
             {
-                afficherPaysageSDL(carte, perso->positionX, renderer);
-                SDL_RenderPresent(renderer);
+                perso->score++;
+                carte->carte[nouv_y][perso->positionX] = ' ';
             }
-
-            Sleep(85);
+            
+            if (carte->carte[nouv_y][perso->positionX] != 'w')
+            {
+                effacer_position(carte, perso);
+                perso->positionY = nouv_y;
+                mettre_position(carte, perso);
+            }
         }
     }
-
-    perso->en_saut = 0;
+    
+    perso->etape_saut++;
+    
+    if (perso->etape_saut > 8)
+    {
+        perso->en_saut = 0;
+        perso->etape_saut = 0;
+    }
 }
 
 void verifier_collision(Carte *carte, Personnage *perso)
 {
     char caractere_dessous = (perso->positionY + 1 < carte->hauteur) ? carte->carte[perso->positionY + 1][perso->positionX] : 'w';
-    
-    // Gestion de la chute 
-    if (est_bloc_solide(caractere_dessous)) {
+
+    if (caractere_dessous == 'w')
+    {
         perso->en_chute = 0;
-    } else {
+    }
+    else
+    {
         perso->en_chute = 1;
     }
-    
-    // Vérification du caractère au-dessus du personnage
+
     char caractere_dessus = (perso->positionY - 1 >= 0) ? carte->carte[perso->positionY - 1][perso->positionX] : 'w';
-    
-    // Vérification de la possibilité de monter
-    if (est_bloc_solide(caractere_dessus)) {
+
+    if (caractere_dessus == 'w')
+    {
         perso->peut_monter = 0;
-    } else {
+    }
+    else
+    {
         perso->peut_monter = 1;
     }
-    
-    // Vérification du caractère devant le personnage
+
     char caractere_devant = (perso->positionX + 1 < carte->largeur) ? carte->carte[perso->positionY][perso->positionX + 1] : 'w';
-    
-    // Vérification de la possibilité d'avancer
-    if (est_bloc_solide(caractere_devant) || perso->positionX == carte->largeur - 3) {
+
+    if (caractere_devant == 'w' || perso->positionX == carte->largeur - 3)
+    {
         perso->peut_avancer = 0;
-    } else {
+    }
+    else
+    {
         perso->peut_avancer = 1;
     }
-    
-    // Vérification du caractère derrière le personnage
+
     char caractere_derriere = (perso->positionX - 1 >= 0) ? carte->carte[perso->positionY][perso->positionX - 1] : 'w';
-    
-    // Vérification de la possibilité de reculer
-    if (est_bloc_solide(caractere_derriere) || perso->positionX == 0) {
+
+    if (caractere_derriere == 'w' || perso->positionX == 0)
+    {
         perso->peut_reculer = 0;
-    } else {
+    }
+    else
+    {
         perso->peut_reculer = 1;
     }
-    
-    // Vérifications des limites pour garder le personnage dans la carte
+
     if (perso->positionX < 0)
         perso->positionX = 0;
     if (perso->positionX >= carte->largeur)
@@ -346,7 +355,7 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
 
     char caractere_devant = (gumba->positionX + 1 < carte->largeur) ? carte->carte[gumba->positionY][gumba->positionX + 1] : 'w';
 
-    if (est_bloc_solide(caractere_devant) || caractere_devant == ']' || caractere_devant == 'Q' || gumba->positionX == carte->largeur - 3)
+    if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == 'Q' || gumba->positionX == carte->largeur - 3)
     {
         gumba->peut_avancer = 0;
     }
@@ -356,7 +365,7 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
     }
     char caractere_derriere = (gumba->positionX - 1 >= 0) ? carte->carte[gumba->positionY][gumba->positionX - 1] : 'w';
 
-    if (est_bloc_solide(caractere_derriere) || caractere_derriere == '[' || caractere_derriere == 'Q' || gumba->positionX == 0)
+    if (caractere_derriere == 'w' || caractere_derriere == '[' || caractere_derriere == 'Q' || gumba->positionX == 0)
     {
         gumba->peut_reculer = 0;
     }
@@ -373,8 +382,17 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
         gumba->positionY = 0;
 }
 
+
 void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
 {
+    
+    if (globalBackground != NULL)
+    {
+        freeBackgroundTexture(globalBackground);
+        globalBackground = NULL;  
+    }
+    
+    
     if (renderer != NULL)
     {
         SDL_DestroyRenderer(renderer);
@@ -383,53 +401,8 @@ void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
     {
         SDL_DestroyWindow(window);
     }
+    
     SDL_Quit();
-}
-
-void gerer_saut(Carte *carte, Personnage *perso, int direction)
-{
-    int hauteur_saut[8] = {-1, -1, -1, -1, 1, 1, 1, 1};
-
-    SDL_Renderer *renderer = SDL_GetRenderer(SDL_GetWindowFromID(1));
-
-    for (int i = 0; i < 8; i++)
-    {
-        int nouv_x = perso->positionX + direction;
-        int nouv_y = perso->positionY + hauteur_saut[i];
-
-        if (nouv_x < 0 || nouv_x >= carte->largeur || nouv_y < 0 || nouv_y >= carte->hauteur)
-        {
-            continue;
-        }
-
-        if (carte->carte[nouv_y][nouv_x] == 'c')
-        {
-            perso->score++;
-            carte->carte[nouv_y][nouv_x] = ' ';
-        }
-
-        char caractere_destination = carte->carte[nouv_y][nouv_x];
-        char caractere_lateral = carte->carte[perso->positionY][nouv_x];
-
-        if (nouv_x >= 0 && nouv_x < carte->largeur && nouv_y >= 0 &&
-            !est_bloc_solide(caractere_destination) && !est_bloc_solide(caractere_lateral) && perso->peut_monter)
-        {
-            effacer_position(carte, perso);
-            perso->positionX = nouv_x;
-            perso->positionY = nouv_y;
-            mettre_position(carte, perso);
-
-            if (renderer != NULL)
-            {
-                afficherPaysageSDL(carte, perso->positionX, renderer);
-                SDL_RenderPresent(renderer);
-            }
-
-            Sleep(85);
-        }
-    }
-
-    perso->en_saut = 0;
 }
 
 void deplacer_joueur(Carte *carte, Personnage *perso)
@@ -440,17 +413,11 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
     }
 
     int deplacement_x = 0;
-    int ancien_x = perso->positionX;
-    int ancien_y = perso->positionY;
 
-    if (GetAsyncKeyState('D') & 0x8000) {
+    if (GetAsyncKeyState('D') & 0x8000)
         deplacement_x = 1;
-        gameTextures.direction = -1;  // Regarder à droite
-    }
-    if (GetAsyncKeyState('Q') & 0x8000) {
+    if (GetAsyncKeyState('Q') & 0x8000)
         deplacement_x = -1;
-        gameTextures.direction = 1;  // Regarder à gauche
-    }
 
     verifier_collision(carte, perso);
 
@@ -500,13 +467,6 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
         }
     }
 
-    // Mettre à jour l'état de mouvement pour l'animation
-    if (ancien_x != perso->positionX || ancien_y != perso->positionY) {
-        gameTextures.est_en_mouvement = 1;
-    } else {
-        gameTextures.est_en_mouvement = 0;
-    }
-
     if (perso->en_saut)
     {
         gerer_saut(carte, perso, deplacement_x);
@@ -519,7 +479,6 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
     }
 }
 
-// Mise à jour de la fonction jouer pour utiliser les nouvelles textures
 void jouer(const char *fichierTemp, Personnage *perso)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -528,9 +487,9 @@ void jouer(const char *fichierTemp, Personnage *perso)
         return;
     }
 
-    // Initialiser SDL_image pour les PNG
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        printf("Erreur SDL_image: %s\n", IMG_GetError());
+    
+    if (IMG_Init(IMG_INIT_PNG) == 0) {
+        printf("Erreur IMG_Init: %s\n", IMG_GetError());
         SDL_Quit();
         return;
     }
@@ -547,11 +506,20 @@ void jouer(const char *fichierTemp, Personnage *perso)
     if (window == NULL)
     {
         printf("Erreur de création de la fenêtre: %s\n", SDL_GetError());
+        IMG_Quit();
         SDL_Quit();
         return;
     }
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (renderer == NULL)
+    {
+        printf("Erreur de création du renderer: %s\n", SDL_GetError());
+        SDL_DestroyWindow(window);
+        IMG_Quit();
+        SDL_Quit();
+        return;
+    }
 
     Carte *carte = chargerCarteEnMemoire(fichierTemp);
     if (carte == NULL)
@@ -559,6 +527,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
         printf("Erreur: Impossible de charger la carte %s\n", fichierTemp);
         nettoyerSDL(window, renderer);
         Sleep(1500);
+        IMG_Quit();
         return;
     }
 
@@ -594,35 +563,56 @@ void jouer(const char *fichierTemp, Personnage *perso)
             }
         }
 
-        Sleep(60);
-        bouger_gumba(carte, &tab_gumba);
-        
-        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
-            while (_kbhit()) _getch();
-            sauvegarderCarteVersFichier(carte, fichierTemp);
-            
-            nettoyerSDL(window, renderer);
-            
-            if (tab_gumba.gumbas != NULL) {
-                free(tab_gumba.gumbas);
-                tab_gumba.gumbas = NULL;
-            }
-            
-            menuSauvegarde(perso, carte);
-            return;
-        }
-        
-        deplacer_joueur(carte, perso);
+        Uint32 currentTime = SDL_GetTicks();
+        int deltaTime = currentTime - lastTime;
 
-        afficherPaysageSDL(carte, perso->positionX, renderer);  
-        SDL_RenderPresent(renderer);
+        if (deltaTime >= frameDelay)
+        {
+            lastTime = currentTime;
+
+            bouger_gumba(carte, &tab_gumba);
+            bougerPlante(carte, &tab_plante);
+
+            if (GetAsyncKeyState(VK_ESCAPE) & 0x8000)
+            {
+                while (_kbhit())
+                    _getch();
+                
+                sauvegarderCarteVersFichier(carte, fichierTemp);
+
+                nettoyerSDL(window, renderer);
+                IMG_Quit();
+
+                if (tab_gumba.gumbas != NULL)
+                {
+                    free(tab_gumba.gumbas);
+                    tab_gumba.gumbas = NULL;
+                }
+                
+                if (tab_plante.plantes != NULL)
+                {
+                    free(tab_plante.plantes);
+                    tab_plante.plantes = NULL;
+                }
+
+                menuSauvegarde(perso, carte);
+                return;
+            }
+
+            deplacer_joueur(carte, perso);
+
+            gerer_collisions(carte, perso, &tab_gumba, &tab_plante);
+
+            afficherPaysageSDL(carte, perso->positionX, renderer);
+            SDL_RenderPresent(renderer);
 
             if (perso->positionY >= MORT_Y)
             {
                 perso->vie--;
                 sauvegarderCarteVersFichier(carte, fichierTemp);
 
-            nettoyerSDL(window, renderer);
+                nettoyerSDL(window, renderer);
+                IMG_Quit();
 
                 if (tab_gumba.gumbas != NULL)
                 {
@@ -644,9 +634,8 @@ void jouer(const char *fichierTemp, Personnage *perso)
         }
     }
 
-    // Libérer les textures avant de nettoyer SDL
-    libererTextures();
     nettoyerSDL(window, renderer);
+    IMG_Quit();
 
     if (tab_gumba.gumbas != NULL)
     {
@@ -661,6 +650,4 @@ void jouer(const char *fichierTemp, Personnage *perso)
     }
 
     libererCarte(carte);
-    // À la fin de la fonction, n'oubliez pas de quitter SDL_image aussi
-    IMG_Quit();  // Quitter SDL_image
 }
