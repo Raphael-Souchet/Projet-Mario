@@ -403,6 +403,9 @@ void jouer(const char *fichierTemp, Personnage *perso)
 
             if (perso->positionY >= MORT_Y)
             {
+                // animation de mort
+                playSoundEffect("asset/sound/death.wav", 64);
+                Sleep(2500);
                 perso->vie--;
                 sauvegarderCarteVersFichier(carte, fichierTemp);
 
