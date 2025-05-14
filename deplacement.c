@@ -157,12 +157,34 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
         return;
     }
 
-    int deplacement_x = 0;
+    int input_deplacement = 0;
+    const float ACCELERATION = 0.4f;      
+    const float DECELERATION = 0.3f; 
+    const float VITESSE_MAX = 1.4f;  
 
     if (GetAsyncKeyState('D') & 0x8000)
-        deplacement_x = 1;
-    if (GetAsyncKeyState('Q') & 0x8000)
-        deplacement_x = -1;
+        input_deplacement = 1;
+    else if (GetAsyncKeyState('Q') & 0x8000)
+        input_deplacement = -1;
+
+    if (input_deplacement != 0) {
+        perso->vitesse_x += input_deplacement * ACCELERATION;
+        
+        if (perso->vitesse_x > VITESSE_MAX)
+            perso->vitesse_x = VITESSE_MAX;
+        else if (perso->vitesse_x < -VITESSE_MAX)
+            perso->vitesse_x = -VITESSE_MAX;
+    } else {
+        if (perso->vitesse_x > 0) {
+            perso->vitesse_x -= DECELERATION;
+            if (perso->vitesse_x < 0)
+                perso->vitesse_x = 0;
+        } else if (perso->vitesse_x < 0) {
+            perso->vitesse_x += DECELERATION;
+            if (perso->vitesse_x > 0)
+                perso->vitesse_x = 0;
+        }
+    }
 
     verifier_collision(carte, perso);
 
@@ -187,26 +209,43 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
         }
     }
 
-    if (deplacement_x != 0)
-    {
-        int new_x = perso->positionX + deplacement_x;
-        if (new_x >= 0 && new_x < carte->largeur)
-        {
-            if (carte->carte[perso->positionY][new_x] == 'c')
-            {
-                perso->score++;
-                carte->carte[perso->positionY][new_x] = ' ';
-            }
+    if (perso->vitesse_x != 0) {
+        int deplacement_x = (perso->vitesse_x > 0) ? 
+                            ((int)(perso->vitesse_x + 0.5)) : 
+                            ((int)(perso->vitesse_x - 0.5));
+        
+        if (deplacement_x != 0) {
+            int new_x = perso->positionX + deplacement_x;
             
-            if ((deplacement_x > 0 && perso->peut_avancer) ||
-                (deplacement_x < 0 && perso->peut_reculer))
-            {
-                if (carte->carte[perso->positionY][new_x] != 'w')
-                {
-                    effacer_position(carte, perso);
-                    perso->positionX = new_x;
-                    mettre_position(carte, perso);
-                    verifier_collision(carte, perso);
+            if (new_x >= 0 && new_x < carte->largeur) {
+                if ((deplacement_x > 0 && !perso->peut_avancer) ||
+                    (deplacement_x < 0 && !perso->peut_reculer)) {
+                    perso->vitesse_x = 0;
+                } else {
+                    int dir = (deplacement_x > 0) ? 1 : -1;
+                    for (int i = 0; i < abs(deplacement_x); i++) {
+                        int next_x = perso->positionX + dir;
+                        
+                        if (next_x >= 0 && next_x < carte->largeur) {
+                            if (carte->carte[perso->positionY][next_x] == 'c') {
+                                perso->score++;
+                                carte->carte[perso->positionY][next_x] = ' ';
+                            }
+                            
+                            if (carte->carte[perso->positionY][next_x] != 'w') {
+                                effacer_position(carte, perso);
+                                perso->positionX = next_x;
+                                mettre_position(carte, perso);
+                                verifier_collision(carte, perso);
+                            } else {
+                                perso->vitesse_x = 0;
+                                break;
+                            }
+                        } else {
+                            perso->vitesse_x = 0;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -214,13 +253,13 @@ void deplacer_joueur(Carte *carte, Personnage *perso)
 
     if (perso->en_saut)
     {
-        gerer_saut(carte, perso, deplacement_x);
+        gerer_saut(carte, perso, input_deplacement);
     }
     else if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_chute)
     {
         perso->en_saut = 1;
         perso->etape_saut = 0;
-        gerer_saut(carte, perso, deplacement_x);
+        gerer_saut(carte, perso, input_deplacement);
     }
 }
 
@@ -283,6 +322,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
         perso->positionY = SPAWN_Y;
     }
 
+    perso->vitesse_x = 0.0f;
     carte->carte[perso->positionY][perso->positionX] = 'M';
 
     Tab_gumba tab_gumba = {NULL, 0};

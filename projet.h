@@ -33,6 +33,7 @@ typedef struct {
     int peut_reculer;
     int vie;
     int etape_saut;
+    float vitesse_x;   
 } Personnage;
 
 typedef struct {
@@ -102,7 +103,6 @@ void mettre_position(Carte* carte, Personnage* perso);
 void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer);
 int copierFichier(const char *source, const char *destination);
 void deplacer_joueur(Carte* carte, Personnage* perso);
-void caracterePaysage(char caractereActuel);
 void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer);
 void menuPrincipal(const char *fichierTemp);
 void jouer(const char *fichierTemp, Personnage *perso);
@@ -115,7 +115,7 @@ void verifier_collision(Carte* carte, Personnage* perso);
 void cacherCurseur();
 char* creerNomFichierTemp(const char* nomJoueur);
 void menu_mort(Personnage *perso, const char *fichierTemp);
-
+void declencher_rebond(Personnage *perso);
 int ecraser_gumba(Carte *carte, Tab_gumba *tab_gumba, Personnage *perso);
 int collision_avec_gumba(Tab_gumba *tab_gumba, Personnage *perso);
 int collision_avec_plante(Tab_plante *tab_plante, Personnage *perso);

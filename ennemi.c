@@ -381,11 +381,20 @@ int ecraser_gumba(Carte *carte, Tab_gumba *tab_gumba, Personnage *perso)
                 
                 perso->score += 5;
                 
+                declencher_rebond(perso);
+                
                 return 1;
             }
         }
     }
     return 0;
+}
+
+void declencher_rebond(Personnage *perso)
+{
+    perso->en_saut = 1;
+    perso->etape_saut = 1;
+    perso->en_chute = 0;
 }
 
 int collision_avec_gumba(Tab_gumba *tab_gumba, Personnage *perso)
