@@ -17,40 +17,6 @@ void deplacerCurseur(int x, int y)
     SetConsoleCursorPosition(hConsole, coord);
 }
 
-void caracterePaysage(char caractereActuel)
-{
-    switch (caractereActuel)
-    {
-    case 'w':
-        printf("#");
-        break;
-    case 'c':
-        printf("o");
-        break;
-    case 'M':
-        printf("&");
-        break;
-    case 'Q':
-        printf("@");
-        break;
-    case 'u':
-        printf("u");
-        break;
-    case ']':
-        printf("]");
-        break;
-    case '[':
-        printf("[");
-        break;
-    case '|':
-        printf("|");
-        break;
-    default:
-        printf("%c", caractereActuel);
-        break;
-    }
-}
-
 BackgroundTexture* loadBackgroundTexture(SDL_Renderer *renderer, const char *path)
 {
     BackgroundTexture* bg = (BackgroundTexture*)malloc(sizeof(BackgroundTexture));
