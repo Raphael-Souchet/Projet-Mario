@@ -88,30 +88,26 @@ typedef struct {
     int height;
 } BackgroundTexture;
 
-// Nouvelle structure pour gérer les textures du jeu
 typedef struct {
-    SDL_Texture* brick;     // Texture pour les briques 'w'
-    // Ajouter d'autres textures au besoin pour différents éléments
+    SDL_Texture* brick;
 } GameTextures;
 
-// Ajout au fichier projet.h - Nouvelles structures pour l'animation
 typedef struct {
     SDL_Texture* texture;
-    int frameCount;      // Nombre total de frames
-    int currentFrame;    // Frame actuelle
-    int frameWidth;      // Largeur d'une frame
-    int frameHeight;     // Hauteur d'une frame
-    Uint32 frameDuration;// Durée d'une frame en ms
-    Uint32 lastFrameTime;// Horodatage de la dernière frame
+    int frameCount;  
+    int currentFrame; 
+    int frameWidth;      
+    int frameHeight;     
+    Uint32 frameDuration;
+    Uint32 lastFrameTime;
 } Animation;
 
-// Mise à jour de la structure PlayerAnimations pour inclure l'animation de course
 typedef struct {
-    Animation* idle;           // Animation idle (face à droite)
-    Animation* idle_left;      // Animation idle (face à gauche)
-    Animation* run;            // Animation de course (face à droite)
-    Animation* run_left;       // Animation de course (face à gauche)
-    int facingRight;           // Direction du personnage: 1 = droite, 0 = gauche
+    Animation* idle;     
+    Animation* idle_left;  
+    Animation* run;          
+    Animation* run_left;     
+    int facingRight;         
 } PlayerAnimations;
 
 static BackgroundTexture* globalBackground = NULL;
@@ -133,9 +129,8 @@ void effacer_position(Carte* carte, Personnage* perso);
 void mettre_position(Carte* carte, Personnage* perso);
 void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer);
 int copierFichier(const char *source, const char *destination);
-void deplacer_joueur(Carte* carte, Personnage* perso);
-void caracterePaysage(char caractereActuel);
-void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer);
+void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving);
+void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving);
 void menuPrincipal(const char *fichierTemp);
 void jouer(const char *fichierTemp, Personnage *perso);
 void sauvegarderPartie(Personnage* perso, Carte* carte, const char* fichierTemp);

@@ -58,7 +58,6 @@ void freeBackgroundTexture(BackgroundTexture* bg)
     }
 }
 
-// Nouvelle fonction pour charger les textures du jeu
 GameTextures* loadGameTextures(SDL_Renderer *renderer)
 {
     GameTextures* textures = (GameTextures*)malloc(sizeof(GameTextures));
@@ -67,14 +66,11 @@ GameTextures* loadGameTextures(SDL_Renderer *renderer)
         return NULL;
     }
     
-    // Initialisation par défaut
     textures->brick = NULL;
     
-    // Chargement de la texture pour les briques
     SDL_Surface* surface = IMG_Load("asset/sprit/tiles/tile_0004.png");
     if (surface == NULL) {
         printf("Erreur: Impossible de charger l'image tile_0004.png: %s\n", IMG_GetError());
-        // Tentative avec un chemin alternatif
         surface = IMG_Load("asset/tiles/tile_0004.png");
         if (surface == NULL) {
             printf("Erreur: Impossible de charger l'image alternative: %s\n", IMG_GetError());
@@ -96,14 +92,12 @@ GameTextures* loadGameTextures(SDL_Renderer *renderer)
     return textures;
 }
 
-// Fonction pour libérer les textures du jeu
 void freeGameTextures(GameTextures* textures)
 {
     if (textures != NULL) {
         if (textures->brick != NULL) {
             SDL_DestroyTexture(textures->brick);
         }
-        // Libérer d'autres textures si ajoutées
         free(textures);
     }
 }
@@ -123,7 +117,6 @@ Animation* loadAnimation(SDL_Renderer* renderer, const char* path, int frameCoun
         return NULL;
     }
     
-    // Initialisation par défaut
     animation->texture = NULL;
     animation->frameCount = frameCount;
     animation->currentFrame = 0;
@@ -132,7 +125,6 @@ Animation* loadAnimation(SDL_Renderer* renderer, const char* path, int frameCoun
     animation->frameDuration = frameDuration;
     animation->lastFrameTime = SDL_GetTicks();
     
-    // Charger la texture
     SDL_Surface* surface = IMG_Load(path);
     if (surface == NULL) {
         printf("Erreur: Impossible de charger l'image %s: %s\n", path, IMG_GetError());
@@ -153,35 +145,107 @@ Animation* loadAnimation(SDL_Renderer* renderer, const char* path, int frameCoun
     return animation;
 }
 PlayerAnimations* loadPlayerAnimations(SDL_Renderer* renderer) {
-    // Allocation de la mémoire pour la structure d'animations
     PlayerAnimations* animations = (PlayerAnimations*)malloc(sizeof(PlayerAnimations));
     if (animations == NULL) {
         printf("Erreur: Impossible d'allouer la mémoire pour les animations du joueur\n");
         return NULL;
     }
     
-    // Initialisation des valeurs par défaut
     animations->idle = NULL;
+    animations->idle_left = NULL;
     animations->run = NULL;
-    animations->facingRight = 1; // 1 = face à droite (par défaut), 0 = face à gauche
+    animations->run_left = NULL;
+    animations->facingRight = 1; 
     
-    // Chargement de l'animation d'attente (idle)
-    animations->idle = loadAnimation(renderer, "asset/santa_sheets/idle_sheet.png", 6, 32, 32, 150);
-    if (animations->idle == NULL) {
-        printf("Erreur: Impossible de charger l'animation idle\n");
+    const char* paths[][4] = {
+        {
+            "asset/santa_sheets/idle_sheet.png",
+            "asset/santa_sheets/run_sheet.png",
+            "asset/santa_sheets/idle_left_sheet.png",
+            "asset/santa_sheets/run_left_sheet.png"
+        },
+        {
+            "asset/sprit/santa_sheets/idle_sheet.png",
+            "asset/sprit/santa_sheets/run_sheet.png",
+            "asset/sprit/santa_sheets/idle_left_sheet.png",
+            "asset/sprit/santa_sheets/run_left_sheet.png"
+        },
+        {
+            "asset/player/idle_sheet.png",
+            "asset/player/run_sheet.png",
+            "asset/player/idle_left_sheet.png",
+            "asset/player/run_left_sheet.png"
+        }
+    };
+    
+    Animation* loadedIdle = NULL;
+    Animation* loadedRun = NULL;
+    
+    for (int i = 0; i < 3 && (loadedIdle == NULL || loadedRun == NULL); i++) {
+        if (loadedIdle == NULL) {
+            loadedIdle = loadAnimation(renderer, paths[i][0], 6, 32, 32, 150);
+            if (loadedIdle != NULL) {
+                printf("Animation idle chargée avec succès: %s\n", paths[i][0]);
+            }
+        }
+        
+        if (loadedRun == NULL) {
+            loadedRun = loadAnimation(renderer, paths[i][1], 6, 32, 32, 100);
+            if (loadedRun != NULL) {
+                printf("Animation run chargée avec succès: %s\n", paths[i][1]);
+            }
+        }
+    }
+    
+    if (loadedIdle == NULL) {
+        SDL_Surface* tempSurface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
+        if (tempSurface != NULL) {
+            SDL_FillRect(tempSurface, NULL, SDL_MapRGB(tempSurface->format, 255, 0, 0));
+            
+            loadedIdle = (Animation*)malloc(sizeof(Animation));
+            if (loadedIdle != NULL) {
+                loadedIdle->texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
+                loadedIdle->frameCount = 1;
+                loadedIdle->currentFrame = 0;
+                loadedIdle->frameWidth = 32;
+                loadedIdle->frameHeight = 32;
+                loadedIdle->frameDuration = 150;
+                loadedIdle->lastFrameTime = SDL_GetTicks();
+                
+                printf("Animation idle de secours créée\n");
+            }
+            SDL_FreeSurface(tempSurface);
+        }
+    }
+    
+    if (loadedRun == NULL && loadedIdle != NULL) {
+        loadedRun = (Animation*)malloc(sizeof(Animation));
+        if (loadedRun != NULL) {
+            loadedRun->texture = loadedIdle->texture;
+            loadedRun->frameCount = loadedIdle->frameCount;
+            loadedRun->currentFrame = 0;
+            loadedRun->frameWidth = loadedIdle->frameWidth;
+            loadedRun->frameHeight = loadedIdle->frameHeight;
+            loadedRun->frameDuration = 100;
+            loadedRun->lastFrameTime = SDL_GetTicks();
+            
+            printf("Animation run de secours créée (basée sur idle)\n");
+        }
+    }
+    
+    if (loadedIdle == NULL || loadedRun == NULL) {
+        printf("Erreur: Impossible de charger les animations de base\n");
+        if (loadedIdle != NULL) freeAnimation(loadedIdle);
+        if (loadedRun != NULL && loadedRun->texture != loadedIdle->texture) freeAnimation(loadedRun);
         free(animations);
         return NULL;
     }
     
-    // Chargement de l'animation de course (run)
-    animations->run = loadAnimation(renderer, "asset/santa_sheets/run_sheet.png", 6, 32, 32, 100);
-    if (animations->run == NULL) {
-        printf("Erreur: Impossible de charger l'animation de course\n");
-        freeAnimation(animations->idle);
-        free(animations);
-        return NULL;
-    }
+    animations->idle = loadedIdle;
+    animations->run = loadedRun;
     
+    animations->idle_left = animations->idle;
+    animations->run_left = animations->run;
     
     return animations;
 }
@@ -197,9 +261,10 @@ void updateAnimation(Animation* animation) {
 }
 
 void renderAnimation(SDL_Renderer* renderer, Animation* animation, int x, int y, int flipHorizontal) {
-    if (animation == NULL || renderer == NULL) return;
+    if (animation == NULL || renderer == NULL || animation->texture == NULL) {
+        return;
+    }
     
-    // Rectangle source dans la texture (frame courante)
     SDL_Rect srcRect = {
         animation->currentFrame * animation->frameWidth,
         0,
@@ -207,21 +272,16 @@ void renderAnimation(SDL_Renderer* renderer, Animation* animation, int x, int y,
         animation->frameHeight
     };
     
-    // Rectangle destination sur l'écran (position centrée horizontalement)
     SDL_Rect dstRect = {
-        x - animation->frameWidth / 2,  // Centrer horizontalement
-        y - animation->frameHeight,     // Aligner le bas de l'animation avec la position y
+        x - animation->frameWidth / 2,
+        y - animation->frameHeight,  
         animation->frameWidth,
         animation->frameHeight
     };
     
-    // Appliquer le flip horizontal si nécessaire
     SDL_RendererFlip flip = flipHorizontal ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
     
-    // Vérifier que le renderer et la texture sont valides avant de rendre
-    if (renderer != NULL && animation->texture != NULL) {
-        SDL_RenderCopyEx(renderer, animation->texture, &srcRect, &dstRect, 0, NULL, flip);
-    }
+    SDL_RenderCopyEx(renderer, animation->texture, &srcRect, &dstRect, 0, NULL, flip);
 }
 
 void freePlayerAnimations(PlayerAnimations* animations) {
@@ -237,16 +297,13 @@ void freePlayerAnimations(PlayerAnimations* animations) {
 }
 
 
-// Modification de la fonction afficherPaysageSDL pour utiliser l'animation
 void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving) {
     int largeurAffichage = 50;
     int demiLargeur = largeurAffichage / 2;
     
-    // Calcul des limites d'affichage
     int debutX = positionJoueur - demiLargeur;
     int finX = positionJoueur + demiLargeur;
     
-    // Ajustements des limites si nécessaire
     if (debutX < 0) {
         finX -= debutX; 
         debutX = 0;
@@ -261,7 +318,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         debutX = 0;
     }
     
-    // Chargement du fond d'écran si nécessaire
     if (globalBackground == NULL) {
         const char* bgPath = "asset/sprit/Mondstadt Tileset Platform - Basic/windrise-background.png";
         globalBackground = loadBackgroundTexture(renderer, bgPath);
@@ -273,7 +329,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         }
     }
     
-    // Chargement des textures du jeu si nécessaire
     if (gameTextures == NULL) {
         gameTextures = loadGameTextures(renderer);
         if (gameTextures == NULL) {
@@ -281,7 +336,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         }
     }
     
-    // Chargement des animations du joueur si nécessaire
     if (playerAnimations == NULL) {
         playerAnimations = loadPlayerAnimations(renderer);
         if (playerAnimations == NULL) {
@@ -289,11 +343,9 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         }
     }
 
-    // Effacer l'écran
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     
-    // Afficher le fond d'écran
     if (globalBackground != NULL && globalBackground->texture != NULL) {
         int backgroundOffset = (debutX * 3) % globalBackground->width;  
         
@@ -302,7 +354,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         
         SDL_RenderCopy(renderer, globalBackground->texture, &srcRect, &dstRect);
         
-        // Si on a besoin de boucler l'arrière-plan
         if (backgroundOffset > 0) {
             srcRect.x = 0;
             srcRect.w = backgroundOffset;
@@ -312,7 +363,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         }
     }
 
-    // Afficher les éléments de la carte
     for (int y = 0; y < carte->hauteur; y++) {
         for (int x = debutX; x < finX; x++) {
             if (x >= carte->largeur)
@@ -324,17 +374,14 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                 TILE_SIZE,
                 TILE_SIZE};
 
-            // Ne pas dessiner le joueur ici car nous utiliserons l'animation
             if (carte->carte[y][x] == 'M')
                 continue;
 
             switch (carte->carte[y][x]) {
             case 'w':
-                // Utiliser la texture de brique pour les 'w' au lieu d'un rectangle coloré
                 if (gameTextures != NULL && gameTextures->brick != NULL) {
                     SDL_RenderCopy(renderer, gameTextures->brick, NULL, &tile);
                 } else {
-                    // Fallback si la texture n'est pas disponible
                     SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255);
                     SDL_RenderFillRect(renderer, &tile);
                 }
@@ -369,20 +416,17 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                 SDL_RenderFillRect(renderer, &tile);
                 break;
             default:
-                // Espace vide ou autre caractère non défini
                 break;
             }
         }
     }
     
-    // Rechercher et afficher le joueur avec l'animation appropriée
     for (int y = 0; y < carte->hauteur; y++) {
         for (int x = debutX; x < finX; x++) {
             if (x >= carte->largeur)
                 continue;
                 
             if (carte->carte[y][x] == 'M') {
-                // Choisir l'animation appropriée selon l'état du personnage
                 Animation* currentAnimation = NULL;
                 
                 if (playerAnimations != NULL) {
@@ -395,17 +439,12 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                     if (currentAnimation != NULL) {
                         updateAnimation(currentAnimation);
                         
-                        // Rendre l'animation du joueur à sa position dans la carte
                         int screenX = (x - debutX) * TILE_SIZE + (TILE_SIZE / 2);
                         int screenY = y * TILE_SIZE + TILE_SIZE;
                         
-                        // Utiliser le flip horizontal selon la direction du personnage
-                        // Si facingRight = 0 (regardant à gauche), appliquer le flip horizontal
-                        // Si facingRight = 1 (regardant à droite), ne pas appliquer de flip
                         renderAnimation(renderer, currentAnimation, screenX, screenY, !playerAnimations->facingRight);
                     }
                 } else {
-                    // Fallback si l'animation n'est pas disponible
                     SDL_Rect tile = {
                         (x - debutX) * TILE_SIZE,
                         y * TILE_SIZE,
@@ -421,31 +460,26 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
 }
 
 
-// Modifier la fonction nettoyerSDL pour libérer les ressources d'animation
 void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
 {
-    // Libérer les animations du joueur
     if (playerAnimations != NULL)
     {
         freePlayerAnimations(playerAnimations);
         playerAnimations = NULL;
     }
     
-    // Libérer les textures du jeu
     if (gameTextures != NULL)
     {
         freeGameTextures(gameTextures);
         gameTextures = NULL;
     }
     
-    // Libérer la texture de fond
     if (globalBackground != NULL)
     {
         freeBackgroundTexture(globalBackground);
         globalBackground = NULL;  
     }
     
-    // Libérer le rendu et la fenêtre
     if (renderer != NULL)
     {
         SDL_DestroyRenderer(renderer);

@@ -161,10 +161,22 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
     const float DECELERATION = 0.3f; 
     const float VITESSE_MAX = 1.4f;  
 
-    if (GetAsyncKeyState('D') & 0x8000)
+    *isMoving = 0;
+
+    if (GetAsyncKeyState('D') & 0x8000) {
         input_deplacement = 1;
-    else if (GetAsyncKeyState('Q') & 0x8000)
+        *isMoving = 1;
+        if (playerAnimations != NULL) {
+            playerAnimations->facingRight = 1;
+        }
+    }
+    else if (GetAsyncKeyState('Q') & 0x8000) {
         input_deplacement = -1;
+        *isMoving = 1;
+        if (playerAnimations != NULL) {
+            playerAnimations->facingRight = 0;
+        }
+    }
 
     if (input_deplacement != 0) {
         perso->vitesse_x += input_deplacement * ACCELERATION;
@@ -185,15 +197,19 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
         }
     }
 
+    if (perso->vitesse_x != 0) {
+        *isMoving = 1;
+    }
+
     verifier_collision(carte, perso);
 
-    // Gestion de la chute
     if (perso->en_chute && !perso->en_saut) {
         int new_y = perso->positionY + 1;
         if (new_y < carte->hauteur) {
             if (carte->carte[new_y][perso->positionX] == 'c') {
                 perso->score++;
                 carte->carte[new_y][perso->positionX] = ' ';
+                playSoundEffect("asset/sound/coin.wav", 64);
             }
             
             if (carte->carte[new_y][perso->positionX] != 'w') {
@@ -201,6 +217,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
                 perso->positionY = new_y;
                 mettre_position(carte, perso);
                 verifier_collision(carte, perso);
+                *isMoving = 1; 
             }
         }
     }
@@ -226,6 +243,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
                             if (carte->carte[perso->positionY][next_x] == 'c') {
                                 perso->score++;
                                 carte->carte[perso->positionY][next_x] = ' ';
+                                playSoundEffect("asset/sound/coin.wav", 64);
                             }
                             
                             if (carte->carte[perso->positionY][next_x] != 'w') {
@@ -233,6 +251,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
                                 perso->positionX = next_x;
                                 mettre_position(carte, perso);
                                 verifier_collision(carte, perso);
+                                *isMoving = 1;
                             } else {
                                 perso->vitesse_x = 0;
                                 break;
@@ -250,12 +269,14 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
     if (perso->en_saut)
     {
         gerer_saut(carte, perso, input_deplacement);
+        *isMoving = 1; 
     }
     else if ((GetAsyncKeyState('Z') & 0x8000) && !perso->en_chute) {
-        *isMoving = 1; // Le joueur est en mouvement pendant un saut
         perso->en_saut = 1;
         perso->etape_saut = 0;
         gerer_saut(carte, perso, input_deplacement);
+        *isMoving = 1;
+        playSoundEffect("asset/sound/jump.wav", 64);
     }
 }
 
@@ -274,11 +295,9 @@ void jouer(const char *fichierTemp, Personnage *perso)
         return;
     }
 
-    // Initialiser le système audio et démarrer la musique de fond
     if (!initGameAudio())
     {
         printf("Avertissement: L'audio n'a pas pu être initialisé. Le jeu continuera sans son.\n");
-        // On continue quand même sans son
     }
 
     int largeurAffichage = 50;
@@ -293,7 +312,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
     if (window == NULL)
     {
         printf("Erreur de création de la fenêtre: %s\n", SDL_GetError());
-        cleanupAudio();  // Nettoyer les ressources audio
+        cleanupAudio();
         IMG_Quit();
         SDL_Quit();
         return;
@@ -304,7 +323,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
     {
         printf("Erreur de création du renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
-        cleanupAudio();  // Nettoyer les ressources audio
+        cleanupAudio();  
         IMG_Quit();
         SDL_Quit();
         return;
@@ -315,7 +334,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
     {
         printf("Erreur: Impossible de charger la carte %s\n", fichierTemp);
         nettoyerSDL(window, renderer);
-        cleanupAudio();  // Nettoyer les ressources audio
+        cleanupAudio();
         SDL_Quit();
         return;
     }
@@ -372,7 +391,6 @@ void jouer(const char *fichierTemp, Personnage *perso)
                 
                 sauvegarderCarteVersFichier(carte, fichierTemp);
 
-                // Arrêter la musique avant de quitter
                 stopBackgroundMusic();
                 cleanupAudio();
 
@@ -395,11 +413,11 @@ void jouer(const char *fichierTemp, Personnage *perso)
                 return;
             }
 
-            deplacer_joueur(carte, perso, &playerMoving); // Passage du nouvel indicateur
+            deplacer_joueur(carte, perso, &playerMoving);
 
             gerer_collisions(carte, perso, &tab_gumba, &tab_plante);
 
-            afficherPaysageSDL(carte, perso->positionX, renderer, playerMoving); // Passage de l'état de mouvement
+            afficherPaysageSDL(carte, perso->positionX, renderer, playerMoving);
             SDL_RenderPresent(renderer);
 
             if (perso->positionY >= MORT_Y)
@@ -407,7 +425,6 @@ void jouer(const char *fichierTemp, Personnage *perso)
                 perso->vie--;
                 sauvegarderCarteVersFichier(carte, fichierTemp);
 
-                // Arrêter la musique avant de quitter
                 stopBackgroundMusic();
                 cleanupAudio();
 
@@ -434,7 +451,6 @@ void jouer(const char *fichierTemp, Personnage *perso)
         }
     }
 
-    // Arrêter la musique et nettoyer les ressources audio
     stopBackgroundMusic();
     cleanupAudio();
 
