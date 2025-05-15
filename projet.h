@@ -92,6 +92,8 @@ typedef struct {
 typedef struct {
     SDL_Texture* brick;
     SDL_Texture* terre;
+    SDL_Texture* tuyau;
+    SDL_Texture* plante;
 } GameTextures;
 
 typedef struct {
@@ -146,6 +148,7 @@ extern Animation* starCoinAnimation;
 extern TTF_Font* scoreFont;
 extern SDL_Color scoreColor;
 extern Animation* flagAnimation;
+extern Animation* carnivoreAnimation;
 
 Carte* chargerCarteEnMemoire(const char* fichierCarte);
 void libererCarte(Carte* carte);
@@ -218,5 +221,7 @@ void animer_starcoins(Tab_starcoins* tab_starcoins);
 void afficher_starcoins(SDL_Renderer* renderer, Tab_starcoins* tab_starcoins, int positionJoueur, int debutX);
 void liberer_starcoins(Tab_starcoins* tab_starcoins);
 void check_collect_starcoin(Carte* carte, Tab_starcoins* tab_starcoins, Personnage* perso);
+void loadCarnivoreAnimation(SDL_Renderer *renderer);
+void freeCarnivoreAnimation();
 
 #endif
