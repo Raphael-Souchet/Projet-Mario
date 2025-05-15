@@ -123,9 +123,9 @@ int initGameAudio()
         return 0;
     }
     
-    if (!loadBackgroundMusic("asset/music/main.mp3"))
+    if (!loadBackgroundMusic("asset/music/overworld.mp3"))
     {
-        if (!loadBackgroundMusic("asset/music/main.wav"))
+        if (!loadBackgroundMusic("asset/music/overworld.wav"))
         {
             printf("Impossible de charger la musique d'arrière-plan\n");
             return 0;

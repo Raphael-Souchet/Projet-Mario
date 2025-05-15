@@ -91,6 +91,7 @@ typedef struct {
 
 typedef struct {
     SDL_Texture* brick;
+    SDL_Texture* terre;
 } GameTextures;
 
 typedef struct {
@@ -133,6 +134,7 @@ extern Animation* coinAnimation;
 extern Animation* starCoinAnimation;
 extern TTF_Font* scoreFont;
 extern SDL_Color scoreColor;
+extern Animation* flagAnimation;
 
 Carte* chargerCarteEnMemoire(const char* fichierCarte);
 void libererCarte(Carte* carte);

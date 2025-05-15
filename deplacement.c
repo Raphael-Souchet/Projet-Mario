@@ -31,7 +31,7 @@ void gerer_saut(Carte *carte, Personnage *perso, int direction)
                     playSoundEffect("asset/sound/piece_etoile.wav", 40);
             }
             
-            if (contenu_nouv_pos != 'w' && contenu_nouv_pos != ']' && contenu_nouv_pos != '[')
+            if (contenu_nouv_pos != 'w' && contenu_nouv_pos != ']' && contenu_nouv_pos != '[' && contenu_nouv_pos != 'd' )
             {
                 effacer_position(carte, perso);
                 perso->positionY = nouv_y;
@@ -58,7 +58,7 @@ void verifier_collision(Carte *carte, Personnage *perso)
 {
     char caractere_dessous = (perso->positionY + 1 < carte->hauteur) ? carte->carte[perso->positionY + 1][perso->positionX] : 'w';
 
-    if (caractere_dessous == 'w' || caractere_dessous == ']' || caractere_dessous == '[')
+    if (caractere_dessous == 'w' || caractere_dessous == ']' || caractere_dessous == '[' || caractere_dessous == 'd')
     {
         perso->en_chute = 0;
     }
@@ -69,7 +69,7 @@ void verifier_collision(Carte *carte, Personnage *perso)
 
     char caractere_dessus = (perso->positionY - 1 >= 0) ? carte->carte[perso->positionY - 1][perso->positionX] : 'w';
 
-    if (caractere_dessus == 'w' || caractere_dessus == ']' || caractere_dessus == '[')
+    if (caractere_dessus == 'w' || caractere_dessus == ']' || caractere_dessus == '[' || caractere_dessus == 'd')
     {
         perso->peut_monter = 0;
     }
@@ -80,7 +80,7 @@ void verifier_collision(Carte *carte, Personnage *perso)
 
     char caractere_devant = (perso->positionX + 1 < carte->largeur) ? carte->carte[perso->positionY][perso->positionX + 1] : 'w';
 
-    if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == '['  || perso->positionX == carte->largeur - 3)
+    if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == '['  || perso->positionX == carte->largeur - 3 || caractere_devant == 'd')
     {
         perso->peut_avancer = 0;
     }
@@ -91,7 +91,7 @@ void verifier_collision(Carte *carte, Personnage *perso)
 
     char caractere_derriere = (perso->positionX - 1 >= 0) ? carte->carte[perso->positionY][perso->positionX - 1] : 'w';
 
-    if (caractere_derriere == 'w' || caractere_derriere == ']' || caractere_derriere == '[' || perso->positionX == 0)
+    if (caractere_derriere == 'w' || caractere_derriere == ']' || caractere_derriere == '[' || perso->positionX == 0 || caractere_derriere == 'd')
     {
         perso->peut_reculer = 0;
     }
@@ -134,7 +134,7 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
 
     char caractere_devant = (gumba->positionX + 1 < carte->largeur) ? carte->carte[gumba->positionY][gumba->positionX + 1] : 'w';
 
-    if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == 'Q' || gumba->positionX == carte->largeur - 3)
+    if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == 'Q' || gumba->positionX == carte->largeur - 3 || caractere_devant == 'd')
     {
         gumba->peut_avancer = 0;
     }
@@ -144,7 +144,7 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
     }
     char caractere_derriere = (gumba->positionX - 1 >= 0) ? carte->carte[gumba->positionY][gumba->positionX - 1] : 'w';
 
-    if (caractere_derriere == 'w' || caractere_derriere == '[' || caractere_derriere == 'Q' || gumba->positionX == 0)
+    if (caractere_derriere == 'w' || caractere_derriere == '[' || caractere_derriere == 'Q' || gumba->positionX == 0 || caractere_derriere == 'd')
     {
         gumba->peut_reculer = 0;
     }
@@ -479,6 +479,8 @@ void jouer(const char *fichierTemp, Personnage *perso)
 
     stopBackgroundMusic();
     cleanupAudio();
+
+
 
     nettoyerSDL(window, renderer);
     IMG_Quit();
