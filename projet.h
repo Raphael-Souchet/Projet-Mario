@@ -115,7 +115,7 @@ typedef struct {
     Animation* animation;
     int positionX;
     int positionY;
-    int type;  // 0 pour pièce normale ('c'), 1 pour pièce étoile ('*')
+    int type; 
     int actif;
 } Piece;
 
@@ -131,6 +131,13 @@ extern PlayerAnimations* playerAnimations;
 extern Tab_piece tab_pieces;
 extern Animation* coinAnimation;
 extern Animation* starCoinAnimation;
+extern TTF_Font* scoreFont;
+extern SDL_Color scoreColor;
+
+
+BackgroundTexture* globalBackground = NULL;
+GameTextures* gameTextures = NULL;
+PlayerAnimations* playerAnimations = NULL;
 
 
 Carte* chargerCarteEnMemoire(const char* fichierCarte);
@@ -148,7 +155,7 @@ void mettre_position(Carte* carte, Personnage* perso);
 void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer);
 int copierFichier(const char *source, const char *destination);
 void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving);
-void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving);
+void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving, int score);
 void menuPrincipal(const char *fichierTemp);
 void jouer(const char *fichierTemp, Personnage *perso);
 void sauvegarderPartie(Personnage* perso, Carte* carte, const char* fichierTemp);
@@ -194,5 +201,8 @@ void animer_pieces(Tab_piece* tab_piece);
 void afficher_pieces(SDL_Renderer* renderer, Tab_piece* tab_piece, int positionJoueur, int debutX);
 void liberer_pieces(Tab_piece* tab_piece);
 void check_collect_piece(Carte* carte, Tab_piece* tab_piece, Personnage* perso);
+
+TTF_Font* initFont();
+void afficherScore(SDL_Renderer* renderer, int score);
 
 #endif

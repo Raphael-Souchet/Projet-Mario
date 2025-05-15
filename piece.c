@@ -5,7 +5,6 @@ Animation* coinAnimation = NULL;
 Animation* starCoinAnimation = NULL;
 
 void initialiser_pieces(Carte* carte, Tab_piece* tab_piece) {
-    // Compter d'abord combien il y a de pièces
     int nb_pieces = 0;
     for (int y = 0; y < carte->hauteur; y++) {
         for (int x = 0; x < carte->largeur; x++) {
@@ -15,8 +14,7 @@ void initialiser_pieces(Carte* carte, Tab_piece* tab_piece) {
         }
     }
     
-    // Allouer la mémoire pour les pièces
-    tab_piece->capacity = nb_pieces + 10;  // Un peu plus pour les pièces qui pourraient apparaître
+    tab_piece->capacity = nb_pieces + 10; 
     tab_piece->pieces = (Piece*)malloc(sizeof(Piece) * tab_piece->capacity);
     tab_piece->count = 0;
     
@@ -25,7 +23,6 @@ void initialiser_pieces(Carte* carte, Tab_piece* tab_piece) {
         return;
     }
     
-    // Initialiser les pièces
     for (int y = 0; y < carte->hauteur; y++) {
         for (int x = 0; x < carte->largeur; x++) {
             if (carte->carte[y][x] == 'c' || carte->carte[y][x] == '*') {
@@ -40,7 +37,6 @@ void initialiser_pieces(Carte* carte, Tab_piece* tab_piece) {
 }
 
 void animer_pieces(Tab_piece* tab_piece) {
-    // Mettre à jour l'animation de toutes les pièces
     if (coinAnimation != NULL) {
         updateAnimation(coinAnimation);
     }
@@ -60,7 +56,6 @@ void afficher_pieces(SDL_Renderer* renderer, Tab_piece* tab_piece, int positionJ
         int pieceX = tab_piece->pieces[i].positionX;
         int pieceY = tab_piece->pieces[i].positionY;
         
-        // Vérifier si la pièce est dans la zone visible
         if (pieceX >= debutX && pieceX < finX) {
             Animation* currentAnimation = (tab_piece->pieces[i].type == 1) ? starCoinAnimation : coinAnimation;
             
@@ -70,7 +65,6 @@ void afficher_pieces(SDL_Renderer* renderer, Tab_piece* tab_piece, int positionJ
                 
                 renderAnimation(renderer, currentAnimation, screenX, screenY, 0);
             } else {
-                // Fallback à un rectangle si l'animation n'est pas chargée
                 SDL_Rect tile = {
                     (pieceX - debutX) * TILE_SIZE,
                     pieceY * TILE_SIZE,
@@ -79,9 +73,9 @@ void afficher_pieces(SDL_Renderer* renderer, Tab_piece* tab_piece, int positionJ
                 };
                 
                 if (tab_piece->pieces[i].type == 1) {
-                    SDL_SetRenderDrawColor(renderer, 241, 255, 65, 255);  // Pièce étoile
+                    SDL_SetRenderDrawColor(renderer, 241, 255, 65, 255);
                 } else {
-                    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);   // Pièce normale
+                    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);   
                 }
                 
                 SDL_RenderFillRect(renderer, &tile);
@@ -109,7 +103,6 @@ void liberer_pieces(Tab_piece* tab_piece) {
     }
 }
 
-// Fonction pour vérifier si une pièce doit être collectée
 void check_collect_piece(Carte* carte, Tab_piece* tab_piece, Personnage* perso) {
     for (int i = 0; i < tab_piece->count; i++) {
         if (tab_piece->pieces[i].actif && 
@@ -118,17 +111,15 @@ void check_collect_piece(Carte* carte, Tab_piece* tab_piece, Personnage* perso) 
             
             tab_piece->pieces[i].actif = 0;
             
-            // Mettre à jour le score en fonction du type de pièce
             if (tab_piece->pieces[i].type == 1) {
-                perso->score += 5;  // Pièce étoile vaut 5 points
-                playSoundEffect("asset/sound/piece_etoile.wav", 64);
+                perso->score += 5; 
+                playSoundEffect("asset/sound/piece_etoile.wav", 40);
             } else {
-                perso->score += 1;  // Pièce normale vaut 1 point
-                playSoundEffect("asset/sound/coin.wav", 64);
+                perso->score += 1; 
+                playSoundEffect("asset/sound/coin.wav", 40);
             }
             
-            // Effacer la pièce de la carte
-            carte->carte[tab_piece->pieces[i].positionY][tab_piece->pieces[i].positionX] = ' ';
+            carte->carte[tab_piece->pieces[i].positionY][tab_piece->pieces[i].positionX] = 'M';
         }
     }
 }

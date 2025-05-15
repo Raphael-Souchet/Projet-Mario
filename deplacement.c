@@ -16,20 +16,31 @@ void gerer_saut(Carte *carte, Personnage *perso, int direction)
     
     if (nouv_y >= 0 && nouv_y < carte->hauteur)
     {
-        if ((hauteur_actuelle < 0 && perso->peut_monter) || 
-            (hauteur_actuelle > 0 && !perso->en_chute))
+        if ((hauteur_actuelle < 0 && perso->peut_monter) || (hauteur_actuelle > 0))
         {
-            if (carte->carte[nouv_y][perso->positionX] == 'c' || carte->carte[nouv_y][perso->positionX] == '*')
+            char contenu_nouv_pos = carte->carte[nouv_y][perso->positionX];
+            
+            if (contenu_nouv_pos == 'c' || contenu_nouv_pos == '*')
             {
                 perso->score++;
                 carte->carte[nouv_y][perso->positionX] = ' ';
+                
+                if (contenu_nouv_pos == 'c')
+                    playSoundEffect("asset/sound/coin.wav", 40);
+                else if (contenu_nouv_pos == '*')
+                    playSoundEffect("asset/sound/piece_etoile.wav", 40);
             }
             
-            if (carte->carte[nouv_y][perso->positionX] != 'w' || carte->carte[nouv_y][perso->positionX] != ']' || carte->carte[nouv_y][perso->positionX] != '[')
+            if (contenu_nouv_pos != 'w' && contenu_nouv_pos != ']' && contenu_nouv_pos != '[')
             {
                 effacer_position(carte, perso);
                 perso->positionY = nouv_y;
                 mettre_position(carte, perso);
+            }
+            else if (hauteur_actuelle < 0)
+            {
+                perso->etape_saut = 5; 
+                return;
             }
         }
     }
@@ -193,13 +204,13 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
             if (carte->carte[new_y][perso->positionX] == 'c') {
                 perso->score++;
                 carte->carte[new_y][perso->positionX] = ' ';
-                playSoundEffect("asset/sound/coin.wav", 64);
+                playSoundEffect("asset/sound/coin.wav", 40);
             }
 
             if (carte->carte[new_y][perso->positionX] == '*') {
                 perso->score++;
                 carte->carte[new_y][perso->positionX] = ' ';
-                playSoundEffect("asset/sound/piece_etoile.wav", 64);
+                playSoundEffect("asset/sound/piece_etoile.wav", 40);
             }
             
             if (carte->carte[new_y][perso->positionX] != 'w' || carte->carte[new_y][perso->positionX] == ']' || carte->carte[new_y][perso->positionX] == '[') {
@@ -240,13 +251,13 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
                             if (carte->carte[perso->positionY][next_x] == 'c') {
                                 perso->score++;
                                 carte->carte[perso->positionY][next_x] = ' ';
-                                playSoundEffect("asset/sound/coin.wav", 64);
+                                playSoundEffect("asset/sound/coin.wav", 40);
                             }
 
                             if (carte->carte[perso->positionY][next_x] == '*') {
                                 perso->score = perso->score + 5;
                                 carte->carte[perso->positionY][next_x] = ' ';
-                                playSoundEffect("asset/sound/piece_etoile.wav", 64);
+                                playSoundEffect("asset/sound/piece_etoile.wav", 40);
                             }
                             
                             if (carte->carte[perso->positionY][next_x] != 'w' || carte->carte[perso->positionY][next_x] == ']' || carte->carte[perso->positionY][next_x] == '[') {
@@ -279,7 +290,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
         perso->etape_saut = 0;
         gerer_saut(carte, perso, input_deplacement);
         *isMoving = 1;
-        playSoundEffect("asset/sound/jump.wav", 64);
+        playSoundEffect("asset/sound/jump.wav", 40);
     }
 }
 
@@ -331,6 +342,11 @@ void jouer(const char *fichierTemp, Personnage *perso)
         SDL_Quit();
         return;
     }
+    
+    scoreFont = initFont();
+    if (scoreFont == NULL) {
+        printf("Avertissement: Impossible de charger la police. Le score ne sera pas affiché.\n");
+    }
 
     Carte *carte = chargerCarteEnMemoire(fichierTemp);
     if (carte == NULL)
@@ -357,7 +373,6 @@ void jouer(const char *fichierTemp, Personnage *perso)
     initialiserPlante(carte, &tab_plante);
     initialiser_gumbas(carte, &tab_gumba);
     
-    // Initialiser les pièces avec animation
     initialiser_pieces(carte, &tab_pieces);
 
     cacherCurseur();
@@ -421,12 +436,11 @@ void jouer(const char *fichierTemp, Personnage *perso)
 
             deplacer_joueur(carte, perso, &playerMoving);
             
-            // Vérifier si le joueur collecte une pièce
             check_collect_piece(carte, &tab_pieces, perso);
 
             gerer_collisions(carte, perso, &tab_gumba, &tab_plante);
 
-            afficherPaysageSDL(carte, perso->positionX, renderer, playerMoving);
+            afficherPaysageSDL(carte, perso->positionX, renderer, playerMoving, perso->score);
             SDL_RenderPresent(renderer);
 
             if (perso->positionY >= MORT_Y)

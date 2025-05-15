@@ -161,17 +161,14 @@ Animation *loadAnimation(SDL_Renderer *renderer, const char *path, int frameCoun
 }
 void loadCoinAnimations(SDL_Renderer *renderer)
 {
-    // Chargement des animations de pièces si elles ne sont pas déjà chargées
     if (coinAnimation == NULL)
     {
-        // Pour les pièces normales (c)
         const char *coinPaths[] = {
             "asset/brackeys_platformer_assets/sprites/coin.png",
             "asset/sprites/coin.png",
             "asset/sprit/sprites/coin.png",
             "asset/coin.png"};
 
-        // Essayer différents chemins jusqu'à ce qu'un fonctionne
         for (int i = 0; i < 4 && coinAnimation == NULL; i++)
         {
             coinAnimation = loadAnimation(renderer, coinPaths[i], 6, 16, 16, 100);
@@ -181,7 +178,6 @@ void loadCoinAnimations(SDL_Renderer *renderer)
             }
         }
 
-        // Si aucun chemin ne fonctionne, informer l'utilisateur
         if (coinAnimation == NULL)
         {
             printf("Échec du chargement de l'animation des pièces. Utilisation de la représentation par défaut.\n");
@@ -190,19 +186,15 @@ void loadCoinAnimations(SDL_Renderer *renderer)
 
     if (starCoinAnimation == NULL)
     {
-        // Pour les pièces étoiles (*)
         const char *starCoinPaths[] = {
             "asset/brackeys_platformer_assets/sprites/starcoin.png",
             "asset/sprites/starcoin.png",
             "asset/sprit/sprites/starcoin.png",
             "asset/starcoin.png",
-            // Ajouter le chemin de la nouvelle image si différent
             "asset/starcoin.png"};
 
-        // Essayer différents chemins jusqu'à ce qu'un fonctionne
         for (int i = 0; i < 5 && starCoinAnimation == NULL; i++)
         {
-            // Utiliser 6 frames de 16x16 pixels, avec un intervalle de 100ms
             starCoinAnimation = loadAnimation(renderer, starCoinPaths[i], 6, 16, 16, 100);
             if (starCoinAnimation != NULL)
             {
@@ -210,10 +202,8 @@ void loadCoinAnimations(SDL_Renderer *renderer)
             }
         }
 
-        // Si l'image ne peut pas être chargée via les chemins standards, essayer de charger directement l'image fournie
         if (starCoinAnimation == NULL)
         {
-            // On peut charger directement depuis le chemin où vous avez placé l'image
             starCoinAnimation = loadAnimation(renderer, "asset/starcoin.png", 6, 16, 16, 100);
             if (starCoinAnimation != NULL)
             {
@@ -363,33 +353,87 @@ void renderAnimation(SDL_Renderer *renderer, Animation *animation, int x, int y,
         animation->frameWidth,
         animation->frameHeight};
 
-    // Définir un facteur d'échelle pour chaque type d'animation
     float scaleFactor = 1.0f;
 
-    // Si c'est une animation de pièce (coinAnimation ou starCoinAnimation), on la rend plus grande
     if (animation == coinAnimation || animation == starCoinAnimation)
     {
-        scaleFactor = 1.5f; // Pièces 50% plus grandes
+        scaleFactor = 1.5f; 
     }
 
-    // Calculer la taille finale de l'animation
     int finalWidth = (int)(animation->frameWidth * scaleFactor);
     int finalHeight = (int)(animation->frameHeight * scaleFactor);
 
     SDL_Rect dstRect = {
-        x - finalWidth / 2, // Centrer horizontalement
-        y - finalHeight,    // Aligner en bas
+        x - finalWidth / 2, 
+        y - finalHeight,  
         finalWidth,
         finalHeight};
 
-    // Appliquer le flip horizontal si nécessaire
     SDL_RendererFlip flip = flipHorizontal ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
 
-    // Rendre l'animation
     SDL_RenderCopyEx(renderer, animation->texture, &srcRect, &dstRect, 0, NULL, flip);
 }
 
-void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving)
+TTF_Font* scoreFont = NULL;
+SDL_Color scoreColor = {255, 255, 255, 255};
+
+TTF_Font* initFont() {
+    if (TTF_Init() == -1) {
+        printf("Erreur d'initialisation de TTF: %s\n", TTF_GetError());
+        return NULL;
+    }
+    
+    const char* fontPaths[] = {
+        "asset/font/PixelifySans-VariableFont_wght.ttf"
+    };
+    
+    TTF_Font* font = NULL;
+    for (int i = 0; i < 3 && font == NULL; i++) {
+        font = TTF_OpenFont(fontPaths[i], 32); 
+        if (font != NULL) {
+            printf("Police chargée avec succès: %s\n", fontPaths[i]);
+            break;
+        }
+    }
+    
+    if (font == NULL) {
+        printf("Impossible de charger la police: %s\n", TTF_GetError());
+    }
+    
+    return font;
+}
+
+void afficherScore(SDL_Renderer* renderer, int score) {
+    if (scoreFont == NULL) {
+        return;
+    }
+    
+    char scoreText[50];
+    sprintf(scoreText, "Score: %d", score);
+    
+    SDL_Color scoreColor = {255, 255, 0, 255}; 
+    
+    SDL_Surface* textSurface = TTF_RenderText_Solid(scoreFont, scoreText, scoreColor);
+    if (textSurface == NULL) {
+        printf("Impossible de créer la surface de texte: %s\n", TTF_GetError());
+        return;
+    }
+    
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    if (textTexture == NULL) {
+        printf("Impossible de créer la texture de texte: %s\n", SDL_GetError());
+        SDL_FreeSurface(textSurface);
+        return;
+    }
+    
+    SDL_Rect destRect = {40, 30, textSurface->w, textSurface->h};
+    SDL_RenderCopy(renderer, textTexture, NULL, &destRect);
+    
+    SDL_DestroyTexture(textTexture);
+    SDL_FreeSurface(textSurface);
+}
+
+void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving, int score)
 {
     int largeurAffichage = 50;
     int demiLargeur = largeurAffichage / 2;
@@ -445,7 +489,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         }
     }
 
-    // Charger les animations des pièces
     loadCoinAnimations(renderer);
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -456,7 +499,7 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         int backgroundOffset = (debutX * 3) % globalBackground->width;
 
         SDL_Rect srcRect = {backgroundOffset, 0, globalBackground->width - backgroundOffset, globalBackground->height};
-        SDL_Rect dstRect = {0, 0, largeurAffichage * TILE_SIZE, 20 * TILE_SIZE};
+        SDL_Rect dstRect = {0, 0, largeurAffichage * TILE_SIZE, 24 * TILE_SIZE};
 
         SDL_RenderCopy(renderer, globalBackground->texture, &srcRect, &dstRect);
 
@@ -486,7 +529,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
             if (carte->carte[y][x] == 'M')
                 continue;
 
-            // On ne dessine plus directement les pièces ici (c et *)
             switch (carte->carte[y][x])
             {
             case 'w':
@@ -527,7 +569,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         }
     }
 
-    // Dessiner les pièces animées
     animer_pieces(&tab_pieces);
     afficher_pieces(renderer, &tab_pieces, positionJoueur, debutX);
 
@@ -578,15 +619,16 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
             }
         }
     }
+    
+    afficherScore(renderer, score);
 }
+
 void freePlayerAnimations(PlayerAnimations *animations)
 {
     if (animations != NULL)
     {
-        // Free the idle animation
         if (animations->idle != NULL)
         {
-            // Free the texture only if it's not shared
             if (animations->idle->texture != NULL &&
                 (animations->idle_left == NULL || animations->idle->texture != animations->idle_left->texture) &&
                 (animations->run == NULL || animations->idle->texture != animations->run->texture) &&
@@ -597,10 +639,8 @@ void freePlayerAnimations(PlayerAnimations *animations)
             free(animations->idle);
         }
 
-        // Free the idle_left animation
         if (animations->idle_left != NULL && animations->idle_left != animations->idle)
         {
-            // Only free texture if it's not shared with another animation
             if (animations->idle_left->texture != NULL &&
                 (animations->run == NULL || animations->idle_left->texture != animations->run->texture) &&
                 (animations->run_left == NULL || animations->idle_left->texture != animations->run_left->texture))
@@ -610,10 +650,8 @@ void freePlayerAnimations(PlayerAnimations *animations)
             free(animations->idle_left);
         }
 
-        // Free the run animation
         if (animations->run != NULL && animations->run != animations->idle && animations->run != animations->idle_left)
         {
-            // Only free texture if it's not shared with run_left
             if (animations->run->texture != NULL &&
                 (animations->run_left == NULL || animations->run->texture != animations->run_left->texture))
             {
@@ -622,7 +660,6 @@ void freePlayerAnimations(PlayerAnimations *animations)
             free(animations->run);
         }
 
-        // Free the run_left animation
         if (animations->run_left != NULL &&
             animations->run_left != animations->idle &&
             animations->run_left != animations->idle_left &&
@@ -635,14 +672,19 @@ void freePlayerAnimations(PlayerAnimations *animations)
             free(animations->run_left);
         }
 
-        // Finally, free the animations struct
         free(animations);
     }
 }
-// Modification de nettoyerSDL dans affichage.c
+
 void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
 {
     liberer_pieces(&tab_pieces);
+
+    if (scoreFont != NULL) {
+        TTF_CloseFont(scoreFont);
+        scoreFont = NULL;
+        TTF_Quit();
+    }
 
     if (playerAnimations != NULL)
     {
@@ -673,6 +715,7 @@ void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
 
     SDL_Quit();
 }
+
 void freeAnimation(Animation *animation)
 {
     if (animation != NULL)
