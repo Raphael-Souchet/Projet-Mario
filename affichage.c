@@ -1,4 +1,5 @@
 #include "projet.h"
+
 Animation* flagAnimation = NULL;
 
 void effacer_position(Carte *carte, Personnage *perso)
@@ -74,9 +75,8 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
     }
 
     textures->brick = NULL;
-    textures->terre = NULL;  // Initialisation de terre à NULL
+    textures->terre = NULL;  
 
-    // Chargement de la texture herbe
     SDL_Surface *surface = IMG_Load("asset/sprit/tiles/herbe.png");
     if (surface == NULL)
     {
@@ -99,9 +99,9 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
         return NULL;
     }
     
-    SDL_FreeSurface(surface);  // Libération de la surface herbe
+
+    SDL_FreeSurface(surface); 
     
-    // Chargement de la texture terre (correction)
     SDL_Surface *surface_terre = IMG_Load("asset/sprit/tiles/terre.png");
     if (surface_terre == NULL)
     {
@@ -110,7 +110,6 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
         if (surface_terre == NULL)
         {
             printf("Erreur: Impossible de charger l'image terre alternative: %s\n", IMG_GetError());
-            // On continue car la texture herbe est déjà chargée
         }
     }
     
@@ -120,7 +119,6 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
         if (textures->terre == NULL)
         {
             printf("Erreur: Impossible de créer la texture de terre: %s\n", SDL_GetError());
-            // On continue car la texture herbe est déjà chargée
         }
         SDL_FreeSurface(surface_terre);
     }
@@ -174,60 +172,7 @@ Animation *loadAnimation(SDL_Renderer *renderer, const char *path, int frameCoun
 
     return animation;
 }
-void loadCoinAnimations(SDL_Renderer *renderer)
-{
-    if (coinAnimation == NULL)
-    {
-        const char *coinPaths[] = {
-            "asset/brackeys_platformer_assets/sprites/coin.png",
-            "asset/sprites/coin.png",
-            "asset/sprit/sprites/coin.png",
-            "asset/coin.png"};
 
-        for (int i = 0; i < 4 && coinAnimation == NULL; i++)
-        {
-            coinAnimation = loadAnimation(renderer, coinPaths[i], 6, 16, 16, 100);
-            if (coinAnimation != NULL)
-            {
-                printf("Animation des pièces chargée avec succès: %s\n", coinPaths[i]);
-            }
-        }
-
-        if (coinAnimation == NULL)
-        {
-            printf("Échec du chargement de l'animation des pièces. Utilisation de la représentation par défaut.\n");
-        }
-    }
-
-    if (starCoinAnimation == NULL)
-    {
-        const char *starCoinPaths[] = {
-            "asset/brackeys_platformer_assets/sprites/starcoin.png",
-            "asset/sprites/starcoin.png",
-            "asset/sprit/sprites/starcoin.png",
-            "asset/starcoin.png",
-            "asset/starcoin.png"};
-
-        for (int i = 0; i < 5 && starCoinAnimation == NULL; i++)
-        {
-            starCoinAnimation = loadAnimation(renderer, starCoinPaths[i], 6, 16, 16, 100);
-            if (starCoinAnimation != NULL)
-            {
-                printf("Animation des pièces étoiles chargée avec succès: %s\n", starCoinPaths[i]);
-            }
-        }
-
-        if (starCoinAnimation == NULL)
-        {
-            starCoinAnimation = loadAnimation(renderer, "asset/starcoin.png", 6, 16, 16, 100);
-            if (starCoinAnimation != NULL)
-            {
-                printf("Animation des pièces étoiles chargée depuis l'image de rotation!\n");
-            }
-        }
-  
-    }
-}
 PlayerAnimations *loadPlayerAnimations(SDL_Renderer *renderer)
 {
     PlayerAnimations *animations = (PlayerAnimations *)malloc(sizeof(PlayerAnimations));
@@ -365,7 +310,6 @@ void loadFlagAnimation(SDL_Renderer *renderer)
         if (flagAnimation == NULL)
         {
             printf("Échec du chargement de l'animation du drapeau. Utilisation de la représentation par défaut.\n");
-            // Création d'une texture de secours si nécessaire
             SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
             if (tempSurface != NULL)
             {
@@ -417,9 +361,9 @@ void renderAnimation(SDL_Renderer *renderer, Animation *animation, int x, int y,
 
     float scaleFactor = 1.0f;
 
-    if (animation == coinAnimation || animation == starCoinAnimation)
+    if (animation == coinAnimation)
     {
-        scaleFactor = 1.5f; 
+        scaleFactor = 1.5f;
     }
 
     int finalWidth = (int)(animation->frameWidth * scaleFactor);
@@ -495,6 +439,41 @@ void afficherScore(SDL_Renderer* renderer, int score) {
     SDL_FreeSurface(textSurface);
 }
 
+void loadCoinAnimations(SDL_Renderer *renderer)
+{
+    if (coinAnimation == NULL)
+    {
+        const char *coinPaths = "asset/brackeys_platformer_assets/sprites/coin.png";
+
+        coinAnimation = loadAnimation(renderer, coinPaths, 6, 16, 16, 100);
+        if (coinAnimation != NULL)
+        {
+            printf("Animation des pièces chargée avec succès: %s\n", coinPaths);
+        }
+        
+
+        if (coinAnimation == NULL)
+        {
+            printf("Échec du chargement de l'animation des pièces. Utilisation de la représentation par défaut.\n");
+        }
+    }
+    
+    if (starCoinAnimation == NULL)
+    {
+        const char *starCoinPaths = "asset/brackeys_platformer_assets/sprites/starcoin.png";
+        
+        starCoinAnimation = loadAnimation(renderer, starCoinPaths, 9, 30, 30, 50);
+        if (starCoinAnimation != NULL) {
+            printf("Animation des star coins chargée avec succès: %s\n", starCoinPaths);
+        }
+        
+
+        if (starCoinAnimation == NULL) {
+            printf("Échec du chargement de l'animation des star coins. Utilisation de la représentation par défaut.\n");
+        }
+    }
+}
+
 void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving, int score)
 {
     int largeurAffichage = 50;
@@ -552,7 +531,7 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
     }
 
     loadCoinAnimations(renderer);
-    loadFlagAnimation(renderer);  // Chargement de l'animation du drapeau
+    loadFlagAnimation(renderer); 
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -623,7 +602,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                 SDL_RenderFillRect(renderer, &tile);
                 break;
             case '!':
-                // Au lieu de dessiner un rectangle, on va animer le drapeau
                 if (flagAnimation != NULL)
                 {
                     updateAnimation(flagAnimation);
@@ -633,7 +611,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                 }
                 else
                 {
-                    // Fallback si l'animation ne peut pas être chargée
                     SDL_SetRenderDrawColor(renderer, 25, 65, 199, 255);
                     SDL_RenderFillRect(renderer, &tile);
                 }
@@ -657,6 +634,9 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
 
     animer_pieces(&tab_pieces);
     afficher_pieces(renderer, &tab_pieces, positionJoueur, debutX);
+    
+    animer_starcoins(&tab_starcoins);
+    afficher_starcoins(renderer, &tab_starcoins, positionJoueur, debutX);
 
     for (int y = 0; y < carte->hauteur; y++)
     {
@@ -795,9 +775,11 @@ void freeAnimation(Animation *animation)
         free(animation);
     }
 }
+
 void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
 {
     liberer_pieces(&tab_pieces);
+    liberer_starcoins(&tab_starcoins);
 
     if (scoreFont != NULL) {
         TTF_CloseFont(scoreFont);
@@ -823,14 +805,12 @@ void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
         globalBackground = NULL;
     }
     
-    // Libération de l'animation du drapeau
     if (flagAnimation != NULL)
     {
         freeAnimation(flagAnimation);
         flagAnimation = NULL;
     }
     
-    // Libération des animations de pièces
     if (coinAnimation != NULL)
     {
         freeAnimation(coinAnimation);

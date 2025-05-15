@@ -113,10 +113,8 @@ typedef struct {
 } PlayerAnimations;
 
 typedef struct {
-    Animation* animation;
     int positionX;
     int positionY;
-    int type; 
     int actif;
 } Piece;
 
@@ -126,11 +124,24 @@ typedef struct {
     int capacity;
 } Tab_piece;
 
+typedef struct {
+    int positionX;
+    int positionY;
+    int actif;
+} StarCoin;
+
+typedef struct {
+    StarCoin* starCoins;
+    int count;
+    int capacity;
+} Tab_starcoins;
+
 extern BackgroundTexture* globalBackground;
 extern GameTextures* gameTextures;
 extern PlayerAnimations* playerAnimations;
 extern Tab_piece tab_pieces;
 extern Animation* coinAnimation;
+extern Tab_starcoins tab_starcoins;
 extern Animation* starCoinAnimation;
 extern TTF_Font* scoreFont;
 extern SDL_Color scoreColor;
@@ -182,7 +193,7 @@ int initGameAudio();
 void cleanupAudio();
 
 GameTextures* loadGameTextures(SDL_Renderer *renderer);
-void freeGameTextures(GameTextures* textures);
+void freeGameTextures(GameTextures *textures);
 
 
 Animation* loadAnimation(SDL_Renderer* renderer, const char* path, int frameCount, int frameWidth, int frameHeight, Uint32 frameDuration);
@@ -192,6 +203,7 @@ void freeAnimation(Animation* animation);
 Animation* loadAnimation(SDL_Renderer* renderer, const char* path, int frameCount, int frameWidth, int frameHeight, Uint32 frameDuration);
 PlayerAnimations* loadPlayerAnimations(SDL_Renderer* renderer);
 void freePlayerAnimations(PlayerAnimations* animations);
+
 void initialiser_pieces(Carte* carte, Tab_piece* tab_piece);
 void animer_pieces(Tab_piece* tab_piece);
 void afficher_pieces(SDL_Renderer* renderer, Tab_piece* tab_piece, int positionJoueur, int debutX);
@@ -200,5 +212,11 @@ void check_collect_piece(Carte* carte, Tab_piece* tab_piece, Personnage* perso);
 
 TTF_Font* initFont();
 void afficherScore(SDL_Renderer* renderer, int score);
+
+void initialiser_starcoins(Carte* carte, Tab_starcoins* tab_starcoins);
+void animer_starcoins(Tab_starcoins* tab_starcoins);
+void afficher_starcoins(SDL_Renderer* renderer, Tab_starcoins* tab_starcoins, int positionJoueur, int debutX);
+void liberer_starcoins(Tab_starcoins* tab_starcoins);
+void check_collect_starcoin(Carte* carte, Tab_starcoins* tab_starcoins, Personnage* perso);
 
 #endif
