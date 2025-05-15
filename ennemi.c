@@ -150,58 +150,6 @@ void initialiserPlante(Carte *carte, Tab_plante *tab_plante)
         tab_plante->count = 0;
     }
 
-    int nbPlantes = 0;
-    for (int y = 0; y < carte->hauteur; y++)
-    {
-        for (int x = 0; x < carte->largeur; x++)
-        {
-            if (carte->carte[y][x] == 'P')
-            {
-                nbPlantes++;
-            }
-        }
-    }
-
-    if (nbPlantes > 0)
-    {
-        tab_plante->count = nbPlantes;
-        tab_plante->plantes = malloc(nbPlantes * sizeof(Plante));
-
-        if (tab_plante->plantes == NULL)
-        {
-            printf("Erreur: allocation de memoire pour les plantes echouee\n");
-            tab_plante->count = 0;
-            return;
-        }
-
-        int index = 0;
-        for (int y = 0; y < carte->hauteur; y++)
-        {
-            for (int x = 0; x < carte->largeur; x++)
-            {
-                if (carte->carte[y][x] == 'P')
-                {
-                    tab_plante->plantes[index].positionX = x;
-                    tab_plante->plantes[index].positionY = y;
-                    tab_plante->plantes[index].positionY_base = y; 
-                    tab_plante->plantes[index].peut_monter = 1;
-                    tab_plante->plantes[index].peut_descendre = 1;
-                    tab_plante->plantes[index].compteur = 0;
-                    tab_plante->plantes[index].etat_tige = 0;
-
-                    if (x > 0 && x < carte->largeur - 1) {
-                        carte->carte[y][x-1] = ']';
-                        carte->carte[y][x] = 'u';
-                        carte->carte[y][x+1] = '[';
-                    }
-
-                    index++;
-                }
-            }
-        }
-        return;
-    }
-
     tab_plante->count = 2;
     tab_plante->plantes = malloc(tab_plante->count * sizeof(Plante));
 
@@ -232,9 +180,7 @@ void initialiserPlante(Carte *carte, Tab_plante *tab_plante)
         tab_plante->plantes[i].etat_tige = 0;
 
         if (tab_x[i] > 0 && tab_x[i] < carte->largeur - 1) {
-            carte->carte[tab_y[i]][tab_x[i]-1] = ']';
-            carte->carte[tab_y[i]][tab_x[i]] = 'u';
-            carte->carte[tab_y[i]][tab_x[i]+1] = '[';
+            carte->carte[tab_y[i]][tab_x[i]] = ']';
         }
     }
 }
@@ -253,21 +199,25 @@ void bougerPlante(Carte *carte, Tab_plante *tab_plante)
 
     for (int i = 0; i < tab_plante->count; i++)
     {
-        int oldY = tab_plante->plantes[i].positionY;
-        int oldX = tab_plante->plantes[i].positionX;
+        int baseX = tab_plante->plantes[i].positionX;
+        int baseY = tab_plante->plantes[i].positionY_base;
+        
+        int trouY = baseY - 4; 
+        
+        for (int y = trouY + 1; y < baseY; y++) {
+            carte->carte[y][baseX] = ' ';
+        }
+        
+        int currentY = tab_plante->plantes[i].positionY;
 
-        carte->carte[oldY][oldX] = ' ';
-
+        carte->carte[baseY][baseX] = ']';
+        
         switch (etat_deplacement[i]) {
             case 0:
-                for (int y = oldY + 1; y <= tab_plante->plantes[i].positionY_base; y++) {
-                    carte->carte[y][oldX] = '|';
-                }
-                
                 montee_delai[i]++;
                 if (montee_delai[i] >= 3) {
                     montee_delai[i] = 0;
-                    if (tab_plante->plantes[i].positionY > 0 && tab_plante->plantes[i].compteur < 2)
+                    if (currentY > baseY - 3 && tab_plante->plantes[i].compteur < 2)
                     {
                         tab_plante->plantes[i].positionY--;
                         tab_plante->plantes[i].compteur++;
@@ -282,9 +232,6 @@ void bougerPlante(Carte *carte, Tab_plante *tab_plante)
                 break;
 
             case 1:
-                for (int y = tab_plante->plantes[i].positionY + 1; y <= tab_plante->plantes[i].positionY_base; y++) {
-                    carte->carte[y][oldX] = '|';
-                }
                 pause_counter[i]++;
                 if (pause_counter[i] >= 25) {
                     pause_counter[i] = 0;
@@ -296,28 +243,21 @@ void bougerPlante(Carte *carte, Tab_plante *tab_plante)
                 descente_delai[i]++;
                 if (descente_delai[i] >= 3) {
                     descente_delai[i] = 0;
-                    if (tab_plante->plantes[i].positionY < tab_plante->plantes[i].positionY_base && tab_plante->plantes[i].compteur > 0)
+                    if (currentY < baseY && tab_plante->plantes[i].compteur > 0)
                     {
-                        for (int y = oldY + 1; y <= tab_plante->plantes[i].positionY_base; y++) {
-                            carte->carte[y][oldX] = '|';
-                        }
                         tab_plante->plantes[i].positionY++;
                         tab_plante->plantes[i].compteur--;
-                        if (tab_plante->plantes[i].positionY == tab_plante->plantes[i].positionY_base) {
+                        if (tab_plante->plantes[i].positionY == baseY) {
                             tab_plante->plantes[i].etat_tige = 0;
                             etat_deplacement[i] = 3; 
                         }
                     } else {
                         etat_deplacement[i] = 3;
                     }
-                } else {
-                    for (int y = oldY + 1; y <= tab_plante->plantes[i].positionY_base; y++) {
-                        carte->carte[y][oldX] = '|';
-                    }
                 }
                 break;
 
-            case 3:
+            case 3: 
                 pause_counter[i]++;
                 if (pause_counter[i] >= 15) {
                     pause_counter[i] = 0;
@@ -326,23 +266,16 @@ void bougerPlante(Carte *carte, Tab_plante *tab_plante)
                 break;
         }
 
-        int newY = tab_plante->plantes[i].positionY;
-        int newX = tab_plante->plantes[i].positionX;
-
-        if (newY >= 0 && newY < carte->hauteur && newX >= 0 && newX < carte->largeur)
-        {
-            carte->carte[newY][newX] = 'u';
-            if (newX > 0 && newX < carte->largeur - 1) {
-                carte->carte[tab_plante->plantes[i].positionY_base][newX-1] = ']';
-                carte->carte[tab_plante->plantes[i].positionY_base][newX+1] = '[';
+        currentY = tab_plante->plantes[i].positionY;
+        
+        if (currentY < baseY) {
+            if (tab_plante->plantes[i].etat_tige == 1) {
+                carte->carte[currentY][baseX] = 'u';
+                
+                for (int y = currentY + 1; y < baseY; y++) {
+                    carte->carte[y][baseX] = '|';
+                }
             }
-            for (int y = newY + 1; y < tab_plante->plantes[i].positionY_base; y++) {
-                carte->carte[y][newX] = '|';
-            }
-        }
-        else
-        {
-            printf("Erreur: Plante %d hors limites!\n", i);
         }
     }
 }
