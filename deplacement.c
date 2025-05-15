@@ -356,6 +356,9 @@ void jouer(const char *fichierTemp, Personnage *perso)
     Tab_plante tab_plante = {NULL, 0};
     initialiserPlante(carte, &tab_plante);
     initialiser_gumbas(carte, &tab_gumba);
+    
+    // Initialiser les pièces avec animation
+    initialiser_pieces(carte, &tab_pieces);
 
     cacherCurseur();
     
@@ -417,6 +420,9 @@ void jouer(const char *fichierTemp, Personnage *perso)
             }
 
             deplacer_joueur(carte, perso, &playerMoving);
+            
+            // Vérifier si le joueur collecte une pièce
+            check_collect_piece(carte, &tab_pieces, perso);
 
             gerer_collisions(carte, perso, &tab_gumba, &tab_plante);
 

@@ -8,6 +8,7 @@
 #include <conio.h>
 #include <time.h>
 #include <ctype.h>
+#include <math.h>
 #include "SDL_image.h"
 #include "SDL.h"
 #include "SDL_ttf.h"
@@ -110,9 +111,26 @@ typedef struct {
     int facingRight;         
 } PlayerAnimations;
 
+typedef struct {
+    Animation* animation;
+    int positionX;
+    int positionY;
+    int type;  // 0 pour pièce normale ('c'), 1 pour pièce étoile ('*')
+    int actif;
+} Piece;
+
+typedef struct {
+    Piece* pieces;
+    int count;
+    int capacity;
+} Tab_piece;
+
 extern BackgroundTexture* globalBackground;
 extern GameTextures* gameTextures;
 extern PlayerAnimations* playerAnimations;
+extern Tab_piece tab_pieces;
+extern Animation* coinAnimation;
+extern Animation* starCoinAnimation;
 
 
 Carte* chargerCarteEnMemoire(const char* fichierCarte);
@@ -171,5 +189,10 @@ void freeAnimation(Animation* animation);
 Animation* loadAnimation(SDL_Renderer* renderer, const char* path, int frameCount, int frameWidth, int frameHeight, Uint32 frameDuration);
 PlayerAnimations* loadPlayerAnimations(SDL_Renderer* renderer);
 void freePlayerAnimations(PlayerAnimations* animations);
+void initialiser_pieces(Carte* carte, Tab_piece* tab_piece);
+void animer_pieces(Tab_piece* tab_piece);
+void afficher_pieces(SDL_Renderer* renderer, Tab_piece* tab_piece, int positionJoueur, int debutX);
+void liberer_pieces(Tab_piece* tab_piece);
+void check_collect_piece(Carte* carte, Tab_piece* tab_piece, Personnage* perso);
 
 #endif
