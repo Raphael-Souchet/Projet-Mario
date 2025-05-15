@@ -1,4 +1,5 @@
 #include "projet.h"
+Animation* flagAnimation = NULL;
 
 void effacer_position(Carte *carte, Personnage *perso)
 {
@@ -73,12 +74,14 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
     }
 
     textures->brick = NULL;
+    textures->terre = NULL;  // Initialisation de terre à NULL
 
-    SDL_Surface *surface = IMG_Load("asset/sprit/tiles/tile_0004.png");
+    // Chargement de la texture herbe
+    SDL_Surface *surface = IMG_Load("asset/sprit/tiles/herbe.png");
     if (surface == NULL)
     {
-        printf("Erreur: Impossible de charger l'image tile_0004.png: %s\n", IMG_GetError());
-        surface = IMG_Load("asset/tiles/tile_0004.png");
+        printf("Erreur: Impossible de charger l'image herbe.png: %s\n", IMG_GetError());
+        surface = IMG_Load("asset/tiles/herbe.png");
         if (surface == NULL)
         {
             printf("Erreur: Impossible de charger l'image alternative: %s\n", IMG_GetError());
@@ -86,7 +89,7 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
             return NULL;
         }
     }
-
+    
     textures->brick = SDL_CreateTextureFromSurface(renderer, surface);
     if (textures->brick == NULL)
     {
@@ -95,7 +98,7 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
         free(textures);
         return NULL;
     }
-    
+
     SDL_FreeSurface(surface);
 
     return textures;
@@ -105,12 +108,16 @@ void freeGameTextures(GameTextures *textures)
 {
     if (textures != NULL)
     {
-        if (textures->brick != NULL)
+        textures->terre = SDL_CreateTextureFromSurface(renderer, surface_terre);
+        if (textures->terre == NULL)
         {
-            SDL_DestroyTexture(textures->brick);
+            printf("Erreur: Impossible de créer la texture de terre: %s\n", SDL_GetError());
+            // On continue car la texture herbe est déjà chargée
         }
-        free(textures);
+        SDL_FreeSurface(surface_terre);
     }
+
+    return textures;
 }
 
 void cacherCurseur()
@@ -273,7 +280,54 @@ PlayerAnimations *loadPlayerAnimations(SDL_Renderer *renderer)
 
     return animations;
 }
+void loadFlagAnimation(SDL_Renderer *renderer)
+{
+    if (flagAnimation == NULL)
+    {
+        const char *flagPaths[] = {
+            "C:/Users/duber/cours L1/programation/mario_vscode/Projet-Mario/asset/Rocky Roads/Objects/flag.png",
+            "asset/Rocky Roads/Objects/flag.png",
+            "asset/sprit/objects/flag.png",
+            "asset/flag.png"
+        };
 
+        for (int i = 0; i < 4 && flagAnimation == NULL; i++)
+        {
+            flagAnimation = loadAnimation(renderer, flagPaths[i], 4, 32, 32, 200);
+            if (flagAnimation != NULL)
+            {
+                printf("Animation du drapeau chargée avec succès: %s\n", flagPaths[i]);
+                break;
+            }
+        }
+
+        if (flagAnimation == NULL)
+        {
+            printf("Échec du chargement de l'animation du drapeau. Utilisation de la représentation par défaut.\n");
+            // Création d'une texture de secours si nécessaire
+            SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
+            if (tempSurface != NULL)
+            {
+                SDL_FillRect(tempSurface, NULL, SDL_MapRGB(tempSurface->format, 0, 100, 255));
+                
+                flagAnimation = (Animation *)malloc(sizeof(Animation));
+                if (flagAnimation != NULL)
+                {
+                    flagAnimation->texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
+                    flagAnimation->frameCount = 1;
+                    flagAnimation->currentFrame = 0;
+                    flagAnimation->frameWidth = 32;
+                    flagAnimation->frameHeight = 32;
+                    flagAnimation->frameDuration = 200;
+                    flagAnimation->lastFrameTime = SDL_GetTicks();
+                    
+                    printf("Animation de drapeau de secours créée\n");
+                }
+                SDL_FreeSurface(tempSurface);
+            }
+        }
+    }
+}
 void updateAnimation(Animation *animation)
 {
     if (animation == NULL)
@@ -525,6 +579,7 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
     }
 
     loadCoinAnimations(renderer);
+    loadFlagAnimation(renderer);  // Chargement de l'animation du drapeau
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -595,8 +650,31 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                 SDL_RenderFillRect(renderer, &tile);
                 break;
             case '!':
-                SDL_SetRenderDrawColor(renderer, 25, 65, 199, 255);
-                SDL_RenderFillRect(renderer, &tile);
+                // Au lieu de dessiner un rectangle, on va animer le drapeau
+                if (flagAnimation != NULL)
+                {
+                    updateAnimation(flagAnimation);
+                    int screenX = (x - debutX) * TILE_SIZE + (TILE_SIZE / 2);
+                    int screenY = y * TILE_SIZE + TILE_SIZE;
+                    renderAnimation(renderer, flagAnimation, screenX, screenY, 0);
+                }
+                else
+                {
+                    // Fallback si l'animation ne peut pas être chargée
+                    SDL_SetRenderDrawColor(renderer, 25, 65, 199, 255);
+                    SDL_RenderFillRect(renderer, &tile);
+                }
+                break;
+            case 'd':
+                if (gameTextures != NULL && gameTextures->terre != NULL)
+                {
+                    SDL_RenderCopy(renderer, gameTextures->terre, NULL, &tile);
+                }
+                else
+                {
+                    SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255);
+                    SDL_RenderFillRect(renderer, &tile);
+                }
                 break;
             default:
                 break;
@@ -662,6 +740,59 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
     afficherScore(renderer, score);
 }
 
+void freePlayerAnimations(PlayerAnimations *animations)
+{
+    if (animations != NULL)
+    {
+        if (animations->idle != NULL)
+        {
+            if (animations->idle->texture != NULL &&
+                (animations->idle_left == NULL || animations->idle->texture != animations->idle_left->texture) &&
+                (animations->run == NULL || animations->idle->texture != animations->run->texture) &&
+                (animations->run_left == NULL || animations->idle->texture != animations->run_left->texture))
+            {
+                SDL_DestroyTexture(animations->idle->texture);
+            }
+            free(animations->idle);
+        }
+
+        if (animations->idle_left != NULL && animations->idle_left != animations->idle)
+        {
+            if (animations->idle_left->texture != NULL &&
+                (animations->run == NULL || animations->idle_left->texture != animations->run->texture) &&
+                (animations->run_left == NULL || animations->idle_left->texture != animations->run_left->texture))
+            {
+                SDL_DestroyTexture(animations->idle_left->texture);
+            }
+            free(animations->idle_left);
+        }
+
+        if (animations->run != NULL && animations->run != animations->idle && animations->run != animations->idle_left)
+        {
+            if (animations->run->texture != NULL &&
+                (animations->run_left == NULL || animations->run->texture != animations->run_left->texture))
+            {
+                SDL_DestroyTexture(animations->run->texture);
+            }
+            free(animations->run);
+        }
+
+        if (animations->run_left != NULL &&
+            animations->run_left != animations->idle &&
+            animations->run_left != animations->idle_left &&
+            animations->run_left != animations->run)
+        {
+            if (animations->run_left->texture != NULL)
+            {
+                SDL_DestroyTexture(animations->run_left->texture);
+            }
+            free(animations->run_left);
+        }
+
+        free(animations);
+    }
+}
+
 void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
 {
     liberer_pieces(&tab_pieces);
@@ -691,6 +822,26 @@ void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
         freeBackgroundTexture(globalBackground);
         globalBackground = NULL;
     }
+    
+    // Libération de l'animation du drapeau
+    if (flagAnimation != NULL)
+    {
+        freeAnimation(flagAnimation);
+        flagAnimation = NULL;
+    }
+    
+    // Libération des animations de pièces
+    if (coinAnimation != NULL)
+    {
+        freeAnimation(coinAnimation);
+        coinAnimation = NULL;
+    }
+    
+    if (starCoinAnimation != NULL)
+    {
+        freeAnimation(starCoinAnimation);
+        starCoinAnimation = NULL;
+    }
 
     if (renderer != NULL)
     {
@@ -702,16 +853,4 @@ void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
     }
 
     SDL_Quit();
-}
-
-void freeAnimation(Animation *animation)
-{
-    if (animation != NULL)
-    {
-        if (animation->texture != NULL)
-        {
-            SDL_DestroyTexture(animation->texture);
-        }
-        free(animation);
-    }
 }
