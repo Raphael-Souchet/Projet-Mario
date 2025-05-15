@@ -7,6 +7,10 @@ const int SPAWN_MORT_X = 21;
 const int SPAWN_MORT_Y = 14;
 const int MORT_Y = 19;
 
+BackgroundTexture* globalBackground = NULL;
+GameTextures* gameTextures = NULL;
+PlayerAnimations* playerAnimations = NULL;
+
 int main(int argc, char *argv[])
 {
     const char *fichierOriginal = "Mario.txt";

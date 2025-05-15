@@ -134,12 +134,6 @@ extern Animation* starCoinAnimation;
 extern TTF_Font* scoreFont;
 extern SDL_Color scoreColor;
 
-
-BackgroundTexture* globalBackground = NULL;
-GameTextures* gameTextures = NULL;
-PlayerAnimations* playerAnimations = NULL;
-
-
 Carte* chargerCarteEnMemoire(const char* fichierCarte);
 void libererCarte(Carte* carte);
 int sauvegarderCarteVersFichier(Carte* carte, const char* fichierCarte);
