@@ -2,13 +2,12 @@
 
 Tab_piece tab_pieces = {NULL, 0, 0};
 Animation* coinAnimation = NULL;
-Animation* starCoinAnimation = NULL;
 
 void initialiser_pieces(Carte* carte, Tab_piece* tab_piece) {
     int nb_pieces = 0;
     for (int y = 0; y < carte->hauteur; y++) {
         for (int x = 0; x < carte->largeur; x++) {
-            if (carte->carte[y][x] == 'c' || carte->carte[y][x] == '*') {
+            if (carte->carte[y][x] == 'c') {
                 nb_pieces++;
             }
         }
@@ -25,10 +24,9 @@ void initialiser_pieces(Carte* carte, Tab_piece* tab_piece) {
     
     for (int y = 0; y < carte->hauteur; y++) {
         for (int x = 0; x < carte->largeur; x++) {
-            if (carte->carte[y][x] == 'c' || carte->carte[y][x] == '*') {
+            if (carte->carte[y][x] == 'c') {
                 tab_piece->pieces[tab_piece->count].positionX = x;
                 tab_piece->pieces[tab_piece->count].positionY = y;
-                tab_piece->pieces[tab_piece->count].type = (carte->carte[y][x] == '*') ? 1 : 0;
                 tab_piece->pieces[tab_piece->count].actif = 1;
                 tab_piece->count++;
             }
@@ -39,10 +37,6 @@ void initialiser_pieces(Carte* carte, Tab_piece* tab_piece) {
 void animer_pieces(Tab_piece* tab_piece) {
     if (coinAnimation != NULL) {
         updateAnimation(coinAnimation);
-    }
-    
-    if (starCoinAnimation != NULL) {
-        updateAnimation(starCoinAnimation);
     }
 }
 
@@ -57,13 +51,11 @@ void afficher_pieces(SDL_Renderer* renderer, Tab_piece* tab_piece, int positionJ
         int pieceY = tab_piece->pieces[i].positionY;
         
         if (pieceX >= debutX && pieceX < finX) {
-            Animation* currentAnimation = (tab_piece->pieces[i].type == 1) ? starCoinAnimation : coinAnimation;
-            
-            if (currentAnimation != NULL) {
+            if (coinAnimation != NULL) {
                 int screenX = (pieceX - debutX) * TILE_SIZE + (TILE_SIZE / 2);
                 int screenY = pieceY * TILE_SIZE + (TILE_SIZE / 2);
                 
-                renderAnimation(renderer, currentAnimation, screenX, screenY, 0);
+                renderAnimation(renderer, coinAnimation, screenX, screenY, 0);
             } else {
                 SDL_Rect tile = {
                     (pieceX - debutX) * TILE_SIZE,
@@ -72,12 +64,7 @@ void afficher_pieces(SDL_Renderer* renderer, Tab_piece* tab_piece, int positionJ
                     TILE_SIZE
                 };
                 
-                if (tab_piece->pieces[i].type == 1) {
-                    SDL_SetRenderDrawColor(renderer, 241, 255, 65, 255);
-                } else {
-                    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);   
-                }
-                
+                SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
                 SDL_RenderFillRect(renderer, &tile);
             }
         }
@@ -96,11 +83,6 @@ void liberer_pieces(Tab_piece* tab_piece) {
         freeAnimation(coinAnimation);
         coinAnimation = NULL;
     }
-    
-    if (starCoinAnimation != NULL) {
-        freeAnimation(starCoinAnimation);
-        starCoinAnimation = NULL;
-    }
 }
 
 void check_collect_piece(Carte* carte, Tab_piece* tab_piece, Personnage* perso) {
@@ -110,16 +92,108 @@ void check_collect_piece(Carte* carte, Tab_piece* tab_piece, Personnage* perso) 
             tab_piece->pieces[i].positionY == perso->positionY) {
             
             tab_piece->pieces[i].actif = 0;
-            
-            if (tab_piece->pieces[i].type == 1) {
-                perso->score += 5; 
-                playSoundEffect("asset/sound/piece_etoile.wav", 40);
-            } else {
-                perso->score += 1; 
-                playSoundEffect("asset/sound/coin.wav", 40);
-            }
-            
+            perso->score += 1;
+            playSoundEffect("asset/sound/coin.wav", 40);
             carte->carte[tab_piece->pieces[i].positionY][tab_piece->pieces[i].positionX] = 'M';
+        }
+    }
+}
+
+Tab_starcoins tab_starcoins = {NULL, 0, 0};
+Animation* starCoinAnimation = NULL;
+
+void initialiser_starcoins(Carte* carte, Tab_starcoins* tab_starcoins) {
+    int nb_starcoins = 0;
+    for (int y = 0; y < carte->hauteur; y++) {
+        for (int x = 0; x < carte->largeur; x++) {
+            if (carte->carte[y][x] == '*') { 
+                nb_starcoins++;
+            }
+        }
+    }
+    
+    tab_starcoins->capacity = nb_starcoins + 5; 
+    tab_starcoins->starCoins = (StarCoin*)malloc(sizeof(StarCoin) * tab_starcoins->capacity);
+    tab_starcoins->count = 0;
+    
+    if (tab_starcoins->starCoins == NULL) {
+        printf("Erreur: impossible d'allouer la mémoire pour les star coins\n");
+        return;
+    }
+    
+    for (int y = 0; y < carte->hauteur; y++) {
+        for (int x = 0; x < carte->largeur; x++) {
+            if (carte->carte[y][x] == '*') {
+                tab_starcoins->starCoins[tab_starcoins->count].positionX = x;
+                tab_starcoins->starCoins[tab_starcoins->count].positionY = y;
+                tab_starcoins->starCoins[tab_starcoins->count].actif = 1;
+                tab_starcoins->count++;
+            }
+        }
+    }
+}
+
+void animer_starcoins(Tab_starcoins* tab_starcoins) {
+    if (starCoinAnimation != NULL) {
+        updateAnimation(starCoinAnimation);
+    }
+}
+
+void afficher_starcoins(SDL_Renderer* renderer, Tab_starcoins* tab_starcoins, int positionJoueur, int debutX) {
+    int largeurAffichage = 50;
+    int finX = debutX + largeurAffichage;
+
+    for (int i = 0; i < tab_starcoins->count; i++) {
+        if (!tab_starcoins->starCoins[i].actif) continue;
+        
+        int starX = tab_starcoins->starCoins[i].positionX;
+        int starY = tab_starcoins->starCoins[i].positionY;
+        
+        if (starX >= debutX && starX < finX) {
+            if (starCoinAnimation != NULL) {
+                int screenX = (starX - debutX) * TILE_SIZE + (TILE_SIZE / 2);
+                int screenY = starY * TILE_SIZE + (TILE_SIZE / 2);
+                
+                renderAnimation(renderer, starCoinAnimation, screenX, screenY, 0);
+            } else {
+                SDL_Rect tile = {
+                    (starX - debutX) * TILE_SIZE,
+                    starY * TILE_SIZE,
+                    TILE_SIZE,
+                    TILE_SIZE
+                };
+                
+                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                SDL_RenderFillRect(renderer, &tile);
+            }
+        }
+    }
+}
+
+void liberer_starcoins(Tab_starcoins* tab_starcoins) {
+    if (tab_starcoins->starCoins != NULL) {
+        free(tab_starcoins->starCoins);
+        tab_starcoins->starCoins = NULL;
+    }
+    tab_starcoins->count = 0;
+    tab_starcoins->capacity = 0;
+    
+    if (starCoinAnimation != NULL) {
+        freeAnimation(starCoinAnimation);
+        starCoinAnimation = NULL;
+    }
+}
+
+void check_collect_starcoin(Carte* carte, Tab_starcoins* tab_starcoins, Personnage* perso) {
+    for (int i = 0; i < tab_starcoins->count; i++) {
+        if (tab_starcoins->starCoins[i].actif && 
+            tab_starcoins->starCoins[i].positionX == perso->positionX && 
+            tab_starcoins->starCoins[i].positionY == perso->positionY) {
+            
+            tab_starcoins->starCoins[i].actif = 0;
+            perso->score += 5;  // Une star coin vaut plus que les pièces normales
+            playSoundEffect("asset/sound/starcoin.wav", 50);  // Son différent et plus fort
+            carte->carte[tab_starcoins->starCoins[i].positionY][tab_starcoins->starCoins[i].positionX] = 'M';
         }
     }
 }

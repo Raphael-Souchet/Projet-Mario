@@ -374,7 +374,8 @@ void jouer(const char *fichierTemp, Personnage *perso)
     initialiser_gumbas(carte, &tab_gumba);
     
     initialiser_pieces(carte, &tab_pieces);
-
+    initialiser_starcoins(carte, &tab_starcoins);
+    
     cacherCurseur();
     
     int quit = 0;
@@ -437,6 +438,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
             deplacer_joueur(carte, perso, &playerMoving);
             
             check_collect_piece(carte, &tab_pieces, perso);
+            check_collect_starcoin(carte, &tab_starcoins, perso);
 
             gerer_collisions(carte, perso, &tab_gumba, &tab_plante);
 

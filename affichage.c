@@ -95,7 +95,7 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
         free(textures);
         return NULL;
     }
-
+    
     SDL_FreeSurface(surface);
 
     return textures;
@@ -159,60 +159,7 @@ Animation *loadAnimation(SDL_Renderer *renderer, const char *path, int frameCoun
 
     return animation;
 }
-void loadCoinAnimations(SDL_Renderer *renderer)
-{
-    if (coinAnimation == NULL)
-    {
-        const char *coinPaths[] = {
-            "asset/brackeys_platformer_assets/sprites/coin.png",
-            "asset/sprites/coin.png",
-            "asset/sprit/sprites/coin.png",
-            "asset/coin.png"};
 
-        for (int i = 0; i < 4 && coinAnimation == NULL; i++)
-        {
-            coinAnimation = loadAnimation(renderer, coinPaths[i], 6, 16, 16, 100);
-            if (coinAnimation != NULL)
-            {
-                printf("Animation des pièces chargée avec succès: %s\n", coinPaths[i]);
-            }
-        }
-
-        if (coinAnimation == NULL)
-        {
-            printf("Échec du chargement de l'animation des pièces. Utilisation de la représentation par défaut.\n");
-        }
-    }
-
-    if (starCoinAnimation == NULL)
-    {
-        const char *starCoinPaths[] = {
-            "asset/brackeys_platformer_assets/sprites/starcoin.png",
-            "asset/sprites/starcoin.png",
-            "asset/sprit/sprites/starcoin.png",
-            "asset/starcoin.png",
-            "asset/starcoin.png"};
-
-        for (int i = 0; i < 5 && starCoinAnimation == NULL; i++)
-        {
-            starCoinAnimation = loadAnimation(renderer, starCoinPaths[i], 6, 16, 16, 100);
-            if (starCoinAnimation != NULL)
-            {
-                printf("Animation des pièces étoiles chargée avec succès: %s\n", starCoinPaths[i]);
-            }
-        }
-
-        if (starCoinAnimation == NULL)
-        {
-            starCoinAnimation = loadAnimation(renderer, "asset/starcoin.png", 6, 16, 16, 100);
-            if (starCoinAnimation != NULL)
-            {
-                printf("Animation des pièces étoiles chargée depuis l'image de rotation!\n");
-            }
-        }
-  
-    }
-}
 PlayerAnimations *loadPlayerAnimations(SDL_Renderer *renderer)
 {
     PlayerAnimations *animations = (PlayerAnimations *)malloc(sizeof(PlayerAnimations));
@@ -355,9 +302,9 @@ void renderAnimation(SDL_Renderer *renderer, Animation *animation, int x, int y,
 
     float scaleFactor = 1.0f;
 
-    if (animation == coinAnimation || animation == starCoinAnimation)
+    if (animation == coinAnimation)
     {
-        scaleFactor = 1.5f; 
+        scaleFactor = 1.5f;
     }
 
     int finalWidth = (int)(animation->frameWidth * scaleFactor);
@@ -431,6 +378,94 @@ void afficherScore(SDL_Renderer* renderer, int score) {
     
     SDL_DestroyTexture(textTexture);
     SDL_FreeSurface(textSurface);
+}
+
+void freePlayerAnimations(PlayerAnimations *animations)
+{
+    if (animations != NULL)
+    {
+        if (animations->idle != NULL)
+        {
+            if (animations->idle->texture != NULL &&
+                (animations->idle_left == NULL || animations->idle->texture != animations->idle_left->texture) &&
+                (animations->run == NULL || animations->idle->texture != animations->run->texture) &&
+                (animations->run_left == NULL || animations->idle->texture != animations->run_left->texture))
+            {
+                SDL_DestroyTexture(animations->idle->texture);
+            }
+            free(animations->idle);
+        }
+
+        if (animations->idle_left != NULL && animations->idle_left != animations->idle)
+        {
+            if (animations->idle_left->texture != NULL &&
+                (animations->run == NULL || animations->idle_left->texture != animations->run->texture) &&
+                (animations->run_left == NULL || animations->idle_left->texture != animations->run_left->texture))
+            {
+                SDL_DestroyTexture(animations->idle_left->texture);
+            }
+            free(animations->idle_left);
+        }
+
+        if (animations->run != NULL && animations->run != animations->idle && animations->run != animations->idle_left)
+        {
+            if (animations->run->texture != NULL &&
+                (animations->run_left == NULL || animations->run->texture != animations->run_left->texture))
+            {
+                SDL_DestroyTexture(animations->run->texture);
+            }
+            free(animations->run);
+        }
+
+        if (animations->run_left != NULL &&
+            animations->run_left != animations->idle &&
+            animations->run_left != animations->idle_left &&
+            animations->run_left != animations->run)
+        {
+            if (animations->run_left->texture != NULL)
+            {
+                SDL_DestroyTexture(animations->run_left->texture);
+            }
+            free(animations->run_left);
+        }
+
+        free(animations);
+    }
+}
+
+void loadCoinAnimations(SDL_Renderer *renderer)
+{
+    if (coinAnimation == NULL)
+    {
+        const char *coinPaths = "asset/brackeys_platformer_assets/sprites/coin.png";
+
+        coinAnimation = loadAnimation(renderer, coinPaths, 6, 16, 16, 100);
+        if (coinAnimation != NULL)
+        {
+            printf("Animation des pièces chargée avec succès: %s\n", coinPaths);
+        }
+        
+
+        if (coinAnimation == NULL)
+        {
+            printf("Échec du chargement de l'animation des pièces. Utilisation de la représentation par défaut.\n");
+        }
+    }
+    
+    if (starCoinAnimation == NULL)
+    {
+        const char *starCoinPaths = "asset/brackeys_platformer_assets/sprites/starcoin.png";
+        
+        starCoinAnimation = loadAnimation(renderer, starCoinPaths, 9, 30, 30, 50);
+        if (starCoinAnimation != NULL) {
+            printf("Animation des star coins chargée avec succès: %s\n", starCoinPaths);
+        }
+        
+
+        if (starCoinAnimation == NULL) {
+            printf("Échec du chargement de l'animation des star coins. Utilisation de la représentation par défaut.\n");
+        }
+    }
 }
 
 void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving, int score)
@@ -571,6 +606,10 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
 
     animer_pieces(&tab_pieces);
     afficher_pieces(renderer, &tab_pieces, positionJoueur, debutX);
+    
+    // Ajout de l'animation et de l'affichage des star coins
+    animer_starcoins(&tab_starcoins);
+    afficher_starcoins(renderer, &tab_starcoins, positionJoueur, debutX);
 
     for (int y = 0; y < carte->hauteur; y++)
     {
@@ -623,62 +662,11 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
     afficherScore(renderer, score);
 }
 
-void freePlayerAnimations(PlayerAnimations *animations)
-{
-    if (animations != NULL)
-    {
-        if (animations->idle != NULL)
-        {
-            if (animations->idle->texture != NULL &&
-                (animations->idle_left == NULL || animations->idle->texture != animations->idle_left->texture) &&
-                (animations->run == NULL || animations->idle->texture != animations->run->texture) &&
-                (animations->run_left == NULL || animations->idle->texture != animations->run_left->texture))
-            {
-                SDL_DestroyTexture(animations->idle->texture);
-            }
-            free(animations->idle);
-        }
-
-        if (animations->idle_left != NULL && animations->idle_left != animations->idle)
-        {
-            if (animations->idle_left->texture != NULL &&
-                (animations->run == NULL || animations->idle_left->texture != animations->run->texture) &&
-                (animations->run_left == NULL || animations->idle_left->texture != animations->run_left->texture))
-            {
-                SDL_DestroyTexture(animations->idle_left->texture);
-            }
-            free(animations->idle_left);
-        }
-
-        if (animations->run != NULL && animations->run != animations->idle && animations->run != animations->idle_left)
-        {
-            if (animations->run->texture != NULL &&
-                (animations->run_left == NULL || animations->run->texture != animations->run_left->texture))
-            {
-                SDL_DestroyTexture(animations->run->texture);
-            }
-            free(animations->run);
-        }
-
-        if (animations->run_left != NULL &&
-            animations->run_left != animations->idle &&
-            animations->run_left != animations->idle_left &&
-            animations->run_left != animations->run)
-        {
-            if (animations->run_left->texture != NULL)
-            {
-                SDL_DestroyTexture(animations->run_left->texture);
-            }
-            free(animations->run_left);
-        }
-
-        free(animations);
-    }
-}
-
 void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
 {
     liberer_pieces(&tab_pieces);
+    // Ajout de la libération des star coins
+    liberer_starcoins(&tab_starcoins);
 
     if (scoreFont != NULL) {
         TTF_CloseFont(scoreFont);
