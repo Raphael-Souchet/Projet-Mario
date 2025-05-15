@@ -76,12 +76,14 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
 
     textures->brick = NULL;
     textures->terre = NULL;  
+    textures->tuyau = NULL;
+    textures->plante = NULL;  
 
-    SDL_Surface *surface = IMG_Load("asset/sprit/tiles/herbe.png");
+    SDL_Surface *surface = IMG_Load("asset/sprit/Tiles/herbe.png");
     if (surface == NULL)
     {
         printf("Erreur: Impossible de charger l'image herbe.png: %s\n", IMG_GetError());
-        surface = IMG_Load("asset/tiles/herbe.png");
+        surface = IMG_Load("asset/Tiles/herbe.png");
         if (surface == NULL)
         {
             printf("Erreur: Impossible de charger l'image alternative: %s\n", IMG_GetError());
@@ -102,11 +104,11 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
 
     SDL_FreeSurface(surface); 
     
-    SDL_Surface *surface_terre = IMG_Load("asset/sprit/tiles/terre.png");
+    SDL_Surface *surface_terre = IMG_Load("asset/sprit/Tiles/terre.png");
     if (surface_terre == NULL)
     {
         printf("Erreur: Impossible de charger l'image terre.png: %s\n", IMG_GetError());
-        surface_terre = IMG_Load("asset/tiles/terre.png");
+        surface_terre = IMG_Load("asset/Tiles/terre.png");
         if (surface_terre == NULL)
         {
             printf("Erreur: Impossible de charger l'image terre alternative: %s\n", IMG_GetError());
@@ -121,6 +123,48 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
             printf("Erreur: Impossible de créer la texture de terre: %s\n", SDL_GetError());
         }
         SDL_FreeSurface(surface_terre);
+    }
+
+    SDL_Surface *surface_tuyau = IMG_Load("asset/Tiles/tuyau.png");
+    if (surface_tuyau == NULL)
+    {
+        printf("Erreur: Impossible de charger l'image tuyau.png: %s\n", IMG_GetError());
+        surface_terre = IMG_Load("asset/Tiles/tuyau.png");
+        if (surface_tuyau == NULL)
+        {
+            printf("Erreur: Impossible de charger l'image tuyau alternative: %s\n", IMG_GetError());
+        }
+    }
+    
+    if (surface_tuyau != NULL)
+    {
+        textures->tuyau = SDL_CreateTextureFromSurface(renderer, surface_tuyau);
+        if (textures->tuyau == NULL)
+        {
+            printf("Erreur: Impossible de créer la texture de tuyau: %s\n", SDL_GetError());
+        }
+        SDL_FreeSurface(surface_tuyau);
+    }
+
+    SDL_Surface *surface_plante = IMG_Load("asset/Tiles/plante.png");
+    if (surface_plante == NULL)
+    {
+        printf("Erreur: Impossible de charger l'image plante.png: %s\n", IMG_GetError());
+        surface_plante = IMG_Load("asset/Tiles/plante.png");
+        if (surface_plante == NULL)
+        {
+            printf("Erreur: Impossible de charger l'image plante alternative: %s\n", IMG_GetError());
+        }
+    }
+    
+    if (surface_plante != NULL)
+    {
+        textures->plante = SDL_CreateTextureFromSurface(renderer, surface_plante);
+        if (textures->plante == NULL)
+        {
+            printf("Erreur: Impossible de créer la texture de plante: %s\n", SDL_GetError());
+        }
+        SDL_FreeSurface(surface_plante);
     }
 
     return textures;
@@ -474,6 +518,47 @@ void loadCoinAnimations(SDL_Renderer *renderer)
     }
 }
 
+Animation* carnivoreAnimation = NULL;
+
+void loadCarnivoreAnimation(SDL_Renderer *renderer)
+{
+    if (carnivoreAnimation == NULL)
+    {
+        const char *carnivorePaths = "asset/Tiles/carnivore.png";
+
+        carnivoreAnimation = loadAnimation(renderer, carnivorePaths, 2, 25, 25, 250);
+        if (carnivoreAnimation != NULL)
+        {
+            printf("Animation de la plante carnivore chargée avec succès: %s\n", carnivorePaths);
+        }
+
+        if (carnivoreAnimation == NULL)
+        {
+            printf("Échec du chargement de l'animation de la plante carnivore. Utilisation de la représentation par défaut.\n");
+            SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
+            if (tempSurface != NULL)
+            {
+                SDL_FillRect(tempSurface, NULL, SDL_MapRGB(tempSurface->format, 255, 0, 0));
+                
+                carnivoreAnimation = (Animation *)malloc(sizeof(Animation));
+                if (carnivoreAnimation != NULL)
+                {
+                    carnivoreAnimation->texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
+                    carnivoreAnimation->frameCount = 2;
+                    carnivoreAnimation->currentFrame = 0;
+                    carnivoreAnimation->frameWidth = 32;
+                    carnivoreAnimation->frameHeight = 32;
+                    carnivoreAnimation->frameDuration = 500;
+                    carnivoreAnimation->lastFrameTime = SDL_GetTicks();
+                    
+                    printf("Animation de plante carnivore de secours créée\n");
+                }
+                SDL_FreeSurface(tempSurface);
+            }
+        }
+    }
+}
+
 void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving, int score)
 {
     int largeurAffichage = 50;
@@ -532,6 +617,7 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
 
     loadCoinAnimations(renderer);
     loadFlagAnimation(renderer); 
+    loadCarnivoreAnimation(renderer);
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -589,17 +675,40 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                 SDL_RenderFillRect(renderer, &tile);
                 break;
             case ']':
-            case '[':
-                SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255);
-                SDL_RenderFillRect(renderer, &tile);
+                if (gameTextures != NULL && gameTextures->tuyau != NULL)
+                {
+                    SDL_RenderCopy(renderer, gameTextures->tuyau, NULL, &tile);
+                }
+                else
+                {
+                    SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255);
+                    SDL_RenderFillRect(renderer, &tile);
+                }
                 break;
             case 'u':
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-                SDL_RenderFillRect(renderer, &tile);
+                if (carnivoreAnimation != NULL)
+                {
+                    updateAnimation(carnivoreAnimation);
+                    int screenX = (x - debutX) * TILE_SIZE + (TILE_SIZE / 2);
+                    int screenY = y * TILE_SIZE + TILE_SIZE;
+                    renderAnimation(renderer, carnivoreAnimation, screenX, screenY, 0);
+                }
+                else
+                {
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                    SDL_RenderFillRect(renderer, &tile);
+                }
                 break;
             case '|':
-                SDL_SetRenderDrawColor(renderer, 144, 238, 144, 255);
-                SDL_RenderFillRect(renderer, &tile);
+                if (gameTextures != NULL && gameTextures->plante != NULL)
+                {
+                    SDL_RenderCopy(renderer, gameTextures->plante, NULL, &tile);
+                }
+                else
+                {
+                    SDL_SetRenderDrawColor(renderer, 144, 238, 144, 255);
+                    SDL_RenderFillRect(renderer, &tile);
+                }
                 break;
             case '!':
                 if (flagAnimation != NULL)
@@ -741,6 +850,16 @@ void freePlayerAnimations(PlayerAnimations *animations)
         free(animations);
     }
 }
+
+void freeCarnivoreAnimation()
+{
+    if (carnivoreAnimation != NULL)
+    {
+        freeAnimation(carnivoreAnimation);
+        carnivoreAnimation = NULL;
+    }
+}
+
 void freeGameTextures(GameTextures *textures)
 {
     if (textures != NULL)
@@ -821,6 +940,12 @@ void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
     {
         freeAnimation(starCoinAnimation);
         starCoinAnimation = NULL;
+    }
+
+    if (carnivoreAnimation != NULL)
+    {
+        freeAnimation(carnivoreAnimation);
+        carnivoreAnimation = NULL;
     }
 
     if (renderer != NULL)
