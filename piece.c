@@ -191,8 +191,8 @@ void check_collect_starcoin(Carte* carte, Tab_starcoins* tab_starcoins, Personna
             tab_starcoins->starCoins[i].positionY == perso->positionY) {
             
             tab_starcoins->starCoins[i].actif = 0;
-            perso->score += 5;  // Une star coin vaut plus que les pièces normales
-            playSoundEffect("asset/sound/starcoin.wav", 50);  // Son différent et plus fort
+            perso->score += 5;  
+            playSoundEffect("asset/sound/starcoin.wav", 50);
             carte->carte[tab_starcoins->starCoins[i].positionY][tab_starcoins->starCoins[i].positionX] = 'M';
         }
     }

@@ -193,7 +193,7 @@ int initGameAudio();
 void cleanupAudio();
 
 GameTextures* loadGameTextures(SDL_Renderer *renderer);
-void freeGameTextures(GameTextures* textures);
+void freeGameTextures(GameTextures *textures);
 
 
 Animation* loadAnimation(SDL_Renderer* renderer, const char* path, int frameCount, int frameWidth, int frameHeight, Uint32 frameDuration);
