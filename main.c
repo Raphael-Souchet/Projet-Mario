@@ -7,9 +7,13 @@ const int SPAWN_MORT_X = 21;
 const int SPAWN_MORT_Y = 14;
 const int MORT_Y = 19;
 
-BackgroundTexture* globalBackground = NULL;
 GameTextures* gameTextures = NULL;
+Animation* carnivoreAnimation = NULL;
 PlayerAnimations* playerAnimations = NULL;
+Animation* flagAnimation = NULL;
+BackgroundTexture* globalBackground = NULL;
+TTF_Font* scoreFont = NULL;
+SDL_Color scoreColor = {255, 255, 255, 255};
 
 int main(int argc, char *argv[])
 {
