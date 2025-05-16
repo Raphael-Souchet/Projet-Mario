@@ -166,20 +166,34 @@ void chargerProgression(Progression* progression) {
     }
 }
 
-void sauvegarderProgression(int nouveauNiveauDebloque)
+void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
 {
-    FILE *fichier = fopen("sauvegarde/progression.dat", "wb");
+    SauvegardeInfo saves[100];
+    int nbSaves = lireSauvegardesExistant(saves, 100);
     
-    if (fichier != NULL) {
-        fwrite(&nouveauNiveauDebloque, sizeof(int), 1, fichier);
-        fclose(fichier);
-    } else {
-        mkdir("sauvegarde");
-        fichier = fopen("sauvegarde/progression.dat", "wb");
-        if (fichier != NULL) {
-            fwrite(&nouveauNiveauDebloque, sizeof(int), 1, fichier);
-            fclose(fichier);
+    // Mettre à jour la progression pour le joueur actuel
+    for(int i = 0; i < nbSaves; i++) {
+        if(strcmp(saves[i].nom, nomJoueur) == 0) {
+            if(nouveauNiveauDebloque > saves[i].niveauMaxDebloque) {
+                saves[i].niveauMaxDebloque = nouveauNiveauDebloque;
+            }
+            break;
         }
+    }
+    
+    // Réécrire toutes les sauvegardes
+    FILE *fichier = fopen("sauvegarde.txt", "w");
+    if (fichier) {
+        for(int i = 0; i < nbSaves; i++) {
+            fprintf(fichier, "===== Sauvegarde %s =====\n", saves[i].nom);
+            fprintf(fichier, "Nom:%s\n", saves[i].nom);
+            fprintf(fichier, "NiveauMax:%d\n", saves[i].niveauMaxDebloque);
+            fprintf(fichier, "Score:%d\n", saves[i].score);
+            fprintf(fichier, "Vie:%d\n", saves[i].vie);
+            fprintf(fichier, "PositionX:%d\n", saves[i].positionX);
+            fprintf(fichier, "PositionY:%d\n\n", saves[i].positionY);
+        }
+        fclose(fichier);
     }
 }
 
@@ -345,4 +359,42 @@ void afficherScores()
                sauvegardes[i].date);
     }
     printf("+------+--------------------+--------+------+-----------------------------+\n");
+}
+
+// Nouvelle fonction pour lire les sauvegardes existantes
+int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
+    FILE *fichier = fopen("sauvegarde.txt", "r");
+    if (fichier == NULL) return 0;
+
+    int count = 0;
+    char ligne[1024];
+    SauvegardeInfo current = {0};
+
+    while (fgets(ligne, sizeof(ligne), fichier) && count < maxSaves) {
+        ligne[strcspn(ligne, "\n")] = 0;
+
+        if (strstr(ligne, "===== Sauvegarde")) {
+            memset(&current, 0, sizeof(current));
+        }
+        else if (strncmp(ligne, "Nom:", 4) == 0) {
+            strcpy(current.nom, ligne + 4);
+        }
+        else if (strncmp(ligne, "Score:", 6) == 0) {
+            current.score = atoi(ligne + 6);
+        }
+        else if (strncmp(ligne, "Vie:", 4) == 0) {
+            current.vie = atoi(ligne + 4);
+        }
+        else if (strncmp(ligne, "PositionX:", 10) == 0) {
+            current.positionX = atoi(ligne + 10);
+        }
+        else if (strncmp(ligne, "PositionY:", 10) == 0) {
+            current.positionY = atoi(ligne + 10);
+            // Dernière information de la sauvegarde
+            saves[count++] = current;
+        }
+    }
+
+    fclose(fichier);
+    return count;
 }

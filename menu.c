@@ -460,7 +460,10 @@ void menuPrincipal(Niveau *niveaux)
             }
             else if (selection == MAX_NIVEAUX + 3)
             {
+                system("cls");
                 printf("Merci d'avoir joue !\n");
+                Sleep(1500);
+                system("cls");
                 exit(0);
             }
         }
