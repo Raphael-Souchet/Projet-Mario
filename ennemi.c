@@ -347,14 +347,20 @@ int collision_avec_gumba(Tab_gumba *tab_gumba, Personnage *perso)
 
 int collision_avec_plante(Tab_plante *tab_plante, Personnage *perso)
 {
+    if (!tab_plante || !tab_plante->plantes)
+        return 0;
+        
     for (int i = 0; i < tab_plante->count; i++)
     {
-        if (perso->positionY == tab_plante->plantes[i].positionY &&
-            perso->positionX == tab_plante->plantes[i].positionX)
+        Plante *plante = &tab_plante->plantes[i];
+        
+        if (plante->positionX == perso->positionX && 
+            plante->positionY == perso->positionY)
         {
             return 1;
         }
     }
+    
     return 0;
 }
 
