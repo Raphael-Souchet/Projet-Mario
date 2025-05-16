@@ -15,13 +15,24 @@
 #include "SDL_mixer.h"
 
 #define TILE_SIZE 25
+#define MAX_NIVEAUX 5
 
-extern const int LARGEUR_MAP;
-extern const int SPAWN_X;
-extern const int SPAWN_Y;
-extern const int SPAWN_MORT_X;
-extern const int SPAWN_MORT_Y;
-extern const int MORT_Y;
+typedef struct {
+    char fichier[100];
+    int debloque;
+    int termine;
+} Niveau;
+
+extern int LARGEUR_MAP;
+extern int SPAWN_X;
+extern int SPAWN_Y;
+extern int SPAWN_MORT_X;
+extern int SPAWN_MORT_Y;
+extern int MORT_Y;
+extern int niveauActuel;
+extern int niveauMaxDebloque;
+extern Niveau niveaux[MAX_NIVEAUX];
+extern char nomJoueurStocke[100];
 
 
 typedef struct {
@@ -38,6 +49,10 @@ typedef struct {
     int etape_saut;
     float vitesse_x;   
 } Personnage;
+
+typedef struct {
+    int niveauxDebloques[MAX_NIVEAUX];
+} Progression;
 
 typedef struct {
     int positionX;
@@ -115,8 +130,10 @@ typedef struct {
 } PlayerAnimations;
 
 typedef struct {
+    Animation* animation;
     int positionX;
     int positionY;
+    int type;
     int actif;
 } Piece;
 
@@ -149,6 +166,7 @@ extern TTF_Font* scoreFont;
 extern SDL_Color scoreColor;
 extern Animation* flagAnimation;
 extern Animation* carnivoreAnimation;
+extern SDL_Texture* heartTexture; 
 
 Carte* chargerCarteEnMemoire(const char* fichierCarte);
 void libererCarte(Carte* carte);
@@ -164,19 +182,17 @@ void effacer_position(Carte* carte, Personnage* perso);
 void mettre_position(Carte* carte, Personnage* perso);
 void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer);
 int copierFichier(const char *source, const char *destination);
-void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving);
-void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving, int score);
-void menuPrincipal(const char *fichierTemp);
-void jouer(const char *fichierTemp, Personnage *perso);
+void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *tab_gumba, Tab_plante *tab_plante, const char *fichierTemp, SDL_Window *window, SDL_Renderer *renderer, int niveauActuel);
+void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving, Personnage *perso);
+void menuPrincipal(Niveau *niveaux);
+void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux);
 void sauvegarderPartie(Personnage* perso, Carte* carte, const char* fichierTemp);
-int chargerPartie(Personnage *perso);
-void menuSauvegarde(Personnage* perso, Carte* carte);
 void resetScores();
 void afficherScores();
-void verifier_collision(Carte* carte, Personnage* perso);
+void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, Tab_plante *tab_plante, const char *fichierTemp, SDL_Window *window, SDL_Renderer *renderer, int niveauActuel);
 void cacherCurseur();
 char* creerNomFichierTemp(const char* nomJoueur);
-void menu_mort(Personnage *perso, const char *fichierTemp);
+void menu_mort(Personnage *perso, const char *fichierTemp, int niveauActuel);
 void declencher_rebond(Personnage *perso);
 int ecraser_gumba(Carte *carte, Tab_gumba *tab_gumba, Personnage *perso);
 int collision_avec_gumba(Tab_gumba *tab_gumba, Personnage *perso);
@@ -198,12 +214,10 @@ void cleanupAudio();
 GameTextures* loadGameTextures(SDL_Renderer *renderer);
 void freeGameTextures(GameTextures *textures);
 
-
 Animation* loadAnimation(SDL_Renderer* renderer, const char* path, int frameCount, int frameWidth, int frameHeight, Uint32 frameDuration);
 void updateAnimation(Animation* animation);
 void renderAnimation(SDL_Renderer* renderer, Animation* animation, int x, int y, int flipHorizontal);
 void freeAnimation(Animation* animation);
-Animation* loadAnimation(SDL_Renderer* renderer, const char* path, int frameCount, int frameWidth, int frameHeight, Uint32 frameDuration);
 PlayerAnimations* loadPlayerAnimations(SDL_Renderer* renderer);
 void freePlayerAnimations(PlayerAnimations* animations);
 
@@ -214,7 +228,7 @@ void liberer_pieces(Tab_piece* tab_piece);
 void check_collect_piece(Carte* carte, Tab_piece* tab_piece, Personnage* perso);
 
 TTF_Font* initFont();
-void afficherScore(SDL_Renderer* renderer, int score);
+void afficherScore(SDL_Renderer* renderer, int score, int vies);
 
 void initialiser_starcoins(Carte* carte, Tab_starcoins* tab_starcoins);
 void animer_starcoins(Tab_starcoins* tab_starcoins);
@@ -223,5 +237,20 @@ void liberer_starcoins(Tab_starcoins* tab_starcoins);
 void check_collect_starcoin(Carte* carte, Tab_starcoins* tab_starcoins, Personnage* perso);
 void loadCarnivoreAnimation(SDL_Renderer *renderer);
 void freeCarnivoreAnimation();
+
+SDL_Texture* loadHeartTexture(SDL_Renderer *renderer);
+void freeHeartTexture();
+void afficherVies(SDL_Renderer* renderer, int vies);
+
+void initialiserNiveaux(Niveau *niveaux, int niveauMaxDebloque);
+int navigationMenu(int selection, int min, int max, int touche, Niveau *niveaux);
+void mettreAJourCoordonnees(int niveauActuel, int *x, int *y, int *yMort);
+void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int niveauMaxDebloque);
+void chargerProgression(Progression* progression);
+void sauvegarderProgression(int nouveauNiveauDebloque);
+int afficherOption(int numero, const char *texte, int selection_actuelle);
+void afficherMenuPauseEnJeu();
+int menuPauseEnJeu();
+int lireSauvegarde();
 
 #endif

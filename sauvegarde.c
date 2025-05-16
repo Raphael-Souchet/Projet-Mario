@@ -153,153 +153,47 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
     Sleep(1000);
 
     libererCarte(carte);
-    menuPrincipal("Mario.txt");
+    menuPrincipal(niveaux);
 }
 
-int chargerPartie(Personnage *perso)
+void chargerProgression(Progression* progression) {
+    FILE* f = fopen("progression.dat", "rb");
+    if (f) {
+        fread(progression->niveauxDebloques, sizeof(int), MAX_NIVEAUX, f);
+        fclose(f);
+    } else {
+        for (int i = 0; i < MAX_NIVEAUX; i++) progression->niveauxDebloques[i] = (i == 0 ? 1 : 0); 
+    }
+}
+
+void sauvegarderProgression(int nouveauNiveauDebloque)
 {
-    FILE *fichier = fopen("sauvegarde.txt", "r");
-    if (fichier == NULL)
-    {
-        printf("Aucune sauvegarde trouvee !\n");
-        Sleep(1000);
-        return 0;
-    }
-
-    Sauvegarde sauvegardes[100];
-    int nbSauvegardes = 0;
-    char ligne[256];
-    int dans_sauvegarde = 0;
-    int sauvegarde_courante = -1;
-
-    while (fgets(ligne, sizeof(ligne), fichier))
-    {
-        ligne[strcspn(ligne, "\n")] = 0;
-
-        if (strncmp(ligne, "===== Sauvegarde", 16) == 0)
-        {
-            sauvegarde_courante = nbSauvegardes;
-            nbSauvegardes++;
-            dans_sauvegarde = 1;
-
-            char *dateStart = ligne + 16;
-            char *dateEnd = strstr(dateStart, " =====");
-            if (dateEnd)
-                *dateEnd = '\0';
-            strcpy(sauvegardes[sauvegarde_courante].date, dateStart);
-        }
-        else if (dans_sauvegarde)
-        {
-            if (strncmp(ligne, "Nom:", 4) == 0)
-            {
-                strcpy(sauvegardes[sauvegarde_courante].nom, ligne + 4);
-            }
-            else if (strncmp(ligne, "Score:", 6) == 0)
-            {
-                sauvegardes[sauvegarde_courante].score = atoi(ligne + 6);
-            }
-            else if (strncmp(ligne, "Vie:", 4) == 0)
-            {
-                sauvegardes[sauvegarde_courante].vie = atoi(ligne + 4);
-                dans_sauvegarde = 0; 
-            }
+    FILE *fichier = fopen("sauvegarde/progression.dat", "wb");
+    
+    if (fichier != NULL) {
+        fwrite(&nouveauNiveauDebloque, sizeof(int), 1, fichier);
+        fclose(fichier);
+    } else {
+        mkdir("sauvegarde");
+        fichier = fopen("sauvegarde/progression.dat", "wb");
+        if (fichier != NULL) {
+            fwrite(&nouveauNiveauDebloque, sizeof(int), 1, fichier);
+            fclose(fichier);
         }
     }
+}
 
-    fclose(fichier);
-
-    if (nbSauvegardes == 0)
-    {
-        printf("Aucune sauvegarde disponible.\n");
-        Sleep(1000);
-        return 0;
+int lireSauvegarde()
+{
+    FILE *fichier = fopen("sauvegarde/progression.dat", "rb");
+    int niveauMaxDebloque = 0;
+    
+    if (fichier != NULL) {
+        fread(&niveauMaxDebloque, sizeof(int), 1, fichier);
+        fclose(fichier);
     }
-
-    printf("+------+--------------------+--------+------+-----------------------------+\n");
-    printf("| #    | Nom                | Score  | Vie  | Date                        |\n");
-    printf("+------+--------------------+--------+------+-----------------------------+\n");
-    for (int i = 0; i < nbSauvegardes; i++)
-    {
-        printf("| %3d  | %-18s | %6d | %4d | %-27s |\n",
-               i + 1,
-               sauvegardes[i].nom,
-               sauvegardes[i].score,
-               sauvegardes[i].vie,
-               sauvegardes[i].date);
-    }
-    printf("+------+--------------------+--------+------+-----------------------------+\n");
-
-    int choix;
-    printf("Entrez le numero de la sauvegarde a charger: ");
-    scanf("%d", &choix);
-    while (choix < 1 || choix > nbSauvegardes)
-    {
-        printf("Numero invalide. Entrez un numero valide: ");
-        scanf("%d", &choix);
-    }
-
-    fichier = fopen("sauvegarde.txt", "r");
-    int sauvegarde_trouvee = 0;
-    int sauvegarde_index = 1;
-
-    while (fgets(ligne, sizeof(ligne), fichier) && !sauvegarde_trouvee)
-    {
-        if (strncmp(ligne, "===== Sauvegarde", 16) == 0)
-        {
-            if (sauvegarde_index == choix)
-            {
-                sauvegarde_trouvee = 1;
-
-                while (fgets(ligne, sizeof(ligne), fichier))
-                {
-                    ligne[strcspn(ligne, "\n")] = 0;
-
-                    if (ligne[0] == '\0' || strlen(ligne) == 0)
-                    {
-                        break;
-                    }
-
-                    if (strncmp(ligne, "Nom:", 4) == 0)
-                    {
-                        strcpy(perso->nom, ligne + 4);
-                    }
-                    else if (strncmp(ligne, "PositionX:", 10) == 0)
-                    {
-                        perso->positionX = atoi(ligne + 10);
-                    }
-                    else if (strncmp(ligne, "PositionY:", 10) == 0)
-                    {
-                        perso->positionY = atoi(ligne + 10);
-                    }
-                    else if (strncmp(ligne, "Score:", 6) == 0)
-                    {
-                        perso->score = atoi(ligne + 6);
-                    }
-                    else if (strncmp(ligne, "Vie:", 4) == 0)
-                    {
-                        perso->vie = atoi(ligne + 4);
-                    }
-                }
-            }
-            else
-            {
-                sauvegarde_index++;
-            }
-        }
-    }
-
-    fclose(fichier);
-
-    if (!sauvegarde_trouvee)
-    {
-        printf("Erreur lors du chargement de la sauvegarde!\n");
-        Sleep(1500);
-        return 0;
-    }
-
-    printf("Partie chargee avec succes !\n");
-    Sleep(1500);
-    return 1;
+    
+    return niveauMaxDebloque;
 }
 
 void resetScores()
@@ -321,8 +215,60 @@ void resetScores()
             printf("Erreur: Impossible d'ouvrir le fichier de sauvegarde\n");
         }
         system("del temp_*.txt");
+        nomJoueurStocke[0] = '\0';
         printf("Les fichiers temporaires ont ete supprimes avec succes !\n");
         Sleep(1500);
+    }
+}
+
+void initialiserNiveaux(Niveau *niveaux, int niveauMaxDebloque)
+{
+    strcpy(niveaux[0].fichier, "Mario1.txt");
+    strcpy(niveaux[1].fichier, "Mario2.txt");
+    strcpy(niveaux[2].fichier, "Mario3.txt");
+    strcpy(niveaux[3].fichier, "Mario4.txt");
+    strcpy(niveaux[4].fichier, "Mario5.txt");
+
+    niveaux[0].debloque = 1;
+    
+    for (int i = 1; i < MAX_NIVEAUX; i++) {
+        niveaux[i].debloque = (i <= niveauMaxDebloque) ? 1 : 0;
+    }
+
+    for (int i = 0; i < MAX_NIVEAUX; i++) {
+        niveaux[i].termine = 0;
+    }
+}
+
+void mettreAJourCoordonnees(int niveauActuel, int *x, int *y, int *yMort) {
+    switch (niveauActuel) {
+        case 0:
+            *x = 21;
+            *y = 15;
+            *yMort = 19;
+            break;
+        case 1:
+            *x = 21;
+            *y = 15;
+            *yMort = 23;
+            break;
+        case 2:
+            *x = 21;
+            *y = 15;
+            *yMort = 20;
+            break;
+        case 3:
+            *x = 21;
+            *y = 15;
+            *yMort = 19;
+            break;
+        case 4:
+            *x = 21;
+            *y = 15;
+            *yMort = 19;
+            break;
+        default:
+            break;
     }
 }
 
@@ -399,5 +345,4 @@ void afficherScores()
                sauvegardes[i].date);
     }
     printf("+------+--------------------+--------+------+-----------------------------+\n");
-
 }

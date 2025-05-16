@@ -52,7 +52,64 @@ TTF_Font* initFont() {
     return font;
 }
 
-void afficherScore(SDL_Renderer* renderer, int score) {
+SDL_Texture* loadHeartTexture(SDL_Renderer* renderer) {
+    const char* heartPaths = "asset/Tiles/coeur.png";
+    
+    SDL_Surface* surface = NULL;
+    
+    surface = IMG_Load(heartPaths);
+    if (surface != NULL) {
+        printf("Image du cœur chargée avec succès: %s\n", heartPaths);
+    }
+    
+    if (surface == NULL) {
+        printf("Impossible de charger l'image du cœur. Création d'une texture par défaut.\n");
+        surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0, 0, 0, 0);
+        if (surface != NULL) {
+            SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 255, 0, 255));
+        } else {
+            printf("Erreur lors de la création de la surface par défaut: %s\n", SDL_GetError());
+            return NULL;
+        }
+    }
+    
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (texture == NULL) {
+        printf("Erreur lors de la création de la texture du cœur: %s\n", SDL_GetError());
+    }
+    
+    SDL_FreeSurface(surface);
+    return texture;
+}
+
+void freeHeartTexture() {
+    if (heartTexture != NULL) {
+        SDL_DestroyTexture(heartTexture);
+        heartTexture = NULL;
+    }
+}
+
+void afficherVies(SDL_Renderer* renderer, int vies) {
+    if (heartTexture == NULL) {
+        return;
+    }
+    
+    int heartWidth, heartHeight;
+    SDL_QueryTexture(heartTexture, NULL, NULL, &heartWidth, &heartHeight);
+    
+    int displayWidth = 40;
+    int displayHeight = 40;
+    
+    int startX = 1100;
+    int startY = 30; 
+    
+    for (int i = 0; i < vies; i++) {
+        SDL_Rect destRect = {startX + i * (displayWidth + 5), startY, displayWidth, displayHeight};
+        SDL_RenderCopy(renderer, heartTexture, NULL, &destRect);
+    }
+}
+
+void afficherScore(SDL_Renderer* renderer, int score, int vies) {
     if (scoreFont == NULL) {
         return;
     }
@@ -60,7 +117,7 @@ void afficherScore(SDL_Renderer* renderer, int score) {
     char scoreText[50];
     sprintf(scoreText, "Score: %d", score);
     
-    SDL_Color scoreColor = {255, 255, 0, 255}; 
+    SDL_Color scoreColor = {250, 82, 85, 255}; 
     
     SDL_Surface* textSurface = TTF_RenderText_Solid(scoreFont, scoreText, scoreColor);
     if (textSurface == NULL) {
@@ -80,6 +137,8 @@ void afficherScore(SDL_Renderer* renderer, int score) {
     
     SDL_DestroyTexture(textTexture);
     SDL_FreeSurface(textSurface);
+    
+    afficherVies(renderer, vies);
 }
 
 void loadCoinAnimations(SDL_Renderer *renderer)
@@ -211,7 +270,7 @@ void loadFlagAnimation(SDL_Renderer *renderer)
     }
 }
 
-void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving, int score)
+void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer, int playerMoving, Personnage *perso)
 {
     int largeurAffichage = 50;
     int demiLargeur = largeurAffichage / 2;
@@ -270,6 +329,13 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
     loadCoinAnimations(renderer);
     loadFlagAnimation(renderer); 
     loadCarnivoreAnimation(renderer);
+
+    if (heartTexture == NULL) {
+        heartTexture = loadHeartTexture(renderer);
+        if (heartTexture == NULL) {
+            printf("Impossible de charger la texture du cœur\n");
+        }
+    }
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -447,7 +513,7 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         }
     }
     
-    afficherScore(renderer, score);
+    afficherScore(renderer, perso->score, perso->vie);
 }
 
 void freeFlagAnimation()
@@ -487,6 +553,10 @@ void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
     {
         freeBackgroundTexture(globalBackground);
         globalBackground = NULL;
+    }
+
+    if (heartTexture != NULL) {
+        freeHeartTexture();
     }
     
     if (flagAnimation != NULL)
