@@ -20,17 +20,6 @@ void gerer_saut(Carte *carte, Personnage *perso, int direction)
         {
             char contenu_nouv_pos = carte->carte[nouv_y][perso->positionX];
             
-            if (contenu_nouv_pos == 'c' || contenu_nouv_pos == '*')
-            {
-                perso->score++;
-                carte->carte[nouv_y][perso->positionX] = ' ';
-                
-                if (contenu_nouv_pos == 'c')
-                    playSoundEffect("asset/sound/coin.wav", 40);
-                else if (contenu_nouv_pos == '*')
-                    playSoundEffect("asset/sound/piece_etoile.wav", 40);
-            }
-            
             if (contenu_nouv_pos != 'w' && contenu_nouv_pos != ']' && contenu_nouv_pos != '[' && contenu_nouv_pos != 'd' )
             {
                 effacer_position(carte, perso);
@@ -200,19 +189,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
 
     if (perso->en_chute && !perso->en_saut) {
         int new_y = perso->positionY + 1;
-        if (new_y < carte->hauteur) {
-            if (carte->carte[new_y][perso->positionX] == 'c') {
-                perso->score++;
-                carte->carte[new_y][perso->positionX] = ' ';
-                playSoundEffect("asset/sound/coin.wav", 40);
-            }
-
-            if (carte->carte[new_y][perso->positionX] == '*') {
-                perso->score++;
-                carte->carte[new_y][perso->positionX] = ' ';
-                playSoundEffect("asset/sound/piece_etoile.wav", 40);
-            }
-            
+        if (new_y < carte->hauteur) {            
             if (carte->carte[new_y][perso->positionX] != 'w' || carte->carte[new_y][perso->positionX] == ']' || carte->carte[new_y][perso->positionX] == '[') {
                 effacer_position(carte, perso);
                 perso->positionY = new_y;
@@ -247,19 +224,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving) {
                     for (int i = 0; i < abs(deplacement_x); i++) {
                         int next_x = perso->positionX + dir;
                         
-                        if (next_x >= 0 && next_x < carte->largeur) {
-                            if (carte->carte[perso->positionY][next_x] == 'c') {
-                                perso->score++;
-                                carte->carte[perso->positionY][next_x] = ' ';
-                                playSoundEffect("asset/sound/coin.wav", 40);
-                            }
-
-                            if (carte->carte[perso->positionY][next_x] == '*') {
-                                perso->score = perso->score + 5;
-                                carte->carte[perso->positionY][next_x] = ' ';
-                                playSoundEffect("asset/sound/piece_etoile.wav", 40);
-                            }
-                            
+                        if (next_x >= 0 && next_x < carte->largeur) {                            
                             if (carte->carte[perso->positionY][next_x] != 'w' || carte->carte[perso->positionY][next_x] == ']' || carte->carte[perso->positionY][next_x] == '[') {
                                 effacer_position(carte, perso);
                                 perso->positionX = next_x;

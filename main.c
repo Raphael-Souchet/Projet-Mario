@@ -14,6 +14,10 @@ Animation* flagAnimation = NULL;
 BackgroundTexture* globalBackground = NULL;
 TTF_Font* scoreFont = NULL;
 SDL_Color scoreColor = {255, 255, 255, 255};
+Tab_piece tab_pieces = {NULL, 0, 0};
+Animation* coinAnimation = NULL;
+Tab_starcoins tab_starcoins = {NULL, 0, 0};
+Animation* starCoinAnimation = NULL;
 
 int main(int argc, char *argv[])
 {

@@ -1,8 +1,5 @@
 #include "projet.h"
 
-Tab_piece tab_pieces = {NULL, 0, 0};
-Animation* coinAnimation = NULL;
-
 void initialiser_pieces(Carte* carte, Tab_piece* tab_piece) {
     int nb_pieces = 0;
     for (int y = 0; y < carte->hauteur; y++) {
@@ -98,9 +95,6 @@ void check_collect_piece(Carte* carte, Tab_piece* tab_piece, Personnage* perso) 
         }
     }
 }
-
-Tab_starcoins tab_starcoins = {NULL, 0, 0};
-Animation* starCoinAnimation = NULL;
 
 void initialiser_starcoins(Carte* carte, Tab_starcoins* tab_starcoins) {
     int nb_starcoins = 0;
