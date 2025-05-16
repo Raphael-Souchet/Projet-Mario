@@ -1,7 +1,5 @@
 #include "projet.h"
 
-Animation* flagAnimation = NULL;
-
 void effacer_position(Carte *carte, Personnage *perso)
 {
     carte->carte[perso->positionY][perso->positionX] = ' ';
@@ -19,157 +17,6 @@ void deplacerCurseur(int x, int y)
     SetConsoleCursorPosition(hConsole, coord);
 }
 
-BackgroundTexture *loadBackgroundTexture(SDL_Renderer *renderer, const char *path)
-{
-    BackgroundTexture *bg = (BackgroundTexture *)malloc(sizeof(BackgroundTexture));
-    if (bg == NULL)
-    {
-        printf("Erreur: Impossible d'allouer la mémoire pour la texture de fond\n");
-        return NULL;
-    }
-
-    SDL_Surface *surface = IMG_Load(path);
-    if (surface == NULL)
-    {
-        printf("Erreur: Impossible de charger l'image %s: %s\n", path, IMG_GetError());
-        free(bg);
-        return NULL;
-    }
-
-    bg->texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (bg->texture == NULL)
-    {
-        printf("Erreur: Impossible de créer la texture: %s\n", SDL_GetError());
-        SDL_FreeSurface(surface);
-        free(bg);
-        return NULL;
-    }
-
-    bg->width = surface->w;
-    bg->height = surface->h;
-
-    SDL_FreeSurface(surface);
-
-    return bg;
-}
-
-void freeBackgroundTexture(BackgroundTexture *bg)
-{
-    if (bg != NULL)
-    {
-        if (bg->texture != NULL)
-        {
-            SDL_DestroyTexture(bg->texture);
-        }
-        free(bg);
-    }
-}
-
-GameTextures *loadGameTextures(SDL_Renderer *renderer)
-{
-    GameTextures *textures = (GameTextures *)malloc(sizeof(GameTextures));
-    if (textures == NULL)
-    {
-        printf("Erreur: Impossible d'allouer la mémoire pour les textures du jeu\n");
-        return NULL;
-    }
-
-    textures->brick = NULL;
-    textures->terre = NULL;  
-    textures->tuyau = NULL;
-    textures->plante = NULL;  
-
-    SDL_Surface *surface = IMG_Load("asset/sprit/Tiles/herbe.png");
-    if (surface == NULL)
-    {
-        printf("Erreur: Impossible de charger l'image herbe.png: %s\n", IMG_GetError());
-        surface = IMG_Load("asset/Tiles/herbe.png");
-        if (surface == NULL)
-        {
-            printf("Erreur: Impossible de charger l'image alternative: %s\n", IMG_GetError());
-            free(textures);
-            return NULL;
-        }
-    }
-    
-    textures->brick = SDL_CreateTextureFromSurface(renderer, surface);
-    if (textures->brick == NULL)
-    {
-        printf("Erreur: Impossible de créer la texture de brique: %s\n", SDL_GetError());
-        SDL_FreeSurface(surface);
-        free(textures);
-        return NULL;
-    }
-    
-
-    SDL_FreeSurface(surface); 
-    
-    SDL_Surface *surface_terre = IMG_Load("asset/sprit/Tiles/terre.png");
-    if (surface_terre == NULL)
-    {
-        printf("Erreur: Impossible de charger l'image terre.png: %s\n", IMG_GetError());
-        surface_terre = IMG_Load("asset/Tiles/terre.png");
-        if (surface_terre == NULL)
-        {
-            printf("Erreur: Impossible de charger l'image terre alternative: %s\n", IMG_GetError());
-        }
-    }
-    
-    if (surface_terre != NULL)
-    {
-        textures->terre = SDL_CreateTextureFromSurface(renderer, surface_terre);
-        if (textures->terre == NULL)
-        {
-            printf("Erreur: Impossible de créer la texture de terre: %s\n", SDL_GetError());
-        }
-        SDL_FreeSurface(surface_terre);
-    }
-
-    SDL_Surface *surface_tuyau = IMG_Load("asset/Tiles/tuyau.png");
-    if (surface_tuyau == NULL)
-    {
-        printf("Erreur: Impossible de charger l'image tuyau.png: %s\n", IMG_GetError());
-        surface_terre = IMG_Load("asset/Tiles/tuyau.png");
-        if (surface_tuyau == NULL)
-        {
-            printf("Erreur: Impossible de charger l'image tuyau alternative: %s\n", IMG_GetError());
-        }
-    }
-    
-    if (surface_tuyau != NULL)
-    {
-        textures->tuyau = SDL_CreateTextureFromSurface(renderer, surface_tuyau);
-        if (textures->tuyau == NULL)
-        {
-            printf("Erreur: Impossible de créer la texture de tuyau: %s\n", SDL_GetError());
-        }
-        SDL_FreeSurface(surface_tuyau);
-    }
-
-    SDL_Surface *surface_plante = IMG_Load("asset/Tiles/plante.png");
-    if (surface_plante == NULL)
-    {
-        printf("Erreur: Impossible de charger l'image plante.png: %s\n", IMG_GetError());
-        surface_plante = IMG_Load("asset/Tiles/plante.png");
-        if (surface_plante == NULL)
-        {
-            printf("Erreur: Impossible de charger l'image plante alternative: %s\n", IMG_GetError());
-        }
-    }
-    
-    if (surface_plante != NULL)
-    {
-        textures->plante = SDL_CreateTextureFromSurface(renderer, surface_plante);
-        if (textures->plante == NULL)
-        {
-            printf("Erreur: Impossible de créer la texture de plante: %s\n", SDL_GetError());
-        }
-        SDL_FreeSurface(surface_plante);
-    }
-
-    return textures;
-}
-
 void cacherCurseur()
 {
     HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -178,254 +25,6 @@ void cacherCurseur()
     info.dwSize = 1;
     SetConsoleCursorInfo(console, &info);
 }
-Animation *loadAnimation(SDL_Renderer *renderer, const char *path, int frameCount, int frameWidth, int frameHeight, Uint32 frameDuration)
-{
-    Animation *animation = (Animation *)malloc(sizeof(Animation));
-    if (animation == NULL)
-    {
-        printf("Erreur: Impossible d'allouer la mémoire pour l'animation\n");
-        return NULL;
-    }
-
-    animation->texture = NULL;
-    animation->frameCount = frameCount;
-    animation->currentFrame = 0;
-    animation->frameWidth = frameWidth;
-    animation->frameHeight = frameHeight;
-    animation->frameDuration = frameDuration;
-    animation->lastFrameTime = SDL_GetTicks();
-
-    SDL_Surface *surface = IMG_Load(path);
-    if (surface == NULL)
-    {
-        printf("Erreur: Impossible de charger l'image %s: %s\n", path, IMG_GetError());
-        free(animation);
-        return NULL;
-    }
-
-    animation->texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (animation->texture == NULL)
-    {
-        printf("Erreur: Impossible de créer la texture d'animation: %s\n", SDL_GetError());
-        SDL_FreeSurface(surface);
-        free(animation);
-        return NULL;
-    }
-
-    SDL_FreeSurface(surface);
-
-    return animation;
-}
-
-PlayerAnimations *loadPlayerAnimations(SDL_Renderer *renderer)
-{
-    PlayerAnimations *animations = (PlayerAnimations *)malloc(sizeof(PlayerAnimations));
-    if (animations == NULL)
-    {
-        printf("Erreur: Impossible d'allouer la mémoire pour les animations du joueur\n");
-        return NULL;
-    }
-
-    animations->idle = NULL;
-    animations->idle_left = NULL;
-    animations->run = NULL;
-    animations->run_left = NULL;
-    animations->facingRight = 1;
-
-    const char *paths[][4] = {
-        {"asset/santa_sheets/idle_sheet.png",
-         "asset/santa_sheets/run_sheet.png",
-         "asset/santa_sheets/idle_left_sheet.png",
-         "asset/santa_sheets/run_left_sheet.png"},
-        {"asset/sprit/santa_sheets/idle_sheet.png",
-         "asset/sprit/santa_sheets/run_sheet.png",
-         "asset/sprit/santa_sheets/idle_left_sheet.png",
-         "asset/sprit/santa_sheets/run_left_sheet.png"},
-        {"asset/player/idle_sheet.png",
-         "asset/player/run_sheet.png",
-         "asset/player/idle_left_sheet.png",
-         "asset/player/run_left_sheet.png"}};
-
-    Animation *loadedIdle = NULL;
-    Animation *loadedRun = NULL;
-
-    for (int i = 0; i < 3 && (loadedIdle == NULL || loadedRun == NULL); i++)
-    {
-        if (loadedIdle == NULL)
-        {
-            loadedIdle = loadAnimation(renderer, paths[i][0], 6, 32, 32, 150);
-            if (loadedIdle != NULL)
-            {
-                printf("Animation idle chargée avec succès: %s\n", paths[i][0]);
-            }
-        }
-
-        if (loadedRun == NULL)
-        {
-            loadedRun = loadAnimation(renderer, paths[i][1], 6, 32, 32, 100);
-            if (loadedRun != NULL)
-            {
-                printf("Animation run chargée avec succès: %s\n", paths[i][1]);
-            }
-        }
-    }
-
-    if (loadedIdle == NULL)
-    {
-        SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
-        if (tempSurface != NULL)
-        {
-            SDL_FillRect(tempSurface, NULL, SDL_MapRGB(tempSurface->format, 255, 0, 0));
-
-            loadedIdle = (Animation *)malloc(sizeof(Animation));
-            if (loadedIdle != NULL)
-            {
-                loadedIdle->texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
-                loadedIdle->frameCount = 1;
-                loadedIdle->currentFrame = 0;
-                loadedIdle->frameWidth = 32;
-                loadedIdle->frameHeight = 32;
-                loadedIdle->frameDuration = 150;
-                loadedIdle->lastFrameTime = SDL_GetTicks();
-
-                printf("Animation idle de secours créée\n");
-            }
-            SDL_FreeSurface(tempSurface);
-        }
-    }
-
-    if (loadedRun == NULL && loadedIdle != NULL)
-    {
-        loadedRun = (Animation *)malloc(sizeof(Animation));
-        if (loadedRun != NULL)
-        {
-            loadedRun->texture = loadedIdle->texture;
-            loadedRun->frameCount = loadedIdle->frameCount;
-            loadedRun->currentFrame = 0;
-            loadedRun->frameWidth = loadedIdle->frameWidth;
-            loadedRun->frameHeight = loadedIdle->frameHeight;
-            loadedRun->frameDuration = 100;
-            loadedRun->lastFrameTime = SDL_GetTicks();
-
-            printf("Animation run de secours créée (basée sur idle)\n");
-        }
-    }
-
-    if (loadedIdle == NULL || loadedRun == NULL)
-    {
-        printf("Erreur: Impossible de charger les animations de base\n");
-        if (loadedIdle != NULL)
-            freeAnimation(loadedIdle);
-        if (loadedRun != NULL && loadedRun->texture != loadedIdle->texture)
-            freeAnimation(loadedRun);
-        free(animations);
-        return NULL;
-    }
-
-    animations->idle = loadedIdle;
-    animations->run = loadedRun;
-
-    animations->idle_left = animations->idle;
-    animations->run_left = animations->run;
-
-    return animations;
-}
-void loadFlagAnimation(SDL_Renderer *renderer)
-{
-    if (flagAnimation == NULL)
-    {
-        const char *flagPaths[] = {
-            "C:/Users/duber/cours L1/programation/mario_vscode/Projet-Mario/asset/Rocky Roads/Objects/flag.png",
-            "asset/Rocky Roads/Objects/flag.png",
-            "asset/sprit/objects/flag.png",
-            "asset/flag.png"
-        };
-
-        for (int i = 0; i < 4 && flagAnimation == NULL; i++)
-        {
-            flagAnimation = loadAnimation(renderer, flagPaths[i], 4, 32, 32, 200);
-            if (flagAnimation != NULL)
-            {
-                printf("Animation du drapeau chargée avec succès: %s\n", flagPaths[i]);
-                break;
-            }
-        }
-
-        if (flagAnimation == NULL)
-        {
-            printf("Échec du chargement de l'animation du drapeau. Utilisation de la représentation par défaut.\n");
-            SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
-            if (tempSurface != NULL)
-            {
-                SDL_FillRect(tempSurface, NULL, SDL_MapRGB(tempSurface->format, 0, 100, 255));
-                
-                flagAnimation = (Animation *)malloc(sizeof(Animation));
-                if (flagAnimation != NULL)
-                {
-                    flagAnimation->texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
-                    flagAnimation->frameCount = 1;
-                    flagAnimation->currentFrame = 0;
-                    flagAnimation->frameWidth = 32;
-                    flagAnimation->frameHeight = 32;
-                    flagAnimation->frameDuration = 200;
-                    flagAnimation->lastFrameTime = SDL_GetTicks();
-                    
-                    printf("Animation de drapeau de secours créée\n");
-                }
-                SDL_FreeSurface(tempSurface);
-            }
-        }
-    }
-}
-void updateAnimation(Animation *animation)
-{
-    if (animation == NULL)
-        return;
-
-    Uint32 currentTime = SDL_GetTicks();
-    if (currentTime - animation->lastFrameTime > animation->frameDuration)
-    {
-        animation->currentFrame = (animation->currentFrame + 1) % animation->frameCount;
-        animation->lastFrameTime = currentTime;
-    }
-}
-
-void renderAnimation(SDL_Renderer *renderer, Animation *animation, int x, int y, int flipHorizontal)
-{
-    if (animation == NULL || renderer == NULL || animation->texture == NULL)
-    {
-        return;
-    }
-
-    SDL_Rect srcRect = {
-        animation->currentFrame * animation->frameWidth,
-        0,
-        animation->frameWidth,
-        animation->frameHeight};
-
-    float scaleFactor = 1.0f;
-
-    if (animation == coinAnimation)
-    {
-        scaleFactor = 1.5f;
-    }
-
-    int finalWidth = (int)(animation->frameWidth * scaleFactor);
-    int finalHeight = (int)(animation->frameHeight * scaleFactor);
-
-    SDL_Rect dstRect = {
-        x - finalWidth / 2, 
-        y - finalHeight,  
-        finalWidth,
-        finalHeight};
-
-    SDL_RendererFlip flip = flipHorizontal ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-
-    SDL_RenderCopyEx(renderer, animation->texture, &srcRect, &dstRect, 0, NULL, flip);
-}
-
-TTF_Font* scoreFont = NULL;
-SDL_Color scoreColor = {255, 255, 255, 255};
 
 TTF_Font* initFont() {
     if (TTF_Init() == -1) {
@@ -518,40 +117,93 @@ void loadCoinAnimations(SDL_Renderer *renderer)
     }
 }
 
-Animation* carnivoreAnimation = NULL;
-
-void loadCarnivoreAnimation(SDL_Renderer *renderer)
+BackgroundTexture *loadBackgroundTexture(SDL_Renderer *renderer, const char *path)
 {
-    if (carnivoreAnimation == NULL)
+    BackgroundTexture *bg = (BackgroundTexture *)malloc(sizeof(BackgroundTexture));
+    if (bg == NULL)
     {
-        const char *carnivorePaths = "asset/Tiles/carnivore.png";
+        printf("Erreur: Impossible d'allouer la mémoire pour la texture de fond\n");
+        return NULL;
+    }
 
-        carnivoreAnimation = loadAnimation(renderer, carnivorePaths, 2, 25, 25, 250);
-        if (carnivoreAnimation != NULL)
+    SDL_Surface *surface = IMG_Load(path);
+    if (surface == NULL)
+    {
+        printf("Erreur: Impossible de charger l'image %s: %s\n", path, IMG_GetError());
+        free(bg);
+        return NULL;
+    }
+
+    bg->texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (bg->texture == NULL)
+    {
+        printf("Erreur: Impossible de créer la texture: %s\n", SDL_GetError());
+        SDL_FreeSurface(surface);
+        free(bg);
+        return NULL;
+    }
+
+    bg->width = surface->w;
+    bg->height = surface->h;
+
+    SDL_FreeSurface(surface);
+
+    return bg;
+}
+
+void freeBackgroundTexture(BackgroundTexture *bg)
+{
+    if (bg != NULL)
+    {
+        if (bg->texture != NULL)
         {
-            printf("Animation de la plante carnivore chargée avec succès: %s\n", carnivorePaths);
+            SDL_DestroyTexture(bg->texture);
+        }
+        free(bg);
+    }
+}
+
+void loadFlagAnimation(SDL_Renderer *renderer)
+{
+    if (flagAnimation == NULL)
+    {
+        const char *flagPaths[] = {
+            "C:/Users/duber/cours L1/programation/mario_vscode/Projet-Mario/asset/Rocky Roads/Objects/flag.png",
+            "asset/Rocky Roads/Objects/flag.png",
+            "asset/sprit/objects/flag.png",
+            "asset/flag.png"
+        };
+
+        for (int i = 0; i < 4 && flagAnimation == NULL; i++)
+        {
+            flagAnimation = loadAnimation(renderer, flagPaths[i], 4, 32, 32, 200);
+            if (flagAnimation != NULL)
+            {
+                printf("Animation du drapeau chargée avec succès: %s\n", flagPaths[i]);
+                break;
+            }
         }
 
-        if (carnivoreAnimation == NULL)
+        if (flagAnimation == NULL)
         {
-            printf("Échec du chargement de l'animation de la plante carnivore. Utilisation de la représentation par défaut.\n");
+            printf("Échec du chargement de l'animation du drapeau. Utilisation de la représentation par défaut.\n");
             SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
             if (tempSurface != NULL)
             {
-                SDL_FillRect(tempSurface, NULL, SDL_MapRGB(tempSurface->format, 255, 0, 0));
+                SDL_FillRect(tempSurface, NULL, SDL_MapRGB(tempSurface->format, 0, 100, 255));
                 
-                carnivoreAnimation = (Animation *)malloc(sizeof(Animation));
-                if (carnivoreAnimation != NULL)
+                flagAnimation = (Animation *)malloc(sizeof(Animation));
+                if (flagAnimation != NULL)
                 {
-                    carnivoreAnimation->texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
-                    carnivoreAnimation->frameCount = 2;
-                    carnivoreAnimation->currentFrame = 0;
-                    carnivoreAnimation->frameWidth = 32;
-                    carnivoreAnimation->frameHeight = 32;
-                    carnivoreAnimation->frameDuration = 500;
-                    carnivoreAnimation->lastFrameTime = SDL_GetTicks();
+                    flagAnimation->texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
+                    flagAnimation->frameCount = 1;
+                    flagAnimation->currentFrame = 0;
+                    flagAnimation->frameWidth = 32;
+                    flagAnimation->frameHeight = 32;
+                    flagAnimation->frameDuration = 200;
+                    flagAnimation->lastFrameTime = SDL_GetTicks();
                     
-                    printf("Animation de plante carnivore de secours créée\n");
+                    printf("Animation de drapeau de secours créée\n");
                 }
                 SDL_FreeSurface(tempSurface);
             }
@@ -798,83 +450,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
     afficherScore(renderer, score);
 }
 
-void freePlayerAnimations(PlayerAnimations *animations)
-{
-    if (animations != NULL)
-    {
-        if (animations->idle != NULL)
-        {
-            if (animations->idle->texture != NULL &&
-                (animations->idle_left == NULL || animations->idle->texture != animations->idle_left->texture) &&
-                (animations->run == NULL || animations->idle->texture != animations->run->texture) &&
-                (animations->run_left == NULL || animations->idle->texture != animations->run_left->texture))
-            {
-                SDL_DestroyTexture(animations->idle->texture);
-            }
-            free(animations->idle);
-        }
-
-        if (animations->idle_left != NULL && animations->idle_left != animations->idle)
-        {
-            if (animations->idle_left->texture != NULL &&
-                (animations->run == NULL || animations->idle_left->texture != animations->run->texture) &&
-                (animations->run_left == NULL || animations->idle_left->texture != animations->run_left->texture))
-            {
-                SDL_DestroyTexture(animations->idle_left->texture);
-            }
-            free(animations->idle_left);
-        }
-
-        if (animations->run != NULL && animations->run != animations->idle && animations->run != animations->idle_left)
-        {
-            if (animations->run->texture != NULL &&
-                (animations->run_left == NULL || animations->run->texture != animations->run_left->texture))
-            {
-                SDL_DestroyTexture(animations->run->texture);
-            }
-            free(animations->run);
-        }
-
-        if (animations->run_left != NULL &&
-            animations->run_left != animations->idle &&
-            animations->run_left != animations->idle_left &&
-            animations->run_left != animations->run)
-        {
-            if (animations->run_left->texture != NULL)
-            {
-                SDL_DestroyTexture(animations->run_left->texture);
-            }
-            free(animations->run_left);
-        }
-
-        free(animations);
-    }
-}
-
-void freeCarnivoreAnimation()
-{
-    if (carnivoreAnimation != NULL)
-    {
-        freeAnimation(carnivoreAnimation);
-        carnivoreAnimation = NULL;
-    }
-}
-
-void freeGameTextures(GameTextures *textures)
-{
-    if (textures != NULL)
-    {
-        if (textures->brick != NULL)
-        {
-            SDL_DestroyTexture(textures->brick);
-        }
-        if (textures->terre != NULL)
-        {
-            SDL_DestroyTexture(textures->terre);
-        }
-        free(textures);
-    }
-}
 void freeFlagAnimation()
 {
     if (flagAnimation != NULL)
@@ -883,17 +458,7 @@ void freeFlagAnimation()
         flagAnimation = NULL;
     }
 }
-void freeAnimation(Animation *animation)
-{
-    if (animation != NULL)
-    {
-        if (animation->texture != NULL)
-        {
-            SDL_DestroyTexture(animation->texture);
-        }
-        free(animation);
-    }
-}
+
 
 void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
 {
