@@ -191,7 +191,6 @@ void chargerProgression(Progression* progression) {
 
 void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
 {
-    // Mettre à jour la variable globale
     if (nouveauNiveauDebloque > niveauMaxDebloque) {
         niveauMaxDebloque = nouveauNiveauDebloque;
     }
@@ -437,23 +436,21 @@ int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
     int count = 0;
     char ligne[1024];
     SauvegardeInfo current;
-    int nouveauJoueur = 1;  // Indicateur pour un nouveau joueur
+    int nouveauJoueur = 1;
 
     while (fgets(ligne, sizeof(ligne), fichier) && count < maxSaves) {
         ligne[strcspn(ligne, "\n")] = 0;
 
         if (strstr(ligne, "===== Sauvegarde") == ligne) {
             if (!nouveauJoueur && count < maxSaves) {
-                // Sauvegarder le joueur précédent si ses données sont valides
                 saves[count++] = current;
             }
-            // Réinitialiser pour le nouveau joueur
             memset(&current, 0, sizeof(current));
             nouveauJoueur = 1;
         }
         else if (strncmp(ligne, "Nom:", 4) == 0) {
             strcpy(current.nom, ligne + 4);
-            nouveauJoueur = 0; // Nous avons désormais un nom, ce n'est plus un nouveau joueur vide
+            nouveauJoueur = 0; 
         }
         else if (strncmp(ligne, "NiveauMax:", 10) == 0) {
             current.niveauMaxDebloque = atoi(ligne + 10);
@@ -471,12 +468,9 @@ int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
             current.positionY = atoi(ligne + 10);
         }
     }
-
-    // Ne pas oublier d'ajouter le dernier joueur si ses données sont valides
     if (!nouveauJoueur && count < maxSaves) {
         saves[count++] = current;
     }
 
-    fclose(fichier);
     return count;
 }
