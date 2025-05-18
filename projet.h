@@ -51,6 +51,14 @@ typedef struct {
 } Personnage;
 
 typedef struct {
+    char nom[100];
+    int niveauMaxDebloque; // Ajouté
+    int score;
+    int vie;
+    int positionX;
+    int positionY;
+} SauvegardeInfo;
+typedef struct {
     int niveauxDebloques[MAX_NIVEAUX];
 } Progression;
 
@@ -171,6 +179,7 @@ extern SDL_Texture* heartTexture;
 Carte* chargerCarteEnMemoire(const char* fichierCarte);
 void libererCarte(Carte* carte);
 int sauvegarderCarteVersFichier(Carte* carte, const char* fichierCarte);
+int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves);
 void deplacerCurseur(int x, int y);
 void initialiser_gumbas(Carte* carte, Tab_gumba* tab_gumba);
 void bouger_gumba(Carte* carte, Tab_gumba* tab_gumba);
@@ -247,7 +256,7 @@ int navigationMenu(int selection, int min, int max, int touche, Niveau *niveaux)
 void mettreAJourCoordonnees(int niveauActuel, int *x, int *y, int *yMort);
 void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int niveauMaxDebloque);
 void chargerProgression(Progression* progression);
-void sauvegarderProgression(int nouveauNiveauDebloque);
+void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur);
 int afficherOption(int numero, const char *texte, int selection_actuelle);
 void afficherMenuPauseEnJeu();
 int menuPauseEnJeu();

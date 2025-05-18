@@ -51,6 +51,7 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
         int positionY;
         int score;
         int vie;
+        int niveauMax;
         char date[100];
     } SaveData;
 
@@ -70,12 +71,23 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
 
             if (strncmp(ligne, "===== Sauvegarde", 16) == 0)
             {
-                currentSave = nbSauvegardes++;
+                if (currentSave >= 0 && nbSauvegardes < 100) {
+                    nbSauvegardes++;
+                }
+                currentSave = nbSauvegardes;
+                
                 char *dateStart = ligne + 16;
                 strcpy(sauvegardes[currentSave].date, dateStart);
                 char *endMarker = strstr(sauvegardes[currentSave].date, " =====");
                 if (endMarker)
                     *endMarker = '\0';
+                
+                sauvegardes[currentSave].positionX = 0;
+                sauvegardes[currentSave].positionY = 0;
+                sauvegardes[currentSave].score = 0;
+                sauvegardes[currentSave].vie = 3;
+                sauvegardes[currentSave].niveauMax = 0;
+                sauvegardes[currentSave].nom[0] = '\0';
             }
             else if (strncmp(ligne, "Nom:", 4) == 0)
             {
@@ -101,7 +113,16 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
             {
                 sauvegardes[currentSave].vie = atoi(ligne + 4);
             }
+            else if (strncmp(ligne, "NiveauMax:", 10) == 0)
+            {
+                sauvegardes[currentSave].niveauMax = atoi(ligne + 10);
+            }
         }
+        
+        if (currentSave >= 0 && nbSauvegardes < 100) {
+            nbSauvegardes++;
+        }
+        
         fclose(fichier);
     }
 
@@ -116,17 +137,24 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
         sauvegardes[joueurExiste].positionY = perso->positionY;
         sauvegardes[joueurExiste].score = perso->score;
         sauvegardes[joueurExiste].vie = perso->vie;
+        // Garder le niveau max existant s'il est plus élevé
+        if (niveauMaxDebloque > sauvegardes[joueurExiste].niveauMax) {
+            sauvegardes[joueurExiste].niveauMax = niveauMaxDebloque;
+        }
         strcpy(sauvegardes[joueurExiste].date, date);
     }
     else
     {
-        strcpy(sauvegardes[nbSauvegardes].nom, perso->nom);
-        sauvegardes[nbSauvegardes].positionX = perso->positionX;
-        sauvegardes[nbSauvegardes].positionY = perso->positionY;
-        sauvegardes[nbSauvegardes].score = perso->score;
-        sauvegardes[nbSauvegardes].vie = perso->vie;
-        strcpy(sauvegardes[nbSauvegardes].date, date);
-        nbSauvegardes++;
+        if (nbSauvegardes < 100) {
+            strcpy(sauvegardes[nbSauvegardes].nom, perso->nom);
+            sauvegardes[nbSauvegardes].positionX = perso->positionX;
+            sauvegardes[nbSauvegardes].positionY = perso->positionY;
+            sauvegardes[nbSauvegardes].score = perso->score;
+            sauvegardes[nbSauvegardes].vie = perso->vie;
+            sauvegardes[nbSauvegardes].niveauMax = niveauMaxDebloque;
+            strcpy(sauvegardes[nbSauvegardes].date, date);
+            nbSauvegardes++;
+        }
     }
 
     fichier = fopen("sauvegarde.txt", "w");
@@ -141,6 +169,7 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
     {
         fprintf(fichier, "===== Sauvegarde %s =====\n", sauvegardes[i].date);
         fprintf(fichier, "Nom:%s\n", sauvegardes[i].nom);
+        fprintf(fichier, "NiveauMax:%d\n", sauvegardes[i].niveauMax);
         fprintf(fichier, "PositionX:%d\n", sauvegardes[i].positionX);
         fprintf(fichier, "PositionY:%d\n", sauvegardes[i].positionY);
         fprintf(fichier, "Score:%d\n", sauvegardes[i].score);
@@ -148,12 +177,6 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
     }
 
     fclose(fichier);
-
-    printf("Partie sauvegardee avec succes!\n");
-    Sleep(1000);
-
-    libererCarte(carte);
-    menuPrincipal(niveaux);
 }
 
 void chargerProgression(Progression* progression) {
@@ -166,34 +189,94 @@ void chargerProgression(Progression* progression) {
     }
 }
 
-void sauvegarderProgression(int nouveauNiveauDebloque)
+void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
 {
-    FILE *fichier = fopen("sauvegarde/progression.dat", "wb");
+    // Mettre à jour la variable globale
+    if (nouveauNiveauDebloque > niveauMaxDebloque) {
+        niveauMaxDebloque = nouveauNiveauDebloque;
+    }
     
-    if (fichier != NULL) {
-        fwrite(&nouveauNiveauDebloque, sizeof(int), 1, fichier);
-        fclose(fichier);
-    } else {
-        mkdir("sauvegarde");
-        fichier = fopen("sauvegarde/progression.dat", "wb");
-        if (fichier != NULL) {
-            fwrite(&nouveauNiveauDebloque, sizeof(int), 1, fichier);
-            fclose(fichier);
+    SauvegardeInfo saves[100];
+    int nbSaves = lireSauvegardesExistant(saves, 100);
+    int joueurExiste = 0;
+    
+    for(int i = 0; i < nbSaves; i++) {
+        if(strcmp(saves[i].nom, nomJoueur) == 0) {
+            if(nouveauNiveauDebloque > saves[i].niveauMaxDebloque) {
+                saves[i].niveauMaxDebloque = nouveauNiveauDebloque;
+            }
+            // Mettre à jour le nom global si nécessaire
+            if (strlen(nomJoueurStocke) == 0) {
+                strcpy(nomJoueurStocke, nomJoueur);
+            }
+            joueurExiste = 1;
+            break;
         }
+    }
+    
+    // Si le joueur n'existe pas, l'ajouter
+    if (!joueurExiste && nbSaves < 100 && strlen(nomJoueur) > 0) {
+        strcpy(saves[nbSaves].nom, nomJoueur);
+        saves[nbSaves].niveauMaxDebloque = nouveauNiveauDebloque;
+        saves[nbSaves].score = 0;
+        saves[nbSaves].vie = 3;
+        saves[nbSaves].positionX = SPAWN_X;
+        saves[nbSaves].positionY = SPAWN_Y;
+        nbSaves++;
+        
+        // Mettre à jour le nom global
+        if (strlen(nomJoueurStocke) == 0) {
+            strcpy(nomJoueurStocke, nomJoueur);
+        }
+    }
+    
+    FILE *fichier = fopen("sauvegarde.txt", "w");
+    if (fichier) {
+        for(int i = 0; i < nbSaves; i++) {
+            // On utilise la date actuelle pour la sauvegarde
+            time_t now;
+            time(&now);
+            char *date = ctime(&now);
+            date[strcspn(date, "\n")] = '\0';
+            
+            fprintf(fichier, "===== Sauvegarde %s =====\n", date);
+            fprintf(fichier, "Nom:%s\n", saves[i].nom);
+            fprintf(fichier, "NiveauMax:%d\n", saves[i].niveauMaxDebloque);
+            fprintf(fichier, "Score:%d\n", saves[i].score);
+            fprintf(fichier, "Vie:%d\n", saves[i].vie);
+            fprintf(fichier, "PositionX:%d\n", saves[i].positionX);
+            fprintf(fichier, "PositionY:%d\n\n", saves[i].positionY);
+        }
+        fclose(fichier);
     }
 }
 
 int lireSauvegarde()
 {
-    FILE *fichier = fopen("sauvegarde/progression.dat", "rb");
-    int niveauMaxDebloque = 0;
+    SauvegardeInfo saves[100];
+    int nbSaves = lireSauvegardesExistant(saves, 100);
     
-    if (fichier != NULL) {
-        fread(&niveauMaxDebloque, sizeof(int), 1, fichier);
-        fclose(fichier);
+    // Si un joueur est déjà connecté, retourner son niveau max
+    if (strlen(nomJoueurStocke) > 0) {
+        for (int i = 0; i < nbSaves; i++) {
+            if (strcmp(saves[i].nom, nomJoueurStocke) == 0) {
+                // Mettre à jour la variable globale
+                niveauMaxDebloque = saves[i].niveauMaxDebloque;
+                return saves[i].niveauMaxDebloque;
+            }
+        }
     }
     
-    return niveauMaxDebloque;
+    // Sinon, chercher le niveau max parmi toutes les sauvegardes
+    int maxNiveau = 0;
+    for (int i = 0; i < nbSaves; i++) {
+        if (saves[i].niveauMaxDebloque > maxNiveau) {
+            maxNiveau = saves[i].niveauMaxDebloque;
+        }
+    }
+    
+    niveauMaxDebloque = maxNiveau;
+    return maxNiveau;
 }
 
 void resetScores()
@@ -345,4 +428,55 @@ void afficherScores()
                sauvegardes[i].date);
     }
     printf("+------+--------------------+--------+------+-----------------------------+\n");
+}
+
+int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
+    FILE *fichier = fopen("sauvegarde.txt", "r");
+    if (fichier == NULL) return 0;
+
+    int count = 0;
+    char ligne[1024];
+    SauvegardeInfo current;
+    int nouveauJoueur = 1;  // Indicateur pour un nouveau joueur
+
+    while (fgets(ligne, sizeof(ligne), fichier) && count < maxSaves) {
+        ligne[strcspn(ligne, "\n")] = 0;
+
+        if (strstr(ligne, "===== Sauvegarde") == ligne) {
+            if (!nouveauJoueur && count < maxSaves) {
+                // Sauvegarder le joueur précédent si ses données sont valides
+                saves[count++] = current;
+            }
+            // Réinitialiser pour le nouveau joueur
+            memset(&current, 0, sizeof(current));
+            nouveauJoueur = 1;
+        }
+        else if (strncmp(ligne, "Nom:", 4) == 0) {
+            strcpy(current.nom, ligne + 4);
+            nouveauJoueur = 0; // Nous avons désormais un nom, ce n'est plus un nouveau joueur vide
+        }
+        else if (strncmp(ligne, "NiveauMax:", 10) == 0) {
+            current.niveauMaxDebloque = atoi(ligne + 10);
+        }
+        else if (strncmp(ligne, "Score:", 6) == 0) {
+            current.score = atoi(ligne + 6);
+        }
+        else if (strncmp(ligne, "Vie:", 4) == 0) {
+            current.vie = atoi(ligne + 4);
+        }
+        else if (strncmp(ligne, "PositionX:", 10) == 0) {
+            current.positionX = atoi(ligne + 10);
+        }
+        else if (strncmp(ligne, "PositionY:", 10) == 0) {
+            current.positionY = atoi(ligne + 10);
+        }
+    }
+
+    // Ne pas oublier d'ajouter le dernier joueur si ses données sont valides
+    if (!nouveauJoueur && count < maxSaves) {
+        saves[count++] = current;
+    }
+
+    fclose(fichier);
+    return count;
 }
