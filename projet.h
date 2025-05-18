@@ -117,6 +117,8 @@ typedef struct {
     SDL_Texture* terre;
     SDL_Texture* tuyau;
     SDL_Texture* plante;
+    SDL_Texture* herbe5;
+    SDL_Texture* terre5;
 } GameTextures;
 
 typedef struct {
@@ -219,6 +221,10 @@ int isMusicPlaying();
 void playSoundEffect(const char *soundPath, int volume);
 int initGameAudio();
 void cleanupAudio();
+void reinitialiserAudio();
+void preserveAudioState();
+void restoreAudioState();
+void reinitialiserAudioComplet();
 
 GameTextures* loadGameTextures(SDL_Renderer *renderer);
 void freeGameTextures(GameTextures *textures);

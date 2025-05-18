@@ -23,6 +23,7 @@ int initAudio()
 }
 
 
+
 int loadBackgroundMusic(const char *musicPath)
 {
     
@@ -142,7 +143,23 @@ int initGameAudio()
     printf("Musique d'arrière-plan lancée avec succès\n");
     return 1;
 }
+void reinitialiserAudio() {
+    // Si l'audio n'est pas en cours de lecture, essayer de le redémarrer
+    if (!isMusicPlaying()) {
+        if (backgroundMusic != NULL) {
+            // Essayer simplement de reprendre la lecture
+            playBackgroundMusic(-1);
+        } else {
+            // Recharger et démarrer la musique
+            initGameAudio();
+        }
+    }
+}
 
+void preserveAudioState() {
+    // Arrêter temporairement la musique sans libérer les ressources
+    pauseBackgroundMusic();
+}
 
 void cleanupAudio()
 {
@@ -164,4 +181,47 @@ void cleanupAudio()
     Mix_Quit();
     
     printf("Ressources audio libérées\n");
+}
+void reinitialiserAudioComplet()
+{
+    // Arrêter et nettoyer la musique actuelle
+    if (Mix_PlayingMusic())
+    {
+        Mix_HaltMusic();
+    }
+    
+    if (backgroundMusic != NULL)
+    {
+        Mix_FreeMusic(backgroundMusic);
+        backgroundMusic = NULL;
+    }
+    
+    // Fermer et réinitialiser le système audio
+    Mix_CloseAudio();
+    Mix_Quit();
+    
+    // Réinitialiser complètement l'audio
+    initAudio();
+    
+    // Recharger et démarrer la musique
+    if (loadBackgroundMusic("asset/music/overworld.mp3") || 
+        loadBackgroundMusic("asset/music/overworld.wav"))
+    {
+        setMusicVolume(96);
+        playBackgroundMusic(-1);
+        printf("Système audio réinitialisé avec succès\n");
+    }
+    else
+    {
+        printf("Échec de la réinitialisation audio\n");
+    }
+}
+void restoreAudioState() {
+    // Si la musique n'est pas en cours de lecture après une pause
+    if (!Mix_PlayingMusic()) {
+        reinitialiserAudioComplet();
+    } else {
+        // Sinon, reprendre la musique normalement
+        resumeBackgroundMusic();
+    }
 }

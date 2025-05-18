@@ -147,6 +147,7 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
     {
         if (nbSauvegardes < 100) {
             strcpy(sauvegardes[nbSauvegardes].nom, perso->nom);
+            initGameAudio();
             sauvegardes[nbSauvegardes].positionX = perso->positionX;
             sauvegardes[nbSauvegardes].positionY = perso->positionY;
             sauvegardes[nbSauvegardes].score = perso->score;

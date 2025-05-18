@@ -337,6 +337,26 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         }
     }
 
+    // Charger les nouvelles textures pour 'f' et 'o'
+    SDL_Texture* herbe5Texture = NULL;
+    SDL_Texture* terre5Texture = NULL;
+    
+    SDL_Surface* herbe5Surface = IMG_Load("asset/Tiles/herbe5.png");
+    if (herbe5Surface) {
+        herbe5Texture = SDL_CreateTextureFromSurface(renderer, herbe5Surface);
+        SDL_FreeSurface(herbe5Surface);
+    } else {
+        printf("Erreur: impossible de charger herbe5.png: %s\n", IMG_GetError());
+    }
+    
+    SDL_Surface* terre5Surface = IMG_Load("asset/Tiles/terre5.png");
+    if (terre5Surface) {
+        terre5Texture = SDL_CreateTextureFromSurface(renderer, terre5Surface);
+        SDL_FreeSurface(terre5Surface);
+    } else {
+        printf("Erreur: impossible de charger terre5.png: %s\n", IMG_GetError());
+    }
+
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -453,6 +473,31 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                     SDL_RenderFillRect(renderer, &tile);
                 }
                 break;
+            // Ajout des nouveaux types de tuiles
+            case 'f':
+                if (herbe5Texture != NULL)
+                {
+                    SDL_RenderCopy(renderer, herbe5Texture, NULL, &tile);
+                }
+                else
+                {
+                    // Fallback si la texture n'est pas chargée
+                    SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255); // Vert forêt
+                    SDL_RenderFillRect(renderer, &tile);
+                }
+                break;
+            case 'o':
+                if (terre5Texture != NULL)
+                {
+                    SDL_RenderCopy(renderer, terre5Texture, NULL, &tile);
+                }
+                else
+                {
+                    // Fallback si la texture n'est pas chargée
+                    SDL_SetRenderDrawColor(renderer, 160, 82, 45, 255); // Brun
+                    SDL_RenderFillRect(renderer, &tile);
+                }
+                break;
             default:
                 break;
             }
@@ -514,6 +559,10 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
     }
     
     afficherScore(renderer, perso->score, perso->vie);
+    
+    // Libération des textures temporaires
+    if (herbe5Texture) SDL_DestroyTexture(herbe5Texture);
+    if (terre5Texture) SDL_DestroyTexture(terre5Texture);
 }
 
 void freeFlagAnimation()
