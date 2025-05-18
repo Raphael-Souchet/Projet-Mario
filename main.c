@@ -26,13 +26,58 @@ SDL_Texture* heartTexture = NULL;
 
 int main(int argc, char *argv[])
 {
-    int niveauMaxDebloque = lireSauvegarde();
-    const char *fichierOriginal = "Mario.txt";
-    
+    SauvegardeInfo saves[100];
+    int nbSaves = lireSauvegardesExistant(saves, 100);
+    char nomJoueur[100] = "";
+
+    if (nbSaves > 0) {
+        printf("Voulez-vous reprendre une partie existante ? (O/N) ");
+        char choix;
+        scanf(" %c", &choix);
+        
+        if (toupper(choix) == 'O') {
+            if (nbSaves == 1) {
+                strcpy(nomJoueur, saves[0].nom);
+                printf("Chargement de la partie de %s...\n", nomJoueur);
+            } else {
+                printf("Joueurs existants :\n");
+                for (int i = 0; i < nbSaves; i++) {
+                    printf("- %s\n", saves[i].nom);
+                }
+                printf("Entrez votre nom : ");
+                scanf("%99s", nomJoueur);
+            }
+
+            // Recherche de la sauvegarde
+            int found = 0;
+            for (int i = 0; i < nbSaves; i++) {
+                if (strcmp(saves[i].nom, nomJoueur) == 0) {
+                    niveauMaxDebloque = saves[i].niveauMaxDebloque;
+                    strcpy(nomJoueurStocke, nomJoueur);
+                    SPAWN_X = saves[i].positionX;
+                    SPAWN_Y = saves[i].positionY;
+                    found = 1;
+                    break;
+                }
+            }
+
+            if (!found) {
+                printf("Aucune sauvegarde trouvee pour %s. Nouvelle partie.\n", nomJoueur);
+                niveauMaxDebloque = 0;
+                nomJoueurStocke[0] = '\0';
+            }
+        }
+        else {
+            niveauMaxDebloque = 0;
+            system("del temp_*.txt");
+        }
+    }
+
     initialiserNiveaux(niveaux, niveauMaxDebloque);
     menuPrincipal(niveaux);
     return 0;
 }
+
 
 
 void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
@@ -158,24 +203,12 @@ void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
                 if (choixMenu == 2)
                 {
                     stopBackgroundMusic();
-                    cleanupAudio();
-
-                    nettoyerSDL(window, renderer);
-                    IMG_Quit();
-
-                    if (tab_gumba.gumbas != NULL)
-                    {
-                        free(tab_gumba.gumbas);
-                        tab_gumba.gumbas = NULL;
-                    }
-
-                    if (tab_plante.plantes != NULL)
-                    {
-                        free(tab_plante.plantes);
-                        tab_plante.plantes = NULL;
-                    }
-
-                    libererCarte(carte);
+    cleanupAudio();
+    nettoyerSDL(window, renderer);
+    IMG_Quit();
+    libererCarte(carte);
+    menuPrincipal(niveaux); // Ajouté pour relancer le menu
+    return;
 
                     return;
                 }
