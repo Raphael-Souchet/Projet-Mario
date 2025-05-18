@@ -256,7 +256,7 @@ int navigationMenu(int selection, int min, int max, int touche, Niveau *niveaux)
 void mettreAJourCoordonnees(int niveauActuel, int *x, int *y, int *yMort);
 void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int niveauMaxDebloque);
 void chargerProgression(Progression* progression);
-void sauvegarderProgression(int nouveauNiveauDebloque);
+void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur);
 int afficherOption(int numero, const char *texte, int selection_actuelle);
 void afficherMenuPauseEnJeu();
 int menuPauseEnJeu();

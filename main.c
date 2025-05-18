@@ -2,27 +2,27 @@
 
 int LARGEUR_MAP = 163;
 int SPAWN_X = 21;
-int SPAWN_Y = 15;   
+int SPAWN_Y = 15;
 int SPAWN_MORT_X = 21;
 int SPAWN_MORT_Y = 14;
 int MORT_Y = 19;
-char nomJoueurStocke[100]= "";
+char nomJoueurStocke[100] = "";
 Niveau niveaux[MAX_NIVEAUX];
-int niveauActuel = 0; 
+int niveauActuel = 0;
 int niveauMaxDebloque = 0;
 
-GameTextures* gameTextures = NULL;
-Animation* carnivoreAnimation = NULL;
-PlayerAnimations* playerAnimations = NULL;
-Animation* flagAnimation = NULL;
-BackgroundTexture* globalBackground = NULL;
-TTF_Font* scoreFont = NULL;
+GameTextures *gameTextures = NULL;
+Animation *carnivoreAnimation = NULL;
+PlayerAnimations *playerAnimations = NULL;
+Animation *flagAnimation = NULL;
+BackgroundTexture *globalBackground = NULL;
+TTF_Font *scoreFont = NULL;
 SDL_Color scoreColor = {255, 255, 255, 255};
 Tab_piece tab_pieces = {NULL, 0, 0};
-Animation* coinAnimation = NULL;
+Animation *coinAnimation = NULL;
 Tab_starcoins tab_starcoins = {NULL, 0, 0};
-Animation* starCoinAnimation = NULL;
-SDL_Texture* heartTexture = NULL;
+Animation *starCoinAnimation = NULL;
+SDL_Texture *heartTexture = NULL;
 
 int main(int argc, char *argv[])
 {
@@ -30,28 +30,52 @@ int main(int argc, char *argv[])
     int nbSaves = lireSauvegardesExistant(saves, 100);
     char nomJoueur[100] = "";
 
-    if (nbSaves > 0) {
+    if (nbSaves > 0)
+    {
         printf("Voulez-vous reprendre une partie existante ? (O/N) ");
         char choix;
         scanf(" %c", &choix);
-        
-        if (toupper(choix) == 'O') {
-            if (nbSaves == 1) {
+
+        if (toupper(choix) == 'O')
+        {
+            system("cls");
+            printf("+---------------------------------------------+\n");
+            printf("|          PARTIES SAUVEGARDEES               |\n");
+            printf("+---------------------------------------------+\n");
+
+            for (int i = 0; i < nbSaves; i++)
+            {
+                printf("| %2d. %-40s |\n", i + 1, saves[i].nom);
+            }
+            printf("+---------------------------------------------+\n");
+
+            if (nbSaves == 1)
+            {
                 strcpy(nomJoueur, saves[0].nom);
-                printf("Chargement de la partie de %s...\n", nomJoueur);
-            } else {
-                printf("Joueurs existants :\n");
-                for (int i = 0; i < nbSaves; i++) {
-                    printf("- %s\n", saves[i].nom);
-                }
-                printf("Entrez votre nom : ");
-                scanf("%99s", nomJoueur);
+                printf("Une seule sauvegarde trouvee: %s\n", nomJoueur);
+                printf("Chargement automatique...\n");
+                Sleep(1500);
+            }
+            else
+            {
+                int choixJoueur = 0;
+                do
+                {
+                    printf("Entrez le numero du joueur (1-%d) : ", nbSaves);
+                    scanf("%d", &choixJoueur);
+                } while (choixJoueur < 1 || choixJoueur > nbSaves);
+
+                strcpy(nomJoueur, saves[choixJoueur - 1].nom);
+                printf("Vous avez choisi: %s\n", nomJoueur);
+                Sleep(1000);
             }
 
-            // Recherche de la sauvegarde
+            // Charger les données du joueur choisi
             int found = 0;
-            for (int i = 0; i < nbSaves; i++) {
-                if (strcmp(saves[i].nom, nomJoueur) == 0) {
+            for (int i = 0; i < nbSaves; i++)
+            {
+                if (strcmp(saves[i].nom, nomJoueur) == 0)
+                {
                     niveauMaxDebloque = saves[i].niveauMaxDebloque;
                     strcpy(nomJoueurStocke, nomJoueur);
                     SPAWN_X = saves[i].positionX;
@@ -61,24 +85,33 @@ int main(int argc, char *argv[])
                 }
             }
 
-            if (!found) {
+            if (!found)
+            {
                 printf("Aucune sauvegarde trouvee pour %s. Nouvelle partie.\n", nomJoueur);
                 niveauMaxDebloque = 0;
                 nomJoueurStocke[0] = '\0';
+                Sleep(1500);
             }
         }
-        else {
+        else
+        {
+            // Nouvelle partie - réinitialiser les variables globales
             niveauMaxDebloque = 0;
-            system("del temp_*.txt");
+            nomJoueurStocke[0] = '\0';
         }
     }
+    else
+    {
+        // Aucune sauvegarde existante - nouvelle partie
+        niveauMaxDebloque = 0;
+        nomJoueurStocke[0] = '\0';
+    }
 
+    // Initialiser les niveaux avec la progression chargée ou par défaut
     initialiserNiveaux(niveaux, niveauMaxDebloque);
     menuPrincipal(niveaux);
     return 0;
 }
-
-
 
 void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
 {
@@ -203,12 +236,12 @@ void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
                 if (choixMenu == 2)
                 {
                     stopBackgroundMusic();
-    cleanupAudio();
-    nettoyerSDL(window, renderer);
-    IMG_Quit();
-    libererCarte(carte);
-    menuPrincipal(niveaux); // Ajouté pour relancer le menu
-    return;
+                    cleanupAudio();
+                    nettoyerSDL(window, renderer);
+                    IMG_Quit();
+                    libererCarte(carte);
+                    menuPrincipal(niveaux);
+                    return;
 
                     return;
                 }
