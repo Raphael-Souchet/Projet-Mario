@@ -102,6 +102,27 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
         SDL_FreeSurface(surface_plante);
     }
 
+    SDL_Surface *surface_nuage = IMG_Load("asset/Tiles/nuage.png");
+    if (surface_nuage == NULL)
+    {
+        printf("Erreur: Impossible de charger l'image nuage.png: %s\n", IMG_GetError());
+        surface_nuage = IMG_Load("asset/Tiles/nuage.png");
+        if (surface_nuage == NULL)
+        {
+            printf("Erreur: Impossible de charger l'image nuage alternative: %s\n", IMG_GetError());
+        }
+    }
+    
+    if (surface_nuage != NULL)
+    {
+        textures->nuage = SDL_CreateTextureFromSurface(renderer, surface_nuage);
+        if (textures->nuage == NULL)
+        {
+            printf("Erreur: Impossible de créer la texture du nuage: %s\n", SDL_GetError());
+        }
+        SDL_FreeSurface(surface_nuage);
+    }
+
     return textures;
 }
 

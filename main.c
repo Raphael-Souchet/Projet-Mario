@@ -3,7 +3,7 @@
 int LARGEUR_MAP = 163;
 int SPAWN_X = 21;
 int SPAWN_Y = 15;
-int MORT_Y = 25;
+int MORT_Y = 23;
 char nomJoueurStocke[100] = "";
 Niveau niveaux[MAX_NIVEAUX];
 int niveauActuel = 0;

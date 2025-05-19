@@ -55,6 +55,7 @@ typedef struct {
     int positionX;
     int positionY;
 } SauvegardeInfo;
+
 typedef struct {
     int niveauxDebloques[MAX_NIVEAUX];
 } Progression;
@@ -116,6 +117,7 @@ typedef struct {
     SDL_Texture* plante;
     SDL_Texture* herbe5;
     SDL_Texture* terre5;
+    SDL_Texture* nuage;
 } GameTextures;
 
 typedef struct {

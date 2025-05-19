@@ -2,23 +2,23 @@
                                                                                                                                                   
                                                                                                                                                   
                                 *                                                                                                                 
-                                        w                                                                                                         
-                                            w                                                                                                     
-                                                 w                               cc                                                               
-                                                     wwwww                     wwwww                                                              
+                                        n                                                                                                         
+                                            n                                                                                                     
+                                                 n                               cc                                                               
+                                                     nnnn                     nnnnn                                                              
                                                                                                                                                   
                                                                  wwwwwwwwwww                                                                      
-                                                            wwwwwwwwwwwwwwww                          ccccccccccccccc                         !   
-                                          wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww        wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+                                                            wwwwwddddddddddd                          ccccccccccccccc                         !   
+                                          wwwwwwwwwwwwwwwwwwddddddddddddddddwwwww        wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
                                          w                                         *                                                              
-                             wwwwwwww                                                                                                             
-                    *                              ww                                   ww                                                        
-                                         wwwww           wwww                                                                                     
-                                                                wwwww      wwwww                                                                  
+                             nnnnnnnn                                                                                                             
+                                                   nn                                   nn                                                        
+                    *                    nnnnn           nnnn                                                                                     
+                                                                nnnnn      nnnnn                                                                  
                                                                                                                                                   
-                                                                                   wwwwwwwwww                                                     
+                                                                                   nnnnnnnnnn                                                     
                                                                    c          c                                                                   
-                                                                  www        www                                                                  
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww             w                                                                        
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww                                                                                       
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww                                                                                       
+                                                                  nnn        nnn                                                                  
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww             n                                                                        
+dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd                                                                                       
+dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd                                                                                       

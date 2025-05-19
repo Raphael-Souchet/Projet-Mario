@@ -80,76 +80,6 @@ void afficherMenuPrincipal(int selection, Niveau *niveaux)
     printf("+---------------------------------------------+\n");
 }
 
-void afficherMenuSauvegarde(int selection)
-{
-    system("cls");
-    printf("+---------------------------------------------+\n");
-    printf("|               Menu Sauvegarde               |\n");
-    printf("|                                             |\n");
-    
-    if (selection == 1)
-        setCouleur(240);
-    printf("|             Sauvegarder la partie           |\n");
-    setCouleur(7);
-    
-    if (selection == 2)
-        setCouleur(240);
-    printf("|                 Retour au jeu               |\n");
-    setCouleur(7);
-    
-    if (selection == 3)
-        setCouleur(240);
-    printf("|                Menu Principal               |\n");
-    setCouleur(7);
-    
-    printf("+---------------------------------------------+\n");
-}
-
-void menuSauvegarde(Personnage *perso, Carte *carte)
-{
-    char *fichierTemp = creerNomFichierTemp(perso->nom);
-    int selection = 1;
-    int touche;
-    extern Niveau niveaux[MAX_NIVEAUX];
-    
-    while (_kbhit())
-        _getch();
-    
-    while (1)
-    {
-        afficherMenuSauvegarde(selection);
-        
-        touche = _getch();
-        
-        if (touche == 0 || touche == 224)
-            touche = _getch();
-        
-        selection = navigationMenu(selection, 1, 3, touche, NULL);
-        
-        if (touche == 13)
-        {
-            switch (selection)
-            {
-                case 1:
-                    sauvegarderPartie(perso, carte, fichierTemp);
-                    printf("Partie sauvegardee avec succes!\n");
-                    Sleep(1500);
-                    break;
-                case 2:
-                    jouer(fichierTemp, perso);
-                    free(fichierTemp);
-                    return;
-                case 3:
-                    sauvegarderCarteVersFichier(carte, fichierTemp);
-                    libererCarte(carte);
-                    free(fichierTemp);
-                    menuPrincipal(niveaux);
-                    return;
-            }
-        }
-    }
-}
-
 void afficherMenuPauseEnJeu()
 {
     system("cls");
@@ -271,8 +201,8 @@ void menu_mort(Personnage *perso, const char *fichierTemp)
                     menuMusicPlaying = 0;
                     
                     remove(fichierTemp);
-                    extern int niveauActuel;
-                    if (!copierFichier(niveaux[niveauActuel].fichier, fichierTemp))
+                    extern int niveauMaxDebloque;
+                    if (!copierFichier(niveaux[niveauMaxDebloque].fichier, fichierTemp))
                     {
                         printf("Erreur de reinitialisation !\n");
                         Sleep(1500);
@@ -348,22 +278,10 @@ void menuVictoire(Personnage *perso)
         system("cls");
         printf("+---------------------------------------------+\n");
         printf("|                VOUS AVEZ GAGNE !            |\n");
-        printf("|                 Score final : %-13d |\n", perso->score);
+        printf("|                Score final : %-14d |\n", perso->score);
         printf("|                                             |\n");
 
-        if (niveauActuel + 1 < MAX_NIVEAUX && niveaux[niveauActuel + 1].debloque)
-        {
-            if (selection == 1)
-                setCouleur(240);
-            printf("|             Niveau suivant                   |\n");
-            setCouleur(7);
-        }
-        else
-        {
-            printf("|     Aucun niveau suivant disponible          |\n");
-        }
-
-        if (selection == 2)
+        if (selection == 1)
             setCouleur(240);
         printf("|             Retour au menu principal         |\n");
         setCouleur(7);
@@ -374,7 +292,7 @@ void menuVictoire(Personnage *perso)
         if (touche == 0 || touche == 224)
             touche = _getch();
 
-        selection = navigationMenu(selection, 1, 2, touche, NULL);
+        selection = navigationMenu(selection, 1, 1, touche, NULL);
 
         if (touche == 13)
         {

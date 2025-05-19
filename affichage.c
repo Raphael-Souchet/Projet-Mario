@@ -493,6 +493,17 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                     SDL_RenderFillRect(renderer, &tile);
                 }
                 break;
+            case 'n':
+                if (gameTextures != NULL && gameTextures->nuage != NULL)
+                {
+                    SDL_RenderCopy(renderer, gameTextures->nuage, NULL, &tile);
+                }
+                else
+                {
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                    SDL_RenderFillRect(renderer, &tile);
+                }
+                break;
             case 'Q':
                 if (slimeAnimation != NULL)
                 {
