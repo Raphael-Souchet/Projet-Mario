@@ -103,7 +103,7 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
         libererCarte(carte);
 
         extern int niveauActuel;
-        sauvegarderProgression(niveauActuel + 1, perso->nom);
+        sauvegarderProgression(niveauActuel + 1, perso->nom, perso->score);
         extern int niveauMaxDebloque;
         extern Niveau niveaux[MAX_NIVEAUX];
         menuVictoire(perso);

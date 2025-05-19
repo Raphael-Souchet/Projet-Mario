@@ -81,9 +81,9 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
             break;
         }
         case 2: {
-            static int x2[] = {30, 90, 95};
-            static int y2[] = {12, 11, 10};
-            tab_x = x2; tab_y = y2; count = 3;
+            static int x2[] = {74, 100, 200, 264, 302};
+            static int y2[] = {13, 19, 11, 17, 12};
+            tab_x = x2; tab_y = y2; count = 5;
             break;
         }
         case 3: {
@@ -202,8 +202,8 @@ void initialiserPlante(Carte *carte, Tab_plante *tab_plante)
             break;
         }
         case 2: {
-            static int x2[] = {100, 105};
-            static int y2[] = {10, 9};
+            static int x2[] = {150, 247};
+            static int y2[] = {10, 15};
             tab_x = x2; tab_y = y2; count = 2;
             break;
         }

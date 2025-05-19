@@ -93,9 +93,6 @@ int isMusicPlaying()
     return Mix_PlayingMusic();
 }
 
-
-
-
 void playSoundEffect(const char *soundPath, int volume)
 {
     printf("Tentative de lecture du son: %s avec volume %d\n", soundPath, volume);
