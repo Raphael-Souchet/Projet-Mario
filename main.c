@@ -3,9 +3,7 @@
 int LARGEUR_MAP = 163;
 int SPAWN_X = 21;
 int SPAWN_Y = 15;
-int SPAWN_MORT_X = 21;
-int SPAWN_MORT_Y = 14;
-int MORT_Y = 19;
+int MORT_Y = 25;
 char nomJoueurStocke[100] = "";
 Niveau niveaux[MAX_NIVEAUX];
 int niveauActuel = 0;
@@ -114,7 +112,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
+void jouer(const char *fichierTemp, Personnage *perso)
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
     {
@@ -193,8 +191,8 @@ void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
 
     Tab_gumba tab_gumba = {NULL, 0};
     Tab_plante tab_plante = {NULL, 0};
-    initialiser_gumbas(carte, &tab_gumba, niveauActuel);
-    initialiserPlante(carte, &tab_plante, niveauActuel);
+    initialiser_gumbas(carte, &tab_gumba);
+    initialiserPlante(carte, &tab_plante);
 
     initialiser_pieces(carte, &tab_pieces);
     initialiser_starcoins(carte, &tab_starcoins);
@@ -207,6 +205,8 @@ void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
     const int frameDelay = 1500 / FPS;
 
     int playerMoving = 0;
+
+    mettreAJourCoordonnees(&SPAWN_X, &SPAWN_Y, &MORT_Y);
 
     while (!quit)
     {
@@ -250,7 +250,7 @@ void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
                 }
             }
 
-            deplacer_joueur(carte, perso, &playerMoving, &tab_gumba, &tab_plante, fichierTemp, window, renderer, niveauActuel);
+            deplacer_joueur(carte, perso, &playerMoving, &tab_gumba, &tab_plante, fichierTemp, window, renderer);
 
             check_collect_piece(carte, &tab_pieces, perso);
             check_collect_starcoin(carte, &tab_starcoins, perso);
@@ -287,7 +287,7 @@ void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
 
                 libererCarte(carte);
 
-                menu_mort(perso, fichierTemp, niveauActuel);
+                menu_mort(perso, fichierTemp);
                 return;
             }
         }

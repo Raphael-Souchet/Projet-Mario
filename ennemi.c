@@ -1,7 +1,9 @@
 #include "projet.h"
 
-void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba, int niveau)
+void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
 {
+    extern int niveauActuel;
+    
     if (tab_gumba == NULL)
     {
         printf("Erreur: tab_gumba non valide\n");
@@ -64,7 +66,7 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba, int niveau)
     const int *tab_x = NULL, *tab_y = NULL;
     int count = 0;
 
-    switch (niveau)
+    switch (niveauActuel)
     {
         case 0: {
             static int x0[] = {74, 80, 120};
@@ -166,8 +168,9 @@ void bouger_gumba(Carte *carte, Tab_gumba *tab_gumba)
     }
 }
 
-void initialiserPlante(Carte *carte, Tab_plante *tab_plante, int niveau)
+void initialiserPlante(Carte *carte, Tab_plante *tab_plante)
 {
+    extern int niveauActuel;
     if (tab_plante == NULL)
     {
         printf("Erreur: tab_plante non valide\n");
@@ -184,7 +187,7 @@ void initialiserPlante(Carte *carte, Tab_plante *tab_plante, int niveau)
     const int *tab_x = NULL, *tab_y = NULL;
     int count = 0;
 
-    switch (niveau)
+    switch (niveauActuel)
     {
         case 0: {
             static int x0[] = {88, 94};
@@ -428,6 +431,7 @@ int collision_avec_plante(Tab_plante *tab_plante, Personnage *perso)
 
 void gerer_collisions(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, Tab_plante *tab_plante)
 {
+    extern int MORT_Y;
     if (ecraser_gumba(carte, tab_gumba, perso))
     {
         return;

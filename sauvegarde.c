@@ -130,6 +130,7 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
     time(&now);
     char *date = ctime(&now);
     date[strcspn(date, "\n")] = '\0';
+    extern int niveauMaxDebloque;
 
     if (joueurExiste >= 0)
     {
@@ -192,6 +193,7 @@ void chargerProgression(Progression* progression) {
 
 void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
 {
+    extern int niveauMaxDebloque;
     if (nouveauNiveauDebloque > niveauMaxDebloque) {
         niveauMaxDebloque = nouveauNiveauDebloque;
     }
@@ -199,6 +201,7 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
     SauvegardeInfo saves[100];
     int nbSaves = lireSauvegardesExistant(saves, 100);
     int joueurExiste = 0;
+    extern char nomJoueurStocke[100];
     
     for(int i = 0; i < nbSaves; i++) {
         if(strcmp(saves[i].nom, nomJoueur) == 0) {
@@ -216,6 +219,8 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
     
     
     if (!joueurExiste && nbSaves < 100 && strlen(nomJoueur) > 0) {
+        extern int SPAWN_X;
+        extern int SPAWN_Y;
         strcpy(saves[nbSaves].nom, nomJoueur);
         saves[nbSaves].niveauMaxDebloque = nouveauNiveauDebloque;
         saves[nbSaves].score = 0;
@@ -255,7 +260,8 @@ int lireSauvegarde()
 {
     SauvegardeInfo saves[100];
     int nbSaves = lireSauvegardesExistant(saves, 100);
-    
+    extern int niveauMaxDebloque;
+    extern char nomJoueurStocke[100];
     
     if (strlen(nomJoueurStocke) > 0) {
         for (int i = 0; i < nbSaves; i++) {
@@ -281,6 +287,7 @@ int lireSauvegarde()
 
 void resetScores()
 {
+    extern char nomJoueurStocke[100];
     printf("Voulez-vous vraiment supprimer toutes les sauvegardes ? (o/n) : ");
     char choix;
     scanf(" %c", &choix);
@@ -304,8 +311,11 @@ void resetScores()
     }
 }
 
-void initialiserNiveaux(Niveau *niveaux, int niveauMaxDebloque)
+void initialiserNiveaux()
 {
+    extern Niveau niveaux[MAX_NIVEAUX];
+    extern int niveauMaxDebloque;
+
     strcpy(niveaux[0].fichier, "Mario1.txt");
     strcpy(niveaux[1].fichier, "Mario2.txt");
     strcpy(niveaux[2].fichier, "Mario3.txt");
@@ -323,7 +333,9 @@ void initialiserNiveaux(Niveau *niveaux, int niveauMaxDebloque)
     }
 }
 
-void mettreAJourCoordonnees(int niveauActuel, int *x, int *y, int *yMort) {
+void mettreAJourCoordonnees(int *x, int *y, int *yMort) {
+    extern int niveauActuel;
+    
     switch (niveauActuel) {
         case 0:
             *x = 21;
@@ -438,6 +450,7 @@ int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
     char ligne[1024];
     SauvegardeInfo current;
     int nouveauJoueur = 1;
+    extern int niveauMaxDebloque;
 
     while (fgets(ligne, sizeof(ligne), fichier) && count < maxSaves) {
         ligne[strcspn(ligne, "\n")] = 0;

@@ -94,22 +94,23 @@ void afficherMenuSauvegarde(int selection)
     
     if (selection == 2)
         setCouleur(240);
-    printf("|             Retour au jeu                   |\n");
+    printf("|                 Retour au jeu               |\n");
     setCouleur(7);
     
     if (selection == 3)
         setCouleur(240);
-    printf("|             Menu Principal                  |\n");
+    printf("|                Menu Principal               |\n");
     setCouleur(7);
     
     printf("+---------------------------------------------+\n");
 }
 
-void menuSauvegarde(Personnage *perso, Carte *carte, Niveau *niveaux)
+void menuSauvegarde(Personnage *perso, Carte *carte)
 {
     char *fichierTemp = creerNomFichierTemp(perso->nom);
     int selection = 1;
     int touche;
+    extern Niveau niveaux[MAX_NIVEAUX];
     
     while (_kbhit())
         _getch();
@@ -135,7 +136,7 @@ void menuSauvegarde(Personnage *perso, Carte *carte, Niveau *niveaux)
                     Sleep(1500);
                     break;
                 case 2:
-                    jouer(fichierTemp, perso, niveaux);
+                    jouer(fichierTemp, perso);
                     free(fichierTemp);
                     return;
                 case 3:
@@ -153,10 +154,10 @@ void afficherMenuPauseEnJeu()
 {
     system("cls");
     printf("+---------------------------------------------+\n");
-    printf("|                 PAUSE                       |\n");
+    printf("|                    PAUSE                    |\n");
     printf("|                                             |\n");
-    printf("|                Reprendre                    |\n");
-    printf("|               Menu Principal                |\n");
+    printf("|                  Reprendre                  |\n");
+    printf("|                Menu Principal               |\n");
     printf("+---------------------------------------------+\n");
 }
 
@@ -171,17 +172,17 @@ int menuPauseEnJeu()
     {
         system("cls");
         printf("+---------------------------------------------+\n");
-        printf("|                 PAUSE                       |\n");
+        printf("|                    PAUSE                    |\n");
         printf("|                                             |\n");
         
         if (selection == 1)
             setCouleur(240);
-        printf("|                Reprendre                    |\n");
+        printf("|                  Reprendre                  |\n");
         setCouleur(7);
         
         if (selection == 2)
             setCouleur(240);
-        printf("|               Menu Principal                |\n");
+        printf("|                Menu Principal               |\n");
         setCouleur(7);
         
         printf("+---------------------------------------------+\n");
@@ -204,18 +205,18 @@ void afficherMenuMort(Personnage *perso, int selection)
     if (perso->vie > 0)
     {
         printf("+---------------------------------------------+\n");
-        printf("|                 VOUS ÊTES MORT !            |\n");
-        printf("|            Vies restantes : %-15d |\n", perso->vie);
+        printf("|                VOUS ETES MORT !             |\n");
+        printf("|               Vies restantes : %-12d |\n", perso->vie);
         printf("|                                             |\n");
 
         if (selection == 1)
             setCouleur(240);
-        printf("|               Recommencer                   |\n");
+        printf("|                  Recommencer                |\n");
         setCouleur(7);
 
         if (selection == 2)
             setCouleur(240);
-        printf("|              Menu Principal                 |\n");
+        printf("|                 Menu Principal              |\n");
         setCouleur(7);
 
         printf("+---------------------------------------------+\n");
@@ -231,10 +232,11 @@ void afficherMenuMort(Personnage *perso, int selection)
     }
 }
 
-void menu_mort(Personnage *perso, const char *fichierTemp, int niveauActuel)
+void menu_mort(Personnage *perso, const char *fichierTemp)
 {
-    Niveau niveaux[MAX_NIVEAUX];
-    int niveauMaxDebloque = lireSauvegarde();
+    extern Niveau niveaux[MAX_NIVEAUX];
+    extern int niveauMaxDebloque;
+    niveauMaxDebloque = lireSauvegarde();
     initialiserNiveaux(niveaux, niveauMaxDebloque);
     
     
@@ -269,6 +271,7 @@ void menu_mort(Personnage *perso, const char *fichierTemp, int niveauActuel)
                     menuMusicPlaying = 0;
                     
                     remove(fichierTemp);
+                    extern int niveauActuel;
                     if (!copierFichier(niveaux[niveauActuel].fichier, fichierTemp))
                     {
                         printf("Erreur de reinitialisation !\n");
@@ -276,10 +279,12 @@ void menu_mort(Personnage *perso, const char *fichierTemp, int niveauActuel)
                         menuPrincipal(niveaux);
                         return;
                     }
+                    extern int SPAWN_X;
+                    extern int SPAWN_Y;
                     perso->positionX = SPAWN_X;
                     perso->positionY = SPAWN_Y;
                     perso->score = 0;
-                    jouer(fichierTemp, perso, niveaux);
+                    jouer(fichierTemp, perso);
                     return;
                 }
                 else
@@ -300,12 +305,14 @@ void menu_mort(Personnage *perso, const char *fichierTemp, int niveauActuel)
     }
 }
 
-void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int niveauMaxDebloqueParam)
+void menuVictoire(Personnage *perso)
 {
     system("cls");
     int selection = 1, touche;
+    extern int niveauActuel;
+    extern int niveauMaxDebloque;
+    extern Niveau niveaux[MAX_NIVEAUX];
 
-    
     if (niveauActuel + 1 < MAX_NIVEAUX && niveauActuel + 1 > niveauMaxDebloque)
     {
         niveaux[niveauActuel + 1].debloque = 1;
@@ -340,8 +347,8 @@ void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int nive
     {
         system("cls");
         printf("+---------------------------------------------+\n");
-        printf("|              VOUS AVEZ GAGNE !              |\n");
-        printf("|           Score final : %-19d |\n", perso->score);
+        printf("|                VOUS AVEZ GAGNE !            |\n");
+        printf("|                 Score final : %-13d |\n", perso->score);
         printf("|                                             |\n");
 
         if (niveauActuel + 1 < MAX_NIVEAUX && niveaux[niveauActuel + 1].debloque)
@@ -390,10 +397,13 @@ void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int nive
                     return;
                 }
                 niveauActuel++;
-                mettreAJourCoordonnees(niveauActuel, &SPAWN_X, &SPAWN_Y, &MORT_Y);
+                extern int SPAWN_X;
+                extern int SPAWN_Y;
+                extern int MORT_Y;
+                mettreAJourCoordonnees(&SPAWN_X, &SPAWN_Y, &MORT_Y);
                 perso->positionX = SPAWN_X;
                 perso->positionY = SPAWN_Y;
-                jouer(fichierTemp, perso, niveaux);
+                jouer(fichierTemp, perso);
                 free(fichierTemp);
                 return;
             }
@@ -407,12 +417,18 @@ void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int nive
     }
 }
 
-void menuPrincipal(Niveau *niveaux)
+void menuPrincipal()
 {
+    extern int SPAWN_X;
+    extern int SPAWN_Y;
+    extern int niveauMaxDebloque;
+    extern Niveau niveaux[MAX_NIVEAUX];
     Personnage perso = {SPAWN_X, SPAWN_Y, "", 0, 0, 0, 1, 1, 1, 3};
     int selection = 1, touche;
     char *fichierTemp = NULL;
-    int niveauActuel = 0;
+    extern int niveauActuel;
+    extern char nomJoueurStocke[100];
+    niveauActuel = 0;
 
     
     if (!menuMusicPlaying) {
@@ -432,10 +448,9 @@ void menuPrincipal(Niveau *niveaux)
     static Niveau niveauxLocaux[MAX_NIVEAUX];
     if (niveaux == NULL)
     {
-        
         niveauMaxDebloque = lireSauvegarde();
         initialiserNiveaux(niveauxLocaux, niveauMaxDebloque);
-        niveaux = niveauxLocaux;
+        memcpy(niveaux, niveauxLocaux, sizeof(niveauxLocaux));
     } else {
         
         for (int i = 0; i < MAX_NIVEAUX; i++) {
@@ -502,11 +517,12 @@ void menuPrincipal(Niveau *niveaux)
                 }
 
                 niveauActuel = selection - 1;
-                mettreAJourCoordonnees(niveauActuel, &SPAWN_X, &SPAWN_Y, &MORT_Y);
+                extern int MORT_Y;
+                mettreAJourCoordonnees(&SPAWN_X, &SPAWN_Y, &MORT_Y);
                 perso.positionX = SPAWN_X;
                 perso.positionY = SPAWN_Y;
 
-                jouer(fichierTemp, &perso, niveaux);
+                jouer(fichierTemp, &perso);
                 free(fichierTemp);
                 return;
             }

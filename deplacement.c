@@ -45,7 +45,7 @@ void gerer_saut(Carte *carte, Personnage *perso, int direction)
     }
 }
 
-void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, Tab_plante *tab_plante, const char *fichierTemp, SDL_Window *window, SDL_Renderer *renderer, int niveauActuel)
+void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, Tab_plante *tab_plante, const char *fichierTemp, SDL_Window *window, SDL_Renderer *renderer)
 {
     char caractere_dessous = (perso->positionY + 1 < carte->hauteur) ? carte->carte[perso->positionY + 1][perso->positionX] : 'w';
 
@@ -107,9 +107,11 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
         nettoyerSDL(window, renderer);
         libererCarte(carte);
 
+        extern int niveauActuel;
         sauvegarderProgression(niveauActuel + 1, perso->nom);
-
-        menuVictoire(perso, niveaux, niveauActuel, niveauMaxDebloque);
+        extern int niveauMaxDebloque;
+        extern Niveau niveaux[MAX_NIVEAUX];
+        menuVictoire(perso);
         return;
     }
     if (perso->positionY < 0)
@@ -169,8 +171,9 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
         gumba->positionY = 0;
 }
 
-void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *tab_gumba, Tab_plante *tab_plante, const char *fichierTemp, SDL_Window *window, SDL_Renderer *renderer, int niveauActuel)
+void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *tab_gumba, Tab_plante *tab_plante, const char *fichierTemp, SDL_Window *window, SDL_Renderer *renderer)
 {
+    extern int MORT_Y;
     if (perso->positionY >= MORT_Y)
     {
         *isMoving = 0;
@@ -211,8 +214,8 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *
     {
         perso->vitesse_x = 0;
     }
-
-    verifier_collision(carte, perso, tab_gumba, tab_plante, fichierTemp, window, renderer, niveauActuel);
+    extern int niveauActuel;
+    verifier_collision(carte, perso, tab_gumba, tab_plante, fichierTemp, window, renderer);
 
     if (perso->en_chute && !perso->en_saut)
     {
@@ -227,7 +230,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *
                 effacer_position(carte, perso);
                 perso->positionY = new_y;
                 mettre_position(carte, perso);
-                verifier_collision(carte, perso, tab_gumba, tab_plante, fichierTemp, window, renderer, niveauActuel);
+                verifier_collision(carte, perso, tab_gumba, tab_plante, fichierTemp, window, renderer);
                 *isMoving = 1;
             }
         }
@@ -277,7 +280,7 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *
                                 effacer_position(carte, perso);
                                 perso->positionX = next_x;
                                 mettre_position(carte, perso);
-                                verifier_collision(carte, perso, tab_gumba, tab_plante, fichierTemp, window, renderer, niveauActuel);
+                                verifier_collision(carte, perso, tab_gumba, tab_plante, fichierTemp, window, renderer);
                                 *isMoving = 1;
                             }
                             else
