@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
             for (int i = 0; i < nbSaves; i++)
             {
-                printf("| %2d. %-40s |\n", i + 1, saves[i].nom);
+                printf("| %2d. %-39s |\n", i + 1, saves[i].nom);
             }
             printf("+---------------------------------------------+\n");
 
@@ -193,7 +193,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
         SDL_Quit();
         return;
     }
-
+    perso->score = 0;
     scoreFont = initFont();
     if (scoreFont == NULL)
     {
@@ -236,7 +236,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
     const int frameDelay = 1500 / FPS;
 
     int playerMoving = 0;
-
+    
     mettreAJourCoordonnees(&SPAWN_X, &SPAWN_Y, &MORT_Y);
 
     while (!quit)
@@ -276,8 +276,6 @@ void jouer(const char *fichierTemp, Personnage *perso)
                     IMG_Quit();
                     libererCarte(carte);
                     menuPrincipal(niveaux);
-                    return;
-
                     return;
                 }
             }

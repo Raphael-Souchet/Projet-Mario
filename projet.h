@@ -55,6 +55,7 @@ typedef struct {
     int vie;
     int positionX;
     int positionY;
+    int scoresNiveaux[MAX_NIVEAUX];
 } SauvegardeInfo;
 
 typedef struct {
@@ -266,9 +267,9 @@ int navigationMenu(int selection, int min, int max, int touche, Niveau *niveaux)
 void mettreAJourCoordonnees(int *x, int *y, int *yMort);
 void menuVictoire(Personnage *perso);
 void chargerProgression(Progression* progression);
-void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur);
+void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur, int scoreNiveau);
 int afficherOption(int numero, const char *texte, int selection_actuelle);
-void afficherMenuPauseEnJeu();
+void afficherMenuPrincipal(int selection, Niveau *niveaux);
 int menuPauseEnJeu();
 int lireSauvegarde();
 

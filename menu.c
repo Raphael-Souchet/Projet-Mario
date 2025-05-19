@@ -37,9 +37,32 @@ int navigationMenu(int selection, int min, int max, int touche, Niveau *niveaux)
 
 void afficherMenuPrincipal(int selection, Niveau *niveaux)
 {
+    extern char nomJoueurStocke[100];
+
+    // Calculer le score total
+    int totalScore = 0;
+    if (strlen(nomJoueurStocke) > 0)
+    {
+        SauvegardeInfo saves[100];
+        int nbSaves = lireSauvegardesExistant(saves, 100);
+
+        for (int i = 0; i < nbSaves; i++)
+        {
+            if (strcmp(saves[i].nom, nomJoueurStocke) == 0)
+            {
+                // Calculer le score total comme la somme des scores de chaque niveau
+                for(int j = 0; j < MAX_NIVEAUX; j++) {
+                    totalScore += saves[i].scoresNiveaux[j];
+                }
+                break;
+            }
+        }
+    }
+
     system("cls");
     printf("+---------------------------------------------+\n");
     printf("|     Bienvenue dans l'univers de Mario !     |\n");
+    printf("|                   Score : %-5d             |\n", totalScore);
     printf("|                                             |\n");
     printf("|                   - MENU -                  |\n");
     printf("|                                             |\n");
@@ -157,7 +180,6 @@ void menu_mort(Personnage *perso, const char *fichierTemp)
     niveauMaxDebloque = lireSauvegarde();
     initialiserNiveaux(niveaux, niveauMaxDebloque);
 
-
     if (perso->vie > 0)
     {
         int selection = 1, touche;
@@ -249,11 +271,15 @@ void menuVictoire(Personnage *perso)
     extern int niveauMaxDebloque;
     extern Niveau niveaux[MAX_NIVEAUX];
 
+    // Sauvegarde le score du niveau actuel
+    sauvegarderProgression(niveauMaxDebloque, perso->nom, perso->score);
+
+    // Débloque le niveau suivant si nécessaire
     if (niveauActuel + 1 < MAX_NIVEAUX && niveauActuel + 1 > niveauMaxDebloque)
     {
         niveaux[niveauActuel + 1].debloque = 1;
         niveauMaxDebloque = niveauActuel + 1;
-        sauvegarderProgression(niveauMaxDebloque, perso->nom);
+        sauvegarderProgression(niveauMaxDebloque, perso->nom, perso->score);
     }
 
     char *fichierTemp = creerNomFichierTemp(perso->nom);
@@ -262,14 +288,6 @@ void menuVictoire(Personnage *perso)
     {
         sauvegarderPartie(perso, carte, fichierTemp);
         libererCarte(carte);
-    }
-    else
-    {
-
-        if (strlen(perso->nom) > 0)
-        {
-            sauvegarderProgression(niveauMaxDebloque, perso->nom);
-        }
     }
 
     stopBackgroundMusic();
@@ -306,7 +324,6 @@ void menuVictoire(Personnage *perso)
         {
             if (selection == 1 && niveauActuel + 1 < MAX_NIVEAUX && niveaux[niveauActuel + 1].debloque)
             {
-
                 stopBackgroundMusic();
                 menuMusicPlaying = 0;
 
@@ -329,6 +346,7 @@ void menuVictoire(Personnage *perso)
                 mettreAJourCoordonnees(&SPAWN_X, &SPAWN_Y, &MORT_Y);
                 perso->positionX = SPAWN_X;
                 perso->positionY = SPAWN_Y;
+                perso->score = 0;
                 jouer(fichierTemp, perso);
                 free(fichierTemp);
                 return;
@@ -354,7 +372,6 @@ void menuPrincipal()
     char *fichierTemp = NULL;
     extern int niveauActuel;
     extern char nomJoueurStocke[100];
-    niveauActuel = 0;
 
     if (!menuMusicPlaying)
     {
@@ -394,6 +411,8 @@ void menuPrincipal()
 
     while (1)
     {
+        int totalScore = 0;
+        // compter le score total du joueur
         afficherMenuPrincipal(selection, niveaux);
 
         touche = _getch();
@@ -406,7 +425,6 @@ void menuPrincipal()
         {
             if (selection >= 1 && selection <= MAX_NIVEAUX && niveaux[selection - 1].debloque)
             {
-
                 stopBackgroundMusic();
                 menuMusicPlaying = 0;
 
@@ -424,8 +442,8 @@ void menuPrincipal()
                         if (strcmp(saves[i].nom, perso.nom) == 0)
                         {
                             niveauMaxDebloque = saves[i].niveauMaxDebloque;
-                            perso.score = saves[i].score;
                             perso.vie = saves[i].vie;
+                            // Ne pas charger le score total ici
                             break;
                         }
                     }
@@ -452,6 +470,7 @@ void menuPrincipal()
                 mettreAJourCoordonnees(&SPAWN_X, &SPAWN_Y, &MORT_Y);
                 perso.positionX = SPAWN_X;
                 perso.positionY = SPAWN_Y;
+                perso.score = 0; // Réinitialiser le score au début du niveau
 
                 jouer(fichierTemp, &perso);
                 free(fichierTemp);
@@ -467,12 +486,13 @@ void menuPrincipal()
             else if (selection == MAX_NIVEAUX + 2)
             {
                 resetScores();
-                sauvegarderProgression(0, perso.nom);
-
+                extern Niveau niveaux[MAX_NIVEAUX];
                 initialiserNiveaux(niveaux, 0);
 
                 printf("Scores et progression reinitialises !\n");
                 Sleep(1500);
+                system("cls");
+                menuPrincipal();
             }
             else if (selection == MAX_NIVEAUX + 3)
             {

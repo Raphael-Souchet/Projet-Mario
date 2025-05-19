@@ -189,9 +189,9 @@ void check_collect_starcoin(Carte* carte, Tab_starcoins* tab_starcoins, Personna
             tab_starcoins->starCoins[i].actif = 0;
             perso->score += 50; 
             
-            playSoundEffect("asset/sound/starcoin.wav", 100);
+            playSoundEffect("asset/sound/piece_etoile.wav", 100);
             
-            carte->carte[tab_starcoins->starCoins[i].positionY][tab_starcoins->starCoins[i].positionX] = ' ';
+            carte->carte[tab_starcoins->starCoins[i].positionY][tab_starcoins->starCoins[i].positionX] = 'M';
         }
     }
 }

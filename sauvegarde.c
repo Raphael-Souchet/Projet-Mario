@@ -49,7 +49,7 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
         char nom[100];
         int positionX;
         int positionY;
-        int score;
+        int scoresNiveaux[MAX_NIVEAUX]; // Tableau pour stocker les scores par niveau
         int vie;
         int niveauMax;
         char date[100];
@@ -84,7 +84,10 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
                 
                 sauvegardes[currentSave].positionX = 0;
                 sauvegardes[currentSave].positionY = 0;
-                sauvegardes[currentSave].score = 0;
+                // Initialisation des scores pour chaque niveau
+                for (int i = 0; i < MAX_NIVEAUX; i++) {
+                    sauvegardes[currentSave].scoresNiveaux[i] = 0;
+                }
                 sauvegardes[currentSave].vie = 3;
                 sauvegardes[currentSave].niveauMax = 0;
                 sauvegardes[currentSave].nom[0] = '\0';
@@ -105,9 +108,13 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
             {
                 sauvegardes[currentSave].positionY = atoi(ligne + 10);
             }
-            else if (strncmp(ligne, "Score:", 6) == 0)
+            else if (strncmp(ligne, "ScoreNiveau", 11) == 0)
             {
-                sauvegardes[currentSave].score = atoi(ligne + 6);
+                // Lire le score pour un niveau spécifique
+                int niveau = ligne[11] - '0';
+                if (niveau >= 0 && niveau < MAX_NIVEAUX) {
+                    sauvegardes[currentSave].scoresNiveaux[niveau] = atoi(strchr(ligne, ':') + 1);
+                }
             }
             else if (strncmp(ligne, "Vie:", 4) == 0)
             {
@@ -131,12 +138,16 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
     char *date = ctime(&now);
     date[strcspn(date, "\n")] = '\0';
     extern int niveauMaxDebloque;
+    extern int niveauActuel;
 
     if (joueurExiste >= 0)
     {
         sauvegardes[joueurExiste].positionX = perso->positionX;
         sauvegardes[joueurExiste].positionY = perso->positionY;
-        sauvegardes[joueurExiste].score = perso->score;
+        
+        // Mettre à jour le score du niveau actuel
+        sauvegardes[joueurExiste].scoresNiveaux[niveauActuel] = perso->score;
+        
         sauvegardes[joueurExiste].vie = perso->vie;
         
         if (niveauMaxDebloque > sauvegardes[joueurExiste].niveauMax) {
@@ -151,7 +162,14 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
             initGameAudio();
             sauvegardes[nbSauvegardes].positionX = perso->positionX;
             sauvegardes[nbSauvegardes].positionY = perso->positionY;
-            sauvegardes[nbSauvegardes].score = perso->score;
+            
+            // Initialiser tous les scores à 0
+            for (int i = 0; i < MAX_NIVEAUX; i++) {
+                sauvegardes[nbSauvegardes].scoresNiveaux[i] = 0;
+            }
+            // Définir le score du niveau actuel
+            sauvegardes[nbSauvegardes].scoresNiveaux[niveauActuel] = perso->score;
+            
             sauvegardes[nbSauvegardes].vie = perso->vie;
             sauvegardes[nbSauvegardes].niveauMax = niveauMaxDebloque;
             strcpy(sauvegardes[nbSauvegardes].date, date);
@@ -174,7 +192,12 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
         fprintf(fichier, "NiveauMax:%d\n", sauvegardes[i].niveauMax);
         fprintf(fichier, "PositionX:%d\n", sauvegardes[i].positionX);
         fprintf(fichier, "PositionY:%d\n", sauvegardes[i].positionY);
-        fprintf(fichier, "Score:%d\n", sauvegardes[i].score);
+        
+        // Ecrire les scores pour chaque niveau
+        for (int j = 0; j < MAX_NIVEAUX; j++) {
+            fprintf(fichier, "ScoreNiveau%d:%d\n", j, sauvegardes[i].scoresNiveaux[j]);
+        }
+        
         fprintf(fichier, "Vie:%d\n\n", sauvegardes[i].vie);
     }
 
@@ -191,9 +214,11 @@ void chargerProgression(Progression* progression) {
     }
 }
 
-void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
+void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur, int scoreNiveau)
 {
     extern int niveauMaxDebloque;
+    extern int niveauActuel;
+    
     if (nouveauNiveauDebloque > niveauMaxDebloque) {
         niveauMaxDebloque = nouveauNiveauDebloque;
     }
@@ -209,6 +234,18 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
                 saves[i].niveauMaxDebloque = nouveauNiveauDebloque;
             }
             
+            // Mise à jour du score du niveau si meilleur que précédent
+            if(scoreNiveau > saves[i].scoresNiveaux[niveauActuel]) {
+                saves[i].scoresNiveaux[niveauActuel] = scoreNiveau;
+            }
+            
+            // Recalculer le score total
+            int totalScore = 0;
+            for(int j = 0; j < MAX_NIVEAUX; j++) {
+                totalScore += saves[i].scoresNiveaux[j];
+            }
+            saves[i].score = totalScore;
+            
             if (strlen(nomJoueurStocke) == 0) {
                 strcpy(nomJoueurStocke, nomJoueur);
             }
@@ -223,7 +260,22 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
         extern int SPAWN_Y;
         strcpy(saves[nbSaves].nom, nomJoueur);
         saves[nbSaves].niveauMaxDebloque = nouveauNiveauDebloque;
-        saves[nbSaves].score = 0;
+        
+        // Initialiser tous les scores à 0
+        for(int j = 0; j < MAX_NIVEAUX; j++) {
+            saves[nbSaves].scoresNiveaux[j] = 0;
+        }
+        
+        // Définir le score du niveau actuel
+        saves[nbSaves].scoresNiveaux[niveauActuel] = scoreNiveau;
+        
+        // Score total = somme des scores de tous les niveaux
+        int totalScore = 0;
+        for(int j = 0; j < MAX_NIVEAUX; j++) {
+            totalScore += saves[nbSaves].scoresNiveaux[j];
+        }
+        saves[nbSaves].score = totalScore;
+        
         saves[nbSaves].vie = 3;
         saves[nbSaves].positionX = SPAWN_X;
         saves[nbSaves].positionY = SPAWN_Y;
@@ -247,10 +299,16 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
             fprintf(fichier, "===== Sauvegarde %s =====\n", date);
             fprintf(fichier, "Nom:%s\n", saves[i].nom);
             fprintf(fichier, "NiveauMax:%d\n", saves[i].niveauMaxDebloque);
-            fprintf(fichier, "Score:%d\n", saves[i].score);
             fprintf(fichier, "Vie:%d\n", saves[i].vie);
             fprintf(fichier, "PositionX:%d\n", saves[i].positionX);
-            fprintf(fichier, "PositionY:%d\n\n", saves[i].positionY);
+            fprintf(fichier, "PositionY:%d\n", saves[i].positionY);
+            
+            // Enregistrer les scores par niveau (pas de Score: total)
+            for(int j = 0; j < MAX_NIVEAUX; j++) {
+                fprintf(fichier, "ScoreNiveau%d:%d\n", j, saves[i].scoresNiveaux[j]);
+            }
+            
+            fprintf(fichier, "\n");
         }
         fclose(fichier);
     }
@@ -287,7 +345,10 @@ int lireSauvegarde()
 
 void resetScores()
 {
+    system("cls");
     extern char nomJoueurStocke[100];
+    extern int niveauActuel;
+    extern int niveauMaxDebloque;
     printf("Voulez-vous vraiment supprimer toutes les sauvegardes ? (o/n) : ");
     char choix;
     scanf(" %c", &choix);
@@ -302,9 +363,11 @@ void resetScores()
         }
         else
         {
-            printf("Erreur: Impossible d'ouvrir le fichier de sauvegarde\n");
+            return;
         }
         system("del temp_*.txt");
+        niveauActuel = 0;
+        niveauMaxDebloque = 0;
         nomJoueurStocke[0] = '\0';
         printf("Les fichiers temporaires ont ete supprimes avec succes !\n");
         Sleep(1500);
@@ -377,69 +440,133 @@ void afficherScores()
         return;
     }
 
-    Sauvegarde sauvegardes[100];
-    int nbSauvegardes = 0;
+    typedef struct {
+        char nom[100];
+        int score;
+        char date[100];
+        int vie;
+        int scoresNiveaux[MAX_NIVEAUX];
+    } ScoreAffichage;
+    
+    ScoreAffichage scores[100];
+    int nbScores = 0;
     char ligne[100];
-    char nom_temp[100];
-    int score_temp = 0;
-    char date_temp[100];
-
+    int scoreIndex = -1;
+    
     while (fgets(ligne, sizeof(ligne), fichier))
     {
+        ligne[strcspn(ligne, "\n")] = 0;
+        
         if (strstr(ligne, "===== Sauvegarde") == ligne)
         {
+            if (scoreIndex >= 0) {
+                nbScores++;
+            }
+            
+            scoreIndex = nbScores;
+            
             char *start = ligne + 16;
             char *end = strstr(start, " =====");
             if (end)
             {
                 *end = '\0';
-                strcpy(date_temp, start);
+                strcpy(scores[scoreIndex].date, start);
+            }
+            
+            // Initialiser les scores par niveau
+            for (int i = 0; i < MAX_NIVEAUX; i++) {
+                scores[scoreIndex].scoresNiveaux[i] = 0;
             }
         }
-        else if (sscanf(ligne, "Nom:%s", nom_temp) == 1)
+        else if (sscanf(ligne, "Nom:%s", scores[scoreIndex].nom) == 1)
         {
         }
-        else if (sscanf(ligne, "Score:%d", &score_temp) == 1)
-        {
-            strcpy(sauvegardes[nbSauvegardes].nom, nom_temp);
-            sauvegardes[nbSauvegardes].score = score_temp;
-            strcpy(sauvegardes[nbSauvegardes].date, date_temp);
-            nbSauvegardes++;
-        }
-        else if (sscanf(ligne, "Vie:%d", &sauvegardes[nbSauvegardes - 1].vie) == 1)
+        else if (sscanf(ligne, "Score:%d", &scores[scoreIndex].score) == 1)
         {
         }
+        else if (sscanf(ligne, "Vie:%d", &scores[scoreIndex].vie) == 1)
+        {
+        }
+        else if (strncmp(ligne, "ScoreNiveau", 11) == 0)
+        {
+            int niveau = ligne[11] - '0';
+            if(niveau >= 0 && niveau < MAX_NIVEAUX) {
+                scores[scoreIndex].scoresNiveaux[niveau] = atoi(strchr(ligne, ':') + 1);
+            }
+        }
+    }
+    
+    // Ne pas oublier le dernier score
+    if (scoreIndex >= 0 && scoreIndex == nbScores) {
+        nbScores++;
     }
 
     fclose(fichier);
 
-    for (int i = 0; i < nbSauvegardes - 1; i++)
+    // Trier par score total
+    for (int i = 0; i < nbScores - 1; i++)
     {
-        for (int j = 0; j < nbSauvegardes - i - 1; j++)
+        for (int j = 0; j < nbScores - i - 1; j++)
         {
-            if (sauvegardes[j].score < sauvegardes[j + 1].score)
+            if (scores[j].score < scores[j + 1].score)
             {
-                Sauvegarde temp = sauvegardes[j];
-                sauvegardes[j] = sauvegardes[j + 1];
-                sauvegardes[j + 1] = temp;
+                ScoreAffichage temp = scores[j];
+                scores[j] = scores[j + 1];
+                scores[j + 1] = temp;
             }
         }
     }
 
+    // Afficher le tableau des scores totaux
     printf("+------+--------------------+--------+------+-----------------------------+\n");
     printf("| #    | Nom                | Score  | Vie  | Date                        |\n");
     printf("+------+--------------------+--------+------+-----------------------------+\n");
 
-    for (int i = 0; i < nbSauvegardes && i < 10; i++)
+    for (int i = 0; i < nbScores && i < 10; i++)
     {
         printf("| %3d  | %-18s | %6d | %4d | %-27s |\n",
                i + 1,
-               sauvegardes[i].nom,
-               sauvegardes[i].score,
-               sauvegardes[i].vie,
-               sauvegardes[i].date);
+               scores[i].nom,
+               scores[i].score,
+               scores[i].vie,
+               scores[i].date);
     }
-    printf("+------+--------------------+--------+------+-----------------------------+\n");
+    printf("+------+--------------------+--------+------+-----------------------------+\n\n");
+    
+    // Afficher les scores par niveau
+    printf("Scores par niveau:\n");
+    printf("+------+--------------------+");
+    for (int n = 0; n < MAX_NIVEAUX; n++) {
+        printf("--------+");
+    }
+    printf("\n");
+    
+    printf("| #    | Nom                |");
+    for (int n = 0; n < MAX_NIVEAUX; n++) {
+        printf(" Niv.%-2d |", n+1);
+    }
+    printf("\n");
+    
+    printf("+------+--------------------+");
+    for (int n = 0; n < MAX_NIVEAUX; n++) {
+        printf("--------+");
+    }
+    printf("\n");
+    
+    for (int i = 0; i < nbScores && i < 10; i++)
+    {
+        printf("| %3d  | %-18s |", i + 1, scores[i].nom);
+        for (int n = 0; n < MAX_NIVEAUX; n++) {
+            printf(" %6d |", scores[i].scoresNiveaux[n]);
+        }
+        printf("\n");
+    }
+    
+    printf("+------+--------------------+");
+    for (int n = 0; n < MAX_NIVEAUX; n++) {
+        printf("--------+");
+    }
+    printf("\n");
 }
 
 int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
@@ -452,11 +579,21 @@ int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
     int nouveauJoueur = 1;
     extern int niveauMaxDebloque;
 
+    // Initialiser la structure avant utilisation
+    memset(&current, 0, sizeof(current));
+    
     while (fgets(ligne, sizeof(ligne), fichier) && count < maxSaves) {
         ligne[strcspn(ligne, "\n")] = 0;
 
         if (strstr(ligne, "===== Sauvegarde") == ligne) {
             if (!nouveauJoueur && count < maxSaves) {
+                // Calculer le score total avant d'ajouter à la liste
+                int totalScore = 0;
+                for (int j = 0; j < MAX_NIVEAUX; j++) {
+                    totalScore += current.scoresNiveaux[j];
+                }
+                current.score = totalScore;
+                
                 saves[count++] = current;
             }
             memset(&current, 0, sizeof(current));
@@ -469,8 +606,11 @@ int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
         else if (strncmp(ligne, "NiveauMax:", 10) == 0) {
             current.niveauMaxDebloque = atoi(ligne + 10);
         }
-        else if (strncmp(ligne, "Score:", 6) == 0) {
-            current.score = atoi(ligne + 6);
+        else if (strncmp(ligne, "ScoreNiveau", 11) == 0) {
+            int niveau = ligne[11] - '0';
+            if(niveau >= 0 && niveau < MAX_NIVEAUX) {
+                current.scoresNiveaux[niveau] = atoi(strchr(ligne, ':') + 1);
+            }
         }
         else if (strncmp(ligne, "Vie:", 4) == 0) {
             current.vie = atoi(ligne + 4);
@@ -482,9 +622,18 @@ int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
             current.positionY = atoi(ligne + 10);
         }
     }
+    
     if (!nouveauJoueur && count < maxSaves) {
+        // Calculer le score total pour le dernier joueur
+        int totalScore = 0;
+        for (int j = 0; j < MAX_NIVEAUX; j++) {
+            totalScore += current.scoresNiveaux[j];
+        }
+        current.score = totalScore;
+        
         saves[count++] = current;
     }
 
+    fclose(fichier);
     return count;
 }
