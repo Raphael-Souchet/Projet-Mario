@@ -23,6 +23,7 @@ Animation *coinAnimation = NULL;
 Tab_starcoins tab_starcoins = {NULL, 0, 0};
 Animation *starCoinAnimation = NULL;
 SDL_Texture *heartTexture = NULL;
+Animation* slimeAnimation = NULL;
 
 int main(int argc, char *argv[])
 {
@@ -121,6 +122,8 @@ void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
         return;
     }
 
+    reinitialiserAnimations();
+    
     if (IMG_Init(IMG_INIT_PNG) == 0)
     {
         printf("Erreur IMG_Init: %s\n", IMG_GetError());

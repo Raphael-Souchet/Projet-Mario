@@ -177,6 +177,7 @@ extern SDL_Color scoreColor;
 extern Animation* flagAnimation;
 extern Animation* carnivoreAnimation;
 extern SDL_Texture* heartTexture; 
+extern Animation* slimeAnimation;
 
 Carte* chargerCarteEnMemoire(const char* fichierCarte);
 void libererCarte(Carte* carte);
@@ -235,6 +236,8 @@ void renderAnimation(SDL_Renderer* renderer, Animation* animation, int x, int y,
 void freeAnimation(Animation* animation);
 PlayerAnimations* loadPlayerAnimations(SDL_Renderer* renderer);
 void freePlayerAnimations(PlayerAnimations* animations);
+void loadSlimeAnimation(SDL_Renderer *renderer);
+void freeSlimeAnimation();
 
 void initialiser_pieces(Carte* carte, Tab_piece* tab_piece);
 void animer_pieces(Tab_piece* tab_piece);
@@ -252,6 +255,7 @@ void liberer_starcoins(Tab_starcoins* tab_starcoins);
 void check_collect_starcoin(Carte* carte, Tab_starcoins* tab_starcoins, Personnage* perso);
 void loadCarnivoreAnimation(SDL_Renderer *renderer);
 void freeCarnivoreAnimation();
+void reinitialiserAnimations();
 
 SDL_Texture* loadHeartTexture(SDL_Renderer *renderer);
 void freeHeartTexture();
