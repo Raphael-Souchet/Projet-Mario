@@ -137,7 +137,7 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
         sauvegardes[joueurExiste].positionY = perso->positionY;
         sauvegardes[joueurExiste].score = perso->score;
         sauvegardes[joueurExiste].vie = perso->vie;
-        // Garder le niveau max existant s'il est plus élevé
+        
         if (niveauMaxDebloque > sauvegardes[joueurExiste].niveauMax) {
             sauvegardes[joueurExiste].niveauMax = niveauMaxDebloque;
         }
@@ -205,7 +205,7 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
             if(nouveauNiveauDebloque > saves[i].niveauMaxDebloque) {
                 saves[i].niveauMaxDebloque = nouveauNiveauDebloque;
             }
-            // Mettre à jour le nom global si nécessaire
+            
             if (strlen(nomJoueurStocke) == 0) {
                 strcpy(nomJoueurStocke, nomJoueur);
             }
@@ -214,7 +214,7 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
         }
     }
     
-    // Si le joueur n'existe pas, l'ajouter
+    
     if (!joueurExiste && nbSaves < 100 && strlen(nomJoueur) > 0) {
         strcpy(saves[nbSaves].nom, nomJoueur);
         saves[nbSaves].niveauMaxDebloque = nouveauNiveauDebloque;
@@ -224,7 +224,7 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
         saves[nbSaves].positionY = SPAWN_Y;
         nbSaves++;
         
-        // Mettre à jour le nom global
+        
         if (strlen(nomJoueurStocke) == 0) {
             strcpy(nomJoueurStocke, nomJoueur);
         }
@@ -233,7 +233,7 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur)
     FILE *fichier = fopen("sauvegarde.txt", "w");
     if (fichier) {
         for(int i = 0; i < nbSaves; i++) {
-            // On utilise la date actuelle pour la sauvegarde
+            
             time_t now;
             time(&now);
             char *date = ctime(&now);
@@ -256,18 +256,18 @@ int lireSauvegarde()
     SauvegardeInfo saves[100];
     int nbSaves = lireSauvegardesExistant(saves, 100);
     
-    // Si un joueur est déjà connecté, retourner son niveau max
+    
     if (strlen(nomJoueurStocke) > 0) {
         for (int i = 0; i < nbSaves; i++) {
             if (strcmp(saves[i].nom, nomJoueurStocke) == 0) {
-                // Mettre à jour la variable globale
+                
                 niveauMaxDebloque = saves[i].niveauMaxDebloque;
                 return saves[i].niveauMaxDebloque;
             }
         }
     }
     
-    // Sinon, chercher le niveau max parmi toutes les sauvegardes
+    
     int maxNiveau = 0;
     for (int i = 0; i < nbSaves; i++) {
         if (saves[i].niveauMaxDebloque > maxNiveau) {

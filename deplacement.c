@@ -107,7 +107,7 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
         nettoyerSDL(window, renderer);
         libererCarte(carte);
 
-        sauvegarderProgression(niveauActuel + 1);
+        sauvegarderProgression(niveauActuel + 1, perso->nom);
 
         menuVictoire(perso, niveaux, niveauActuel, niveauMaxDebloque);
         return;

@@ -96,14 +96,20 @@ int isMusicPlaying()
 }
 
 
+
+
 void playSoundEffect(const char *soundPath, int volume)
 {
+    printf("Tentative de lecture du son: %s avec volume %d\n", soundPath, volume);
+    
     Mix_Chunk *sound = Mix_LoadWAV(soundPath);
     if (sound == NULL)
     {
         printf("Erreur de chargement de l'effet sonore %s: %s\n", soundPath, Mix_GetError());
         return;
     }
+    
+    printf("Son chargé avec succès\n");
     
     Mix_VolumeChunk(sound, volume);
     int channel = Mix_PlayChannel(-1, sound, 0);
@@ -113,7 +119,11 @@ void playSoundEffect(const char *soundPath, int volume)
         printf("Erreur de lecture de l'effet sonore: %s\n", Mix_GetError());
         Mix_FreeChunk(sound);
     }
-    
+    else
+    {
+        printf("Son joué sur le canal %d\n", channel);
+        
+    }
 }
 
 
@@ -144,20 +154,20 @@ int initGameAudio()
     return 1;
 }
 void reinitialiserAudio() {
-    // Si l'audio n'est pas en cours de lecture, essayer de le redémarrer
+    
     if (!isMusicPlaying()) {
         if (backgroundMusic != NULL) {
-            // Essayer simplement de reprendre la lecture
+            
             playBackgroundMusic(-1);
         } else {
-            // Recharger et démarrer la musique
+            
             initGameAudio();
         }
     }
 }
 
 void preserveAudioState() {
-    // Arrêter temporairement la musique sans libérer les ressources
+    
     pauseBackgroundMusic();
 }
 
@@ -184,7 +194,7 @@ void cleanupAudio()
 }
 void reinitialiserAudioComplet()
 {
-    // Arrêter et nettoyer la musique actuelle
+    
     if (Mix_PlayingMusic())
     {
         Mix_HaltMusic();
@@ -196,14 +206,14 @@ void reinitialiserAudioComplet()
         backgroundMusic = NULL;
     }
     
-    // Fermer et réinitialiser le système audio
+    
     Mix_CloseAudio();
     Mix_Quit();
     
-    // Réinitialiser complètement l'audio
+    
     initAudio();
     
-    // Recharger et démarrer la musique
+    
     if (loadBackgroundMusic("asset/music/overworld.mp3") || 
         loadBackgroundMusic("asset/music/overworld.wav"))
     {
@@ -217,11 +227,11 @@ void reinitialiserAudioComplet()
     }
 }
 void restoreAudioState() {
-    // Si la musique n'est pas en cours de lecture après une pause
+    
     if (!Mix_PlayingMusic()) {
         reinitialiserAudioComplet();
     } else {
-        // Sinon, reprendre la musique normalement
+        
         resumeBackgroundMusic();
     }
 }

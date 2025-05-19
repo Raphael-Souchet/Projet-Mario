@@ -1,5 +1,8 @@
 #include "projet.h"
 
+
+int menuMusicPlaying = 0;
+
 void setCouleur(int couleur)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -234,6 +237,13 @@ void menu_mort(Personnage *perso, const char *fichierTemp, int niveauActuel)
     int niveauMaxDebloque = lireSauvegarde();
     initialiserNiveaux(niveaux, niveauMaxDebloque);
     
+    
+    stopBackgroundMusic();
+    loadBackgroundMusic("asset/music/sky.mp3");
+    setMusicVolume(96);
+    playBackgroundMusic(-1);
+    menuMusicPlaying = 1;
+    
     if (perso->vie > 0)
     {
         int selection = 1, touche;
@@ -254,6 +264,10 @@ void menu_mort(Personnage *perso, const char *fichierTemp, int niveauActuel)
             {
                 if (selection == 1)
                 {
+                    
+                    stopBackgroundMusic();
+                    menuMusicPlaying = 0;
+                    
                     remove(fichierTemp);
                     if (!copierFichier(niveaux[niveauActuel].fichier, fichierTemp))
                     {
@@ -291,26 +305,33 @@ void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int nive
     system("cls");
     int selection = 1, touche;
 
-    // Débloquer le niveau suivant si nécessaire
+    
     if (niveauActuel + 1 < MAX_NIVEAUX && niveauActuel + 1 > niveauMaxDebloque)
     {
         niveaux[niveauActuel + 1].debloque = 1;
         niveauMaxDebloque = niveauActuel + 1;
-        sauvegarderProgression(niveauMaxDebloque);
+        sauvegarderProgression(niveauMaxDebloque, perso->nom);
     }
 
-    // Sauvegarder la partie avec le score actuel
+    
     char *fichierTemp = creerNomFichierTemp(perso->nom);
     Carte *carte = chargerCarteEnMemoire(fichierTemp);
     if (carte != NULL) {
         sauvegarderPartie(perso, carte, fichierTemp);
         libererCarte(carte);
     } else {
-        // Si la carte ne peut pas être chargée, sauvegarder directement la progression
+        
         if (strlen(perso->nom) > 0) {
             sauvegarderProgression(niveauMaxDebloque, perso->nom);
         }
     }
+    
+    
+    stopBackgroundMusic();
+    loadBackgroundMusic("asset/music/sky.mp3");
+    setMusicVolume(96);
+    playBackgroundMusic(-1);
+    menuMusicPlaying = 1;
 
     while (_kbhit())
         _getch();
@@ -352,6 +373,10 @@ void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int nive
         {
             if (selection == 1 && niveauActuel + 1 < MAX_NIVEAUX && niveaux[niveauActuel + 1].debloque)
             {
+                
+                stopBackgroundMusic();
+                menuMusicPlaying = 0;
+                
                 remove(fichierTemp); 
                 free(fichierTemp);
 
@@ -389,7 +414,17 @@ void menuPrincipal(Niveau *niveaux)
     char *fichierTemp = NULL;
     int niveauActuel = 0;
 
-    // Copier le nom du joueur stocké s'il existe
+    
+    if (!menuMusicPlaying) {
+        if (initAudio()) {
+            loadBackgroundMusic("asset/music/sky.mp3");
+            setMusicVolume(96);
+            playBackgroundMusic(-1);
+            menuMusicPlaying = 1;
+        }
+    }
+
+    
     if (strlen(nomJoueurStocke) > 0) {
         strcpy(perso.nom, nomJoueurStocke);
     }
@@ -397,12 +432,12 @@ void menuPrincipal(Niveau *niveaux)
     static Niveau niveauxLocaux[MAX_NIVEAUX];
     if (niveaux == NULL)
     {
-        // Lire la sauvegarde pour mettre à jour niveauMaxDebloque
+        
         niveauMaxDebloque = lireSauvegarde();
         initialiserNiveaux(niveauxLocaux, niveauMaxDebloque);
         niveaux = niveauxLocaux;
     } else {
-        // Mettre à jour les niveaux avec la progression actuelle
+        
         for (int i = 0; i < MAX_NIVEAUX; i++) {
             niveaux[i].debloque = (i <= niveauMaxDebloque) ? 1 : 0;
         }
@@ -425,7 +460,11 @@ void menuPrincipal(Niveau *niveaux)
         {
             if (selection >= 1 && selection <= MAX_NIVEAUX && niveaux[selection - 1].debloque)
             {
-                // Demander le nom seulement si on n'en a pas déjà un
+                
+                stopBackgroundMusic();
+                menuMusicPlaying = 0;
+                
+                
                 if (strlen(perso.nom) == 0)
                 {
                     system("cls");
@@ -433,7 +472,7 @@ void menuPrincipal(Niveau *niveaux)
                     scanf("%s", perso.nom);
                     strcpy(nomJoueurStocke, perso.nom);
                     
-                    // Charger la progression du joueur s'il existe
+                    
                     SauvegardeInfo saves[100];
                     int nbSaves = lireSauvegardesExistant(saves, 100);
                     for (int i = 0; i < nbSaves; i++) {
@@ -445,7 +484,7 @@ void menuPrincipal(Niveau *niveaux)
                         }
                     }
                     
-                    // Mettre à jour les niveaux avec la nouvelle progression
+                    
                     for (int i = 0; i < MAX_NIVEAUX; i++) {
                         niveaux[i].debloque = (i <= niveauMaxDebloque) ? 1 : 0;
                     }
@@ -481,7 +520,7 @@ void menuPrincipal(Niveau *niveaux)
             else if (selection == MAX_NIVEAUX + 2)
             {
                 resetScores();
-                sauvegarderProgression(0); 
+                sauvegarderProgression(0, perso.nom); 
                 
                 initialiserNiveaux(niveaux, 0);
                 
@@ -494,6 +533,11 @@ void menuPrincipal(Niveau *niveaux)
                 printf("Merci d'avoir joue !\n");
                 Sleep(1500);
                 system("cls");
+                
+                
+                stopBackgroundMusic();
+                cleanupAudio();
+                
                 exit(0);
             }
         }

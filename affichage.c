@@ -290,7 +290,7 @@ void loadFlagAnimation(SDL_Renderer *renderer)
 }
 void loadSlimeAnimation(SDL_Renderer *renderer)
 {
-    // Si déjà chargé, ne rien faire
+    
     if (slimeAnimation != NULL)
     {
         return;
@@ -416,7 +416,7 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
         }
     }
 
-    // Charger les nouvelles textures pour 'f' et 'o'
+    
     SDL_Texture *herbe5Texture = NULL;
     SDL_Texture *terre5Texture = NULL;
 
@@ -508,7 +508,7 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                 }
                 break;
 
-                // Dans la fonction nettoyerSDL de affichage.c, ajouter avant SDL_Quit():
+                
                 if (slimeAnimation != NULL)
                 {
                     freeSlimeAnimation();
@@ -574,7 +574,7 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                     SDL_RenderFillRect(renderer, &tile);
                 }
                 break;
-            // Ajout des nouveaux types de tuiles
+            
             case 'f':
                 if (herbe5Texture != NULL)
                 {
@@ -582,8 +582,8 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                 }
                 else
                 {
-                    // Fallback si la texture n'est pas chargée
-                    SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255); // Vert forêt
+                    
+                    SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255); 
                     SDL_RenderFillRect(renderer, &tile);
                 }
                 break;
@@ -594,8 +594,8 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                 }
                 else
                 {
-                    // Fallback si la texture n'est pas chargée
-                    SDL_SetRenderDrawColor(renderer, 160, 82, 45, 255); // Brun
+                    
+                    SDL_SetRenderDrawColor(renderer, 160, 82, 45, 255); 
                     SDL_RenderFillRect(renderer, &tile);
                 }
                 break;
@@ -661,14 +661,14 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
 
     afficherScore(renderer, perso->score, perso->vie);
 
-    // Libération des textures temporaires
+    
     if (herbe5Texture)
         SDL_DestroyTexture(herbe5Texture);
     if (terre5Texture)
         SDL_DestroyTexture(terre5Texture);
 }
 void reinitialiserAnimations() {
-    // Réinitialisation des pointeurs d'animation à NULL
+    
     slimeAnimation = NULL;
     flagAnimation = NULL;
     coinAnimation = NULL;
@@ -761,7 +761,7 @@ void nettoyerSDL(SDL_Window *window, SDL_Renderer *renderer)
         SDL_DestroyWindow(window);
     }
 
-    // Réinitialiser toutes les variables globales
+    
     reinitialiserAnimations();
 
     SDL_Quit();
