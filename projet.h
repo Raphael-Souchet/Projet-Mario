@@ -52,7 +52,7 @@ typedef struct {
 
 typedef struct {
     char nom[100];
-    int niveauMaxDebloque; // Ajouté
+    int niveauMaxDebloque; 
     int score;
     int vie;
     int positionX;

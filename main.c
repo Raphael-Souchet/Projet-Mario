@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
                 Sleep(1000);
             }
 
-            // Charger les données du joueur choisi
+            
             int found = 0;
             for (int i = 0; i < nbSaves; i++)
             {
@@ -96,19 +96,19 @@ int main(int argc, char *argv[])
         }
         else
         {
-            // Nouvelle partie - réinitialiser les variables globales
+            
             niveauMaxDebloque = 0;
             nomJoueurStocke[0] = '\0';
         }
     }
     else
     {
-        // Aucune sauvegarde existante - nouvelle partie
+        
         niveauMaxDebloque = 0;
         nomJoueurStocke[0] = '\0';
     }
 
-    // Initialiser les niveaux avec la progression chargée ou par défaut
+    
     initialiserNiveaux(niveaux, niveauMaxDebloque);
     menuPrincipal(niveaux);
     return 0;
@@ -123,7 +123,7 @@ void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
     }
 
     reinitialiserAnimations();
-    
+
     if (IMG_Init(IMG_INIT_PNG) == 0)
     {
         printf("Erreur IMG_Init: %s\n", IMG_GetError());

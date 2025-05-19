@@ -178,16 +178,20 @@ void liberer_starcoins(Tab_starcoins* tab_starcoins) {
     }
 }
 
-void check_collect_starcoin(Carte* carte, Tab_starcoins* tab_starcoins, Personnage* perso) {
-    for (int i = 0; i < tab_starcoins->count; i++) {
+void check_collect_starcoin(Carte* carte, Tab_starcoins* tab_starcoins, Personnage* perso)
+{
+    for (int i = 0; i < tab_starcoins->count; i++)
+    {
         if (tab_starcoins->starCoins[i].actif && 
-            tab_starcoins->starCoins[i].positionX == perso->positionX && 
-            tab_starcoins->starCoins[i].positionY == perso->positionY) {
-            
+            perso->positionX == tab_starcoins->starCoins[i].positionX && 
+            perso->positionY == tab_starcoins->starCoins[i].positionY)
+        {
             tab_starcoins->starCoins[i].actif = 0;
-            perso->score += 5;  
-            playSoundEffect("asset/sound/starcoin.wav", 50);
-            carte->carte[tab_starcoins->starCoins[i].positionY][tab_starcoins->starCoins[i].positionX] = 'M';
+            perso->score += 50; 
+            
+            playSoundEffect("asset/sound/starcoin.wav", 100);
+            
+            carte->carte[tab_starcoins->starCoins[i].positionY][tab_starcoins->starCoins[i].positionX] = ' ';
         }
     }
 }
