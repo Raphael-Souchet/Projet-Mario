@@ -375,7 +375,7 @@ int ecraser_gumba(Carte *carte, Tab_gumba *tab_gumba, Personnage *perso)
                 }
                 
                 perso->score += 5;
-                
+                playSoundEffect("asset/sound/slime_ecraser.wav", 100);
                 declencher_rebond(perso);
                 
                 return 1;

@@ -116,7 +116,6 @@ void playSoundEffect(const char *soundPath, int volume)
     
 }
 
-
 int initGameAudio()
 {
     if (!initAudio())
@@ -143,6 +142,7 @@ int initGameAudio()
     printf("Musique d'arrière-plan lancée avec succès\n");
     return 1;
 }
+
 void reinitialiserAudio() {
     // Si l'audio n'est pas en cours de lecture, essayer de le redémarrer
     if (!isMusicPlaying()) {
@@ -182,6 +182,7 @@ void cleanupAudio()
     
     printf("Ressources audio libérées\n");
 }
+
 void reinitialiserAudioComplet()
 {
     // Arrêter et nettoyer la musique actuelle
@@ -216,6 +217,7 @@ void reinitialiserAudioComplet()
         printf("Échec de la réinitialisation audio\n");
     }
 }
+
 void restoreAudioState() {
     // Si la musique n'est pas en cours de lecture après une pause
     if (!Mix_PlayingMusic()) {
