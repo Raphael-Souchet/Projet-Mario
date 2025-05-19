@@ -295,12 +295,8 @@ void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int nive
     if (niveauActuel + 1 < MAX_NIVEAUX && niveauActuel + 1 > niveauMaxDebloque)
     {
         niveaux[niveauActuel + 1].debloque = 1;
-        niveauMaxDebloque = niveauActuel + 1; // Mettre à jour la variable globale
-        
-        // Sauvegarder la progression uniquement si on a un nom de joueur
-        if (strlen(perso->nom) > 0) {
-            sauvegarderProgression(niveauMaxDebloque, perso->nom);
-        }
+        niveauMaxDebloque = niveauActuel + 1;
+        sauvegarderProgression(niveauMaxDebloque);
     }
 
     // Sauvegarder la partie avec le score actuel
@@ -485,11 +481,7 @@ void menuPrincipal(Niveau *niveaux)
             else if (selection == MAX_NIVEAUX + 2)
             {
                 resetScores();
-                
-                // Réinitialiser les variables globales
-                niveauMaxDebloque = 0;
-                nomJoueurStocke[0] = '\0';
-                strcpy(perso.nom, "");
+                sauvegarderProgression(0); 
                 
                 initialiserNiveaux(niveaux, 0);
                 

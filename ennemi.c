@@ -1,6 +1,6 @@
 #include "projet.h"
 
-void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
+void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba, int niveau)
 {
     if (tab_gumba == NULL)
     {
@@ -35,7 +35,7 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
 
         if (tab_gumba->gumbas == NULL)
         {
-            printf("Erreur: allocation de memoire pour les gumbas echouee\n");
+            printf("Erreur: allocation mémoire gumbas échouée\n");
             tab_gumba->count = 0;
             return;
         }
@@ -61,32 +61,63 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
         return;
     }
 
-    tab_gumba->count = 3;
-    tab_gumba->gumbas = malloc(tab_gumba->count * sizeof(Gumba));
+    const int *tab_x = NULL, *tab_y = NULL;
+    int count = 0;
 
+    switch (niveau)
+    {
+        case 0: {
+            static int x0[] = {74, 80, 120};
+            static int y0[] = {14, 9, 8};
+            tab_x = x0; tab_y = y0; count = 3;
+            break;
+        }
+        case 1: {
+            static int x1[] = {56, 72, 92};
+            static int y1[] = {20, 8, 17};
+            tab_x = x1; tab_y = y1; count = 3;
+            break;
+        }
+        case 2: {
+            static int x2[] = {30, 90, 95};
+            static int y2[] = {12, 11, 10};
+            tab_x = x2; tab_y = y2; count = 3;
+            break;
+        }
+        case 3: {
+            static int x3[] = {40, 42};
+            static int y3[] = {14, 14};
+            tab_x = x3; tab_y = y3; count = 2;
+            break;
+        }
+        default:
+            return;
+    }
+
+    tab_gumba->count = count;
+    tab_gumba->gumbas = malloc(count * sizeof(Gumba));
     if (tab_gumba->gumbas == NULL)
     {
-        printf("Erreur: allocation de memoire pour les gumbas echouee\n");
+        printf("Erreur: allocation mémoire gumbas échouée\n");
         tab_gumba->count = 0;
         return;
     }
 
-    int tab_x[4] = {74, 80, 120};
-    int tab_y[4] = {14, 9, 8};
-
-    for (int i = 0; i < tab_gumba->count; i++)
+    for (int i = 0; i < count; i++)
     {
         tab_gumba->gumbas[i].positionX = tab_x[i];
         tab_gumba->gumbas[i].positionY = tab_y[i];
         tab_gumba->gumbas[i].peut_avancer = 1;
-        tab_gumba->gumbas[i].peut_reculer = 0;
+        tab_gumba->gumbas[i].peut_reculer = 1;
         tab_gumba->gumbas[i].peut_tomber_devant = 0;
         tab_gumba->gumbas[i].peut_tomber_derriere = 0;
         tab_gumba->gumbas[i].dernier_deplacement = 1;
 
-        carte->carte[tab_gumba->gumbas[i].positionY][tab_gumba->gumbas[i].positionX] = 'Q';
+        carte->carte[tab_y[i]][tab_x[i]] = 'Q';
     }
 }
+
+
 
 void bouger_gumba(Carte *carte, Tab_gumba *tab_gumba)
 {
@@ -135,7 +166,7 @@ void bouger_gumba(Carte *carte, Tab_gumba *tab_gumba)
     }
 }
 
-void initialiserPlante(Carte *carte, Tab_plante *tab_plante)
+void initialiserPlante(Carte *carte, Tab_plante *tab_plante, int niveau)
 {
     if (tab_plante == NULL)
     {
@@ -150,8 +181,41 @@ void initialiserPlante(Carte *carte, Tab_plante *tab_plante)
         tab_plante->count = 0;
     }
 
-    tab_plante->count = 2;
-    tab_plante->plantes = malloc(tab_plante->count * sizeof(Plante));
+    const int *tab_x = NULL, *tab_y = NULL;
+    int count = 0;
+
+    switch (niveau)
+    {
+        case 0: {
+            static int x0[] = {88, 94};
+            static int y0[] = {14, 9};
+            tab_x = x0; tab_y = y0; count = 2;
+            break;
+        }
+        case 1: {
+            static int x1[] = {50, 90};
+            static int y1[] = {10, 10};
+            tab_x = x1; tab_y = y1; count = 2;
+            break;
+        }
+        case 2: {
+            static int x2[] = {100, 105};
+            static int y2[] = {10, 9};
+            tab_x = x2; tab_y = y2; count = 2;
+            break;
+        }
+        case 3: {
+            static int x3[] = {60};
+            static int y3[] = {13};
+            tab_x = x3; tab_y = y3; count = 1;
+            break;
+        }
+        default:
+            return;
+    }
+
+    tab_plante->count = count;
+    tab_plante->plantes = malloc(count * sizeof(Plante));
 
     if (tab_plante->plantes == NULL)
     {
@@ -160,10 +224,7 @@ void initialiserPlante(Carte *carte, Tab_plante *tab_plante)
         return;
     }
 
-    int tab_x[2] = {88, 94};
-    int tab_y[2] = {14, 9};
-
-    for (int i = 0; i < tab_plante->count; i++)
+    for (int i = 0; i < count; i++)
     {
         if (tab_x[i] < 0 || tab_x[i] >= carte->largeur || tab_y[i] < 0 || tab_y[i] >= carte->hauteur)
         {
@@ -173,13 +234,14 @@ void initialiserPlante(Carte *carte, Tab_plante *tab_plante)
 
         tab_plante->plantes[i].positionX = tab_x[i];
         tab_plante->plantes[i].positionY = tab_y[i];
-        tab_plante->plantes[i].positionY_base = tab_y[i]; 
+        tab_plante->plantes[i].positionY_base = tab_y[i];
         tab_plante->plantes[i].peut_monter = 1;
         tab_plante->plantes[i].peut_descendre = 1;
         tab_plante->plantes[i].compteur = 0;
         tab_plante->plantes[i].etat_tige = 0;
 
-        if (tab_x[i] > 0 && tab_x[i] < carte->largeur - 1) {
+        if (tab_x[i] > 0 && tab_x[i] < carte->largeur - 1)
+        {
             carte->carte[tab_y[i]][tab_x[i]] = ']';
         }
     }
