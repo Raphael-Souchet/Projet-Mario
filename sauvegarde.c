@@ -49,7 +49,7 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
         char nom[100];
         int positionX;
         int positionY;
-        int scoresNiveaux[MAX_NIVEAUX]; // Tableau pour stocker les scores par niveau
+        int scoresNiveaux[MAX_NIVEAUX]; 
         int vie;
         int niveauMax;
         char date[100];
@@ -84,7 +84,6 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
                 
                 sauvegardes[currentSave].positionX = 0;
                 sauvegardes[currentSave].positionY = 0;
-                // Initialisation des scores pour chaque niveau
                 for (int i = 0; i < MAX_NIVEAUX; i++) {
                     sauvegardes[currentSave].scoresNiveaux[i] = 0;
                 }
@@ -110,7 +109,6 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
             }
             else if (strncmp(ligne, "ScoreNiveau", 11) == 0)
             {
-                // Lire le score pour un niveau spécifique
                 int niveau = ligne[11] - '0';
                 if (niveau >= 0 && niveau < MAX_NIVEAUX) {
                     sauvegardes[currentSave].scoresNiveaux[niveau] = atoi(strchr(ligne, ':') + 1);
@@ -145,7 +143,6 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
         sauvegardes[joueurExiste].positionX = perso->positionX;
         sauvegardes[joueurExiste].positionY = perso->positionY;
         
-        // Mettre à jour le score du niveau actuel
         sauvegardes[joueurExiste].scoresNiveaux[niveauActuel] = perso->score;
         
         sauvegardes[joueurExiste].vie = perso->vie;
@@ -163,11 +160,9 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
             sauvegardes[nbSauvegardes].positionX = perso->positionX;
             sauvegardes[nbSauvegardes].positionY = perso->positionY;
             
-            // Initialiser tous les scores à 0
             for (int i = 0; i < MAX_NIVEAUX; i++) {
                 sauvegardes[nbSauvegardes].scoresNiveaux[i] = 0;
             }
-            // Définir le score du niveau actuel
             sauvegardes[nbSauvegardes].scoresNiveaux[niveauActuel] = perso->score;
             
             sauvegardes[nbSauvegardes].vie = perso->vie;
@@ -193,7 +188,6 @@ void sauvegarderPartie(Personnage *perso, Carte *carte, const char *fichierTemp)
         fprintf(fichier, "PositionX:%d\n", sauvegardes[i].positionX);
         fprintf(fichier, "PositionY:%d\n", sauvegardes[i].positionY);
         
-        // Ecrire les scores pour chaque niveau
         for (int j = 0; j < MAX_NIVEAUX; j++) {
             fprintf(fichier, "ScoreNiveau%d:%d\n", j, sauvegardes[i].scoresNiveaux[j]);
         }
@@ -234,12 +228,10 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur, in
                 saves[i].niveauMaxDebloque = nouveauNiveauDebloque;
             }
             
-            // Mise à jour du score du niveau si meilleur que précédent
             if(scoreNiveau > saves[i].scoresNiveaux[niveauActuel]) {
                 saves[i].scoresNiveaux[niveauActuel] = scoreNiveau;
             }
             
-            // Recalculer le score total
             int totalScore = 0;
             for(int j = 0; j < MAX_NIVEAUX; j++) {
                 totalScore += saves[i].scoresNiveaux[j];
@@ -254,22 +246,18 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur, in
         }
     }
     
-    
     if (!joueurExiste && nbSaves < 100 && strlen(nomJoueur) > 0) {
         extern int SPAWN_X;
         extern int SPAWN_Y;
         strcpy(saves[nbSaves].nom, nomJoueur);
         saves[nbSaves].niveauMaxDebloque = nouveauNiveauDebloque;
         
-        // Initialiser tous les scores à 0
         for(int j = 0; j < MAX_NIVEAUX; j++) {
             saves[nbSaves].scoresNiveaux[j] = 0;
         }
         
-        // Définir le score du niveau actuel
         saves[nbSaves].scoresNiveaux[niveauActuel] = scoreNiveau;
         
-        // Score total = somme des scores de tous les niveaux
         int totalScore = 0;
         for(int j = 0; j < MAX_NIVEAUX; j++) {
             totalScore += saves[nbSaves].scoresNiveaux[j];
@@ -303,7 +291,6 @@ void sauvegarderProgression(int nouveauNiveauDebloque, const char* nomJoueur, in
             fprintf(fichier, "PositionX:%d\n", saves[i].positionX);
             fprintf(fichier, "PositionY:%d\n", saves[i].positionY);
             
-            // Enregistrer les scores par niveau (pas de Score: total)
             for(int j = 0; j < MAX_NIVEAUX; j++) {
                 fprintf(fichier, "ScoreNiveau%d:%d\n", j, saves[i].scoresNiveaux[j]);
             }
@@ -460,6 +447,11 @@ void afficherScores()
         if (strstr(ligne, "===== Sauvegarde") == ligne)
         {
             if (scoreIndex >= 0) {
+                int totalScore = 0;
+                for (int i = 0; i < MAX_NIVEAUX; i++) {
+                    totalScore += scores[scoreIndex].scoresNiveaux[i];
+                }
+                scores[scoreIndex].score = totalScore;
                 nbScores++;
             }
             
@@ -473,19 +465,10 @@ void afficherScores()
                 strcpy(scores[scoreIndex].date, start);
             }
             
-            // Initialiser les scores par niveau
+            scores[scoreIndex].score = 0;
             for (int i = 0; i < MAX_NIVEAUX; i++) {
                 scores[scoreIndex].scoresNiveaux[i] = 0;
             }
-        }
-        else if (sscanf(ligne, "Nom:%s", scores[scoreIndex].nom) == 1)
-        {
-        }
-        else if (sscanf(ligne, "Score:%d", &scores[scoreIndex].score) == 1)
-        {
-        }
-        else if (sscanf(ligne, "Vie:%d", &scores[scoreIndex].vie) == 1)
-        {
         }
         else if (strncmp(ligne, "ScoreNiveau", 11) == 0)
         {
@@ -496,14 +479,17 @@ void afficherScores()
         }
     }
     
-    // Ne pas oublier le dernier score
     if (scoreIndex >= 0 && scoreIndex == nbScores) {
+        int totalScore = 0;
+        for (int i = 0; i < MAX_NIVEAUX; i++) {
+            totalScore += scores[scoreIndex].scoresNiveaux[i];
+        }
+        scores[scoreIndex].score = totalScore;
         nbScores++;
     }
 
     fclose(fichier);
 
-    // Trier par score total
     for (int i = 0; i < nbScores - 1; i++)
     {
         for (int j = 0; j < nbScores - i - 1; j++)
@@ -517,7 +503,6 @@ void afficherScores()
         }
     }
 
-    // Afficher le tableau des scores totaux
     printf("+------+--------------------+--------+------+-----------------------------+\n");
     printf("| #    | Nom                | Score  | Vie  | Date                        |\n");
     printf("+------+--------------------+--------+------+-----------------------------+\n");
@@ -533,7 +518,6 @@ void afficherScores()
     }
     printf("+------+--------------------+--------+------+-----------------------------+\n\n");
     
-    // Afficher les scores par niveau
     printf("Scores par niveau:\n");
     printf("+------+--------------------+");
     for (int n = 0; n < MAX_NIVEAUX; n++) {
@@ -579,7 +563,6 @@ int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
     int nouveauJoueur = 1;
     extern int niveauMaxDebloque;
 
-    // Initialiser la structure avant utilisation
     memset(&current, 0, sizeof(current));
     
     while (fgets(ligne, sizeof(ligne), fichier) && count < maxSaves) {
@@ -587,7 +570,6 @@ int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
 
         if (strstr(ligne, "===== Sauvegarde") == ligne) {
             if (!nouveauJoueur && count < maxSaves) {
-                // Calculer le score total avant d'ajouter à la liste
                 int totalScore = 0;
                 for (int j = 0; j < MAX_NIVEAUX; j++) {
                     totalScore += current.scoresNiveaux[j];
@@ -624,7 +606,6 @@ int lireSauvegardesExistant(SauvegardeInfo *saves, int maxSaves) {
     }
     
     if (!nouveauJoueur && count < maxSaves) {
-        // Calculer le score total pour le dernier joueur
         int totalScore = 0;
         for (int j = 0; j < MAX_NIVEAUX; j++) {
             totalScore += current.scoresNiveaux[j];
