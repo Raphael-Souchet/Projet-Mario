@@ -31,6 +31,7 @@ extern int niveauActuel;
 extern int niveauMaxDebloque;
 extern Niveau niveaux[MAX_NIVEAUX];
 extern char nomJoueurStocke[100];
+extern int menuMusicPlaying;
 
 typedef struct {
     int positionX;

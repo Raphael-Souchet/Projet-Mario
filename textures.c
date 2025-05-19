@@ -123,6 +123,48 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
         SDL_FreeSurface(surface_nuage);
     }
 
+    SDL_Surface *surface_herbe5 = IMG_Load("asset/Tiles/herbe5.png");
+    if (surface_herbe5 == NULL)
+    {
+        printf("Erreur: Impossible de charger l'image nuage.png: %s\n", IMG_GetError());
+        surface_herbe5 = IMG_Load("asset/Tiles/herbe5.png");
+        if (surface_herbe5 == NULL)
+        {
+            printf("Erreur: Impossible de charger l'image nuage alternative: %s\n", IMG_GetError());
+        }
+    }
+    
+    if (surface_herbe5 != NULL)
+    {
+        textures->herbe5 = SDL_CreateTextureFromSurface(renderer, surface_herbe5);
+        if (textures->herbe5 == NULL)
+        {
+            printf("Erreur: Impossible de créer la texture du nuage: %s\n", SDL_GetError());
+        }
+        SDL_FreeSurface(surface_herbe5);
+    }
+
+    SDL_Surface *surface_terre5 = IMG_Load("asset/Tiles/terre5.png");
+    if (surface_terre5 == NULL)
+    {
+        printf("Erreur: Impossible de charger l'image nuage.png: %s\n", IMG_GetError());
+        surface_terre5 = IMG_Load("asset/Tiles/terre5.png");
+        if (surface_terre5 == NULL)
+        {
+            printf("Erreur: Impossible de charger l'image nuage alternative: %s\n", IMG_GetError());
+        }
+    }
+    
+    if (surface_terre5 != NULL)
+    {
+        textures->terre5 = SDL_CreateTextureFromSurface(renderer, surface_terre5);
+        if (textures->terre5 == NULL)
+        {
+            printf("Erreur: Impossible de créer la texture du nuage: %s\n", SDL_GetError());
+        }
+        SDL_FreeSurface(surface_terre5);
+    }
+
     return textures;
 }
 

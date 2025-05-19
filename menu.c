@@ -1,8 +1,5 @@
 #include "projet.h"
 
-
-int menuMusicPlaying = 0;
-
 void setCouleur(int couleur)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -80,17 +77,6 @@ void afficherMenuPrincipal(int selection, Niveau *niveaux)
     printf("+---------------------------------------------+\n");
 }
 
-void afficherMenuPauseEnJeu()
-{
-    system("cls");
-    printf("+---------------------------------------------+\n");
-    printf("|                    PAUSE                    |\n");
-    printf("|                                             |\n");
-    printf("|                  Reprendre                  |\n");
-    printf("|                Menu Principal               |\n");
-    printf("+---------------------------------------------+\n");
-}
-
 int menuPauseEnJeu()
 {
     int selection = 1, touche;
@@ -104,17 +90,17 @@ int menuPauseEnJeu()
         printf("+---------------------------------------------+\n");
         printf("|                    PAUSE                    |\n");
         printf("|                                             |\n");
-        
+
         if (selection == 1)
             setCouleur(240);
         printf("|                  Reprendre                  |\n");
         setCouleur(7);
-        
+
         if (selection == 2)
             setCouleur(240);
         printf("|                Menu Principal               |\n");
         setCouleur(7);
-        
+
         printf("+---------------------------------------------+\n");
 
         touche = _getch();
@@ -124,7 +110,7 @@ int menuPauseEnJeu()
         if (touche == 72 || touche == 122 || touche == 90 || touche == 80 || touche == 115 || touche == 83)
             selection = (selection == 1) ? 2 : 1;
 
-        if (touche == 13) 
+        if (touche == 13)
             return selection;
     }
 }
@@ -166,16 +152,12 @@ void menu_mort(Personnage *perso, const char *fichierTemp)
 {
     extern Niveau niveaux[MAX_NIVEAUX];
     extern int niveauMaxDebloque;
+    extern int menuMusicPlaying;
+    menuMusicPlaying = 0;
     niveauMaxDebloque = lireSauvegarde();
     initialiserNiveaux(niveaux, niveauMaxDebloque);
-    
-    
-    stopBackgroundMusic();
-    loadBackgroundMusic("asset/music/sky.mp3");
-    setMusicVolume(96);
-    playBackgroundMusic(-1);
-    menuMusicPlaying = 1;
-    
+
+
     if (perso->vie > 0)
     {
         int selection = 1, touche;
@@ -194,12 +176,35 @@ void menu_mort(Personnage *perso, const char *fichierTemp)
 
             if (touche == 13)
             {
+                stopBackgroundMusic();
+                cleanupAudio();
+
+                if (!initGameAudio())
+                {
+                    printf("Avertissement: L'audio n'a pas pu être réinitialisé.\n");
+                }
+
                 if (selection == 1)
                 {
-                    
-                    stopBackgroundMusic();
-                    menuMusicPlaying = 0;
-                    
+                    char *musicpath = NULL;
+                    switch (niveauActuel)
+                    {
+                    case 0:
+                        musicpath = "asset/music/overworld.mp3";
+                        break;
+                    case 1:
+                        musicpath = "asset/music/sky.mp3";
+                        break;
+                    case 2:
+                        musicpath = "asset/music/beach.mp3";
+                        break;
+                    default:
+                        musicpath = "asset/music/overworld.mp3";
+                    }
+                    loadBackgroundMusic(musicpath);
+                    setMusicVolume(96);
+                    playBackgroundMusic(-1);
+                    menuMusicPlaying = 1;
                     remove(fichierTemp);
                     extern int niveauMaxDebloque;
                     if (!copierFichier(niveaux[niveauMaxDebloque].fichier, fichierTemp))
@@ -209,6 +214,7 @@ void menu_mort(Personnage *perso, const char *fichierTemp)
                         menuPrincipal(niveaux);
                         return;
                     }
+
                     extern int SPAWN_X;
                     extern int SPAWN_Y;
                     perso->positionX = SPAWN_X;
@@ -250,20 +256,22 @@ void menuVictoire(Personnage *perso)
         sauvegarderProgression(niveauMaxDebloque, perso->nom);
     }
 
-    
     char *fichierTemp = creerNomFichierTemp(perso->nom);
     Carte *carte = chargerCarteEnMemoire(fichierTemp);
-    if (carte != NULL) {
+    if (carte != NULL)
+    {
         sauvegarderPartie(perso, carte, fichierTemp);
         libererCarte(carte);
-    } else {
-        
-        if (strlen(perso->nom) > 0) {
+    }
+    else
+    {
+
+        if (strlen(perso->nom) > 0)
+        {
             sauvegarderProgression(niveauMaxDebloque, perso->nom);
         }
     }
-    
-    
+
     stopBackgroundMusic();
     loadBackgroundMusic("asset/music/sky.mp3");
     setMusicVolume(96);
@@ -298,11 +306,11 @@ void menuVictoire(Personnage *perso)
         {
             if (selection == 1 && niveauActuel + 1 < MAX_NIVEAUX && niveaux[niveauActuel + 1].debloque)
             {
-                
+
                 stopBackgroundMusic();
                 menuMusicPlaying = 0;
-                
-                remove(fichierTemp); 
+
+                remove(fichierTemp);
                 free(fichierTemp);
 
                 fichierTemp = creerNomFichierTemp(perso->nom);
@@ -348,18 +356,20 @@ void menuPrincipal()
     extern char nomJoueurStocke[100];
     niveauActuel = 0;
 
-    
-    if (!menuMusicPlaying) {
-        if (initAudio()) {
-            loadBackgroundMusic("asset/music/sky.mp3");
+    if (!menuMusicPlaying)
+    {
+        cleanupAudio();
+        if (initAudio())
+        {
+            loadBackgroundMusic("asset/music/ost.mp3");
             setMusicVolume(96);
             playBackgroundMusic(-1);
             menuMusicPlaying = 1;
         }
     }
 
-    
-    if (strlen(nomJoueurStocke) > 0) {
+    if (strlen(nomJoueurStocke) > 0)
+    {
         strcpy(perso.nom, nomJoueurStocke);
     }
 
@@ -369,9 +379,12 @@ void menuPrincipal()
         niveauMaxDebloque = lireSauvegarde();
         initialiserNiveaux(niveauxLocaux, niveauMaxDebloque);
         memcpy(niveaux, niveauxLocaux, sizeof(niveauxLocaux));
-    } else {
-        
-        for (int i = 0; i < MAX_NIVEAUX; i++) {
+    }
+    else
+    {
+
+        for (int i = 0; i < MAX_NIVEAUX; i++)
+        {
             niveaux[i].debloque = (i <= niveauMaxDebloque) ? 1 : 0;
         }
     }
@@ -393,32 +406,32 @@ void menuPrincipal()
         {
             if (selection >= 1 && selection <= MAX_NIVEAUX && niveaux[selection - 1].debloque)
             {
-                
+
                 stopBackgroundMusic();
                 menuMusicPlaying = 0;
-                
-                
+
                 if (strlen(perso.nom) == 0)
                 {
                     system("cls");
                     printf("Entrez votre nom: ");
                     scanf("%s", perso.nom);
                     strcpy(nomJoueurStocke, perso.nom);
-                    
-                    
+
                     SauvegardeInfo saves[100];
                     int nbSaves = lireSauvegardesExistant(saves, 100);
-                    for (int i = 0; i < nbSaves; i++) {
-                        if (strcmp(saves[i].nom, perso.nom) == 0) {
+                    for (int i = 0; i < nbSaves; i++)
+                    {
+                        if (strcmp(saves[i].nom, perso.nom) == 0)
+                        {
                             niveauMaxDebloque = saves[i].niveauMaxDebloque;
                             perso.score = saves[i].score;
                             perso.vie = saves[i].vie;
                             break;
                         }
                     }
-                    
-                    
-                    for (int i = 0; i < MAX_NIVEAUX; i++) {
+
+                    for (int i = 0; i < MAX_NIVEAUX; i++)
+                    {
                         niveaux[i].debloque = (i <= niveauMaxDebloque) ? 1 : 0;
                     }
                 }
@@ -454,10 +467,10 @@ void menuPrincipal()
             else if (selection == MAX_NIVEAUX + 2)
             {
                 resetScores();
-                sauvegarderProgression(0, perso.nom); 
-                
+                sauvegarderProgression(0, perso.nom);
+
                 initialiserNiveaux(niveaux, 0);
-                
+
                 printf("Scores et progression reinitialises !\n");
                 Sleep(1500);
             }
@@ -467,11 +480,10 @@ void menuPrincipal()
                 printf("Merci d'avoir joue !\n");
                 Sleep(1500);
                 system("cls");
-                
-                
+
                 stopBackgroundMusic();
                 cleanupAudio();
-                
+
                 exit(0);
             }
         }

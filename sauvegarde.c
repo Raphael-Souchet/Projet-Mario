@@ -340,7 +340,7 @@ void mettreAJourCoordonnees(int *x, int *y, int *yMort) {
         case 0:
             *x = 21;
             *y = 15;
-            *yMort = 19;
+            *yMort = 23;
             break;
         case 1:
             *x = 21;
@@ -355,7 +355,7 @@ void mettreAJourCoordonnees(int *x, int *y, int *yMort) {
         case 3:
             *x = 21;
             *y = 15;
-            *yMort = 19;
+            *yMort = 20;
             break;
         case 4:
             *x = 21;

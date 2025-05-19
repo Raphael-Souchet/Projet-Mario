@@ -48,7 +48,6 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 {
     char caractere_dessous = (perso->positionY + 1 < carte->hauteur) ? carte->carte[perso->positionY + 1][perso->positionX] : 'w';
 
-    // Ajout de 'f' et 'o' comme surfaces solides
     if (caractere_dessous == 'w' || caractere_dessous == ']' || caractere_dessous == 'n' || caractere_dessous == '[' || caractere_dessous == 'd' 
         || caractere_dessous == 'f' || caractere_dessous == 'o' || caractere_dessous == '|')
     {
@@ -61,7 +60,6 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 
     char caractere_dessus = (perso->positionY - 1 >= 0) ? carte->carte[perso->positionY - 1][perso->positionX] : 'w';
 
-    // Ajout de 'f' et 'o' comme obstacles au-dessus
     if (caractere_dessus == 'w' || caractere_dessus == ']' || caractere_dessus == 'n' || caractere_dessus == '[' || caractere_dessus == 'd' 
         || caractere_dessus == 'f' || caractere_dessus == 'o' || caractere_dessus == '|')
     {
@@ -74,7 +72,6 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 
     char caractere_devant = (perso->positionX + 1 < carte->largeur) ? carte->carte[perso->positionY][perso->positionX + 1] : 'w';
 
-    // Ajout de 'f' et 'o' comme obstacles devant
     if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == 'n' || caractere_devant == '[' || perso->positionX == carte->largeur - 3 
         || caractere_devant == 'd' || caractere_devant == 'f' || caractere_devant == 'o' || caractere_devant == '|')
     {
@@ -87,7 +84,6 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 
     char caractere_derriere = (perso->positionX - 1 >= 0) ? carte->carte[perso->positionY][perso->positionX - 1] : 'w';
 
-    // Ajout de 'f' et 'o' comme obstacles derrière
     if (caractere_derriere == 'w' || caractere_derriere == ']' || caractere_derriere == 'n' || caractere_derriere == '[' || perso->positionX == 0 
         || caractere_derriere == 'd' || caractere_derriere == 'f' || caractere_derriere == 'o' || caractere_derriere == '|')
     {
@@ -221,7 +217,6 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *
         int new_y = perso->positionY + 1;
         if (new_y < carte->hauteur)
         {
-            // Ajout de 'f' et 'o' comme obstacles à la chute
             if (carte->carte[new_y][perso->positionX] != 'w' && carte->carte[new_y][perso->positionX] != 'n' && 
                 carte->carte[new_y][perso->positionX] != ']' && carte->carte[new_y][perso->positionX] != '|'
                 && carte->carte[new_y][perso->positionX] != '[' && carte->carte[new_y][perso->positionX] != 'd' 
@@ -272,7 +267,6 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *
 
                         if (next_x >= 0 && next_x < carte->largeur)
                         {
-                            // Ajout de 'f' et 'o' comme obstacles au déplacement latéral
                             if (carte->carte[perso->positionY][next_x] != 'w' && carte->carte[perso->positionY][next_x] != ']' 
                                 && carte->carte[perso->positionY][next_x] != 'n' && carte->carte[perso->positionY][next_x] != '|'
                                 && carte->carte[perso->positionY][next_x] != '[' && carte->carte[perso->positionY][next_x] != 'd' 

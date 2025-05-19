@@ -22,8 +22,6 @@ int initAudio()
     return 1;
 }
 
-
-
 int loadBackgroundMusic(const char *musicPath)
 {
     
@@ -128,28 +126,14 @@ void playSoundEffect(const char *soundPath, int volume)
 
 int initGameAudio()
 {
+    cleanupAudio();
+
     if (!initAudio())
     {
         return 0;
     }
-    
-    if (!loadBackgroundMusic("asset/music/overworld.mp3"))
-    {
-        if (!loadBackgroundMusic("asset/music/overworld.wav"))
-        {
-            printf("Impossible de charger la musique d'arrière-plan\n");
-            return 0;
-        }
-    }
-    
-    setMusicVolume(96);
-    
-    if (!playBackgroundMusic(-1))
-    {
-        return 0;
-    }
-    
-    printf("Musique d'arrière-plan lancée avec succès\n");
+
+    printf("Système audio réinitialisé avec succès\n");
     return 1;
 }
 

@@ -8,6 +8,7 @@ char nomJoueurStocke[100] = "";
 Niveau niveaux[MAX_NIVEAUX];
 int niveauActuel = 0;
 int niveauMaxDebloque = 0;
+int menuMusicPlaying = 0;
 
 GameTextures *gameTextures = NULL;
 Animation *carnivoreAnimation = NULL;
@@ -21,7 +22,7 @@ Animation *coinAnimation = NULL;
 Tab_starcoins tab_starcoins = {NULL, 0, 0};
 Animation *starCoinAnimation = NULL;
 SDL_Texture *heartTexture = NULL;
-Animation* slimeAnimation = NULL;
+Animation *slimeAnimation = NULL;
 
 int main(int argc, char *argv[])
 {
@@ -39,7 +40,7 @@ int main(int argc, char *argv[])
         {
             system("cls");
             printf("+---------------------------------------------+\n");
-            printf("|          PARTIES SAUVEGARDEES               |\n");
+            printf("|            PARTIES SAUVEGARDEES             |\n");
             printf("+---------------------------------------------+\n");
 
             for (int i = 0; i < nbSaves; i++)
@@ -69,7 +70,6 @@ int main(int argc, char *argv[])
                 Sleep(1000);
             }
 
-            
             int found = 0;
             for (int i = 0; i < nbSaves; i++)
             {
@@ -94,19 +94,18 @@ int main(int argc, char *argv[])
         }
         else
         {
-            
+
             niveauMaxDebloque = 0;
             nomJoueurStocke[0] = '\0';
         }
     }
     else
     {
-        
+
         niveauMaxDebloque = 0;
         nomJoueurStocke[0] = '\0';
     }
 
-    
     initialiserNiveaux(niveaux, niveauMaxDebloque);
     menuPrincipal(niveaux);
     return 0;
@@ -128,10 +127,42 @@ void jouer(const char *fichierTemp, Personnage *perso)
         SDL_Quit();
         return;
     }
+    char *musicpath = NULL;
 
     if (!initGameAudio())
     {
         printf("Avertissement: L'audio n'a pas pu être initialisé. Le jeu continuera sans son.\n");
+    }
+    else
+    {
+        stopBackgroundMusic();
+
+        char *musicpath = NULL;
+        switch (niveauActuel)
+        {
+        case 0:
+            musicpath = "asset/music/overworld.mp3";
+            break;
+        case 1:
+            musicpath = "asset/music/sky.mp3";
+            break;
+        case 2:
+            musicpath = "asset/music/beach.mp3";
+            break;
+        default:
+            musicpath = "asset/music/overworld.mp3";
+        }
+
+        if (loadBackgroundMusic(musicpath))
+        {
+            setMusicVolume(96);
+            playBackgroundMusic(-1);
+            menuMusicPlaying = 0; 
+        }
+        else
+        {
+            printf("Impossible de charger la musique: %s\n", musicpath);
+        }
     }
 
     int largeurAffichage = 50;
@@ -240,6 +271,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
                 {
                     stopBackgroundMusic();
                     cleanupAudio();
+                    menuMusicPlaying = 0;
                     nettoyerSDL(window, renderer);
                     IMG_Quit();
                     libererCarte(carte);
