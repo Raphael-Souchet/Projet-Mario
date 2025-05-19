@@ -295,7 +295,7 @@ void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int nive
     {
         niveaux[niveauActuel + 1].debloque = 1;
         niveauMaxDebloque = niveauActuel + 1;
-        sauvegarderProgression(niveauMaxDebloque);
+        sauvegarderProgression(niveauMaxDebloque, perso->nom);
     }
 
     char *fichierTemp = creerNomFichierTemp(perso->nom);
@@ -451,7 +451,7 @@ void menuPrincipal(Niveau *niveaux)
             else if (selection == MAX_NIVEAUX + 2)
             {
                 resetScores();
-                sauvegarderProgression(0); 
+                sauvegarderProgression(0, perso.nom); 
                 
                 initialiserNiveaux(niveaux, 0);
                 

@@ -157,8 +157,8 @@ void jouer(const char *fichierTemp, Personnage *perso, Niveau *niveaux)
 
     Tab_gumba tab_gumba = {NULL, 0};
     Tab_plante tab_plante = {NULL, 0};
-    initialiser_gumbas(carte, &tab_gumba);
-    initialiserPlante(carte, &tab_plante);
+    initialiser_gumbas(carte, &tab_gumba, niveauActuel);
+    initialiserPlante(carte, &tab_plante, niveauActuel);
 
     initialiser_pieces(carte, &tab_pieces);
     initialiser_starcoins(carte, &tab_starcoins);
