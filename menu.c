@@ -286,23 +286,30 @@ void menu_mort(Personnage *perso, const char *fichierTemp, int niveauActuel)
     }
 }
 
-void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int niveauMaxDebloque)
+void menuVictoire(Personnage *perso, Niveau *niveaux, int niveauActuel, int niveauMaxDebloqueParam)
 {
     system("cls");
     int selection = 1, touche;
 
+    // Débloquer le niveau suivant si nécessaire
     if (niveauActuel + 1 < MAX_NIVEAUX && niveauActuel + 1 > niveauMaxDebloque)
     {
         niveaux[niveauActuel + 1].debloque = 1;
         niveauMaxDebloque = niveauActuel + 1;
-        sauvegarderProgression(niveauMaxDebloque, perso->nom);
+        sauvegarderProgression(niveauMaxDebloque);
     }
 
+    // Sauvegarder la partie avec le score actuel
     char *fichierTemp = creerNomFichierTemp(perso->nom);
     Carte *carte = chargerCarteEnMemoire(fichierTemp);
     if (carte != NULL) {
         sauvegarderPartie(perso, carte, fichierTemp);
         libererCarte(carte);
+    } else {
+        // Si la carte ne peut pas être chargée, sauvegarder directement la progression
+        if (strlen(perso->nom) > 0) {
+            sauvegarderProgression(niveauMaxDebloque, perso->nom);
+        }
     }
 
     while (_kbhit())
@@ -382,12 +389,23 @@ void menuPrincipal(Niveau *niveaux)
     char *fichierTemp = NULL;
     int niveauActuel = 0;
 
+    // Copier le nom du joueur stocké s'il existe
+    if (strlen(nomJoueurStocke) > 0) {
+        strcpy(perso.nom, nomJoueurStocke);
+    }
+
     static Niveau niveauxLocaux[MAX_NIVEAUX];
     if (niveaux == NULL)
     {
-        int niveauMaxDebloque = lireSauvegarde();
+        // Lire la sauvegarde pour mettre à jour niveauMaxDebloque
+        niveauMaxDebloque = lireSauvegarde();
         initialiserNiveaux(niveauxLocaux, niveauMaxDebloque);
         niveaux = niveauxLocaux;
+    } else {
+        // Mettre à jour les niveaux avec la progression actuelle
+        for (int i = 0; i < MAX_NIVEAUX; i++) {
+            niveaux[i].debloque = (i <= niveauMaxDebloque) ? 1 : 0;
+        }
     }
 
     while (_kbhit())
@@ -407,18 +425,30 @@ void menuPrincipal(Niveau *niveaux)
         {
             if (selection >= 1 && selection <= MAX_NIVEAUX && niveaux[selection - 1].debloque)
             {
-                static int nomSaisi = 0;
-                if (!nomSaisi || strlen(nomJoueurStocke) == 0)
+                // Demander le nom seulement si on n'en a pas déjà un
+                if (strlen(perso.nom) == 0)
                 {
                     system("cls");
                     printf("Entrez votre nom: ");
                     scanf("%s", perso.nom);
                     strcpy(nomJoueurStocke, perso.nom);
-                    nomSaisi = 1;
-                }
-                else
-                {
-                    strcpy(perso.nom, nomJoueurStocke);
+                    
+                    // Charger la progression du joueur s'il existe
+                    SauvegardeInfo saves[100];
+                    int nbSaves = lireSauvegardesExistant(saves, 100);
+                    for (int i = 0; i < nbSaves; i++) {
+                        if (strcmp(saves[i].nom, perso.nom) == 0) {
+                            niveauMaxDebloque = saves[i].niveauMaxDebloque;
+                            perso.score = saves[i].score;
+                            perso.vie = saves[i].vie;
+                            break;
+                        }
+                    }
+                    
+                    // Mettre à jour les niveaux avec la nouvelle progression
+                    for (int i = 0; i < MAX_NIVEAUX; i++) {
+                        niveaux[i].debloque = (i <= niveauMaxDebloque) ? 1 : 0;
+                    }
                 }
 
                 fichierTemp = creerNomFichierTemp(perso.nom);
@@ -451,7 +481,7 @@ void menuPrincipal(Niveau *niveaux)
             else if (selection == MAX_NIVEAUX + 2)
             {
                 resetScores();
-                sauvegarderProgression(0, perso.nom); 
+                sauvegarderProgression(0); 
                 
                 initialiserNiveaux(niveaux, 0);
                 
