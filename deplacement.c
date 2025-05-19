@@ -20,8 +20,8 @@ void gerer_saut(Carte *carte, Personnage *perso, int direction)
         {
             char contenu_nouv_pos = carte->carte[nouv_y][perso->positionX];
 
-            if (contenu_nouv_pos != 'w' && contenu_nouv_pos != 'n' && contenu_nouv_pos != ']' && contenu_nouv_pos != '[' 
-                && contenu_nouv_pos != 'd' && contenu_nouv_pos != 'f' && contenu_nouv_pos != 'o')
+            // Si la position est traversable (n'est PAS un bloc solide)
+            if (strchr("w]n[dfo|yegz", contenu_nouv_pos) == NULL)
             {
                 effacer_position(carte, perso);
                 perso->positionY = nouv_y;
@@ -46,10 +46,13 @@ void gerer_saut(Carte *carte, Personnage *perso, int direction)
 
 void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, Tab_plante *tab_plante, const char *fichierTemp, SDL_Window *window, SDL_Renderer *renderer)
 {
+    // Liste des blocs solides
+    const char* solid_chars = "w]n[dfo|yegz";
+
     char caractere_dessous = (perso->positionY + 1 < carte->hauteur) ? carte->carte[perso->positionY + 1][perso->positionX] : 'w';
 
-    if (caractere_dessous == 'w' || caractere_dessous == ']' || caractere_dessous == 'n' || caractere_dessous == '[' || caractere_dessous == 'd' 
-        || caractere_dessous == 'f' || caractere_dessous == 'o' || caractere_dessous == '|')
+    // Si la case sous le personnage est un bloc solide
+    if (strchr(solid_chars, caractere_dessous) != NULL)
     {
         perso->en_chute = 0;
     }
@@ -60,8 +63,8 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 
     char caractere_dessus = (perso->positionY - 1 >= 0) ? carte->carte[perso->positionY - 1][perso->positionX] : 'w';
 
-    if (caractere_dessus == 'w' || caractere_dessus == ']' || caractere_dessus == 'n' || caractere_dessus == '[' || caractere_dessus == 'd' 
-        || caractere_dessus == 'f' || caractere_dessus == 'o' || caractere_dessus == '|')
+    // Si la case au-dessus du personnage est un bloc solide
+    if (strchr(solid_chars, caractere_dessus) != NULL)
     {
         perso->peut_monter = 0;
     }
@@ -72,8 +75,9 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 
     char caractere_devant = (perso->positionX + 1 < carte->largeur) ? carte->carte[perso->positionY][perso->positionX + 1] : 'w';
 
-    if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == 'n' || caractere_devant == '[' || perso->positionX == carte->largeur - 3 
-        || caractere_devant == 'd' || caractere_devant == 'f' || caractere_devant == 'o' || caractere_devant == '|')
+    // Si la case devant le personnage N'est PAS un bloc solide 
+    // (c'est une erreur, devrait être != NULL pour vérifier s'il peut avancer)
+    if (strchr(solid_chars, caractere_devant) != NULL)
     {
         perso->peut_avancer = 0;
     }
@@ -84,8 +88,9 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 
     char caractere_derriere = (perso->positionX - 1 >= 0) ? carte->carte[perso->positionY][perso->positionX - 1] : 'w';
 
-    if (caractere_derriere == 'w' || caractere_derriere == ']' || caractere_derriere == 'n' || caractere_derriere == '[' || perso->positionX == 0 
-        || caractere_derriere == 'd' || caractere_derriere == 'f' || caractere_derriere == 'o' || caractere_derriere == '|')
+    // Si la case derrière le personnage N'est PAS un bloc solide
+    // (c'est une erreur, devrait être != NULL pour vérifier s'il peut reculer)
+    if (strchr(solid_chars, caractere_derriere) != NULL)
     {
         perso->peut_reculer = 0;
     }
@@ -115,6 +120,9 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 
 void verifier_collision_gumba(Carte *carte, Gumba *gumba)
 {
+    // Liste des caractères solides
+    const char* solid_chars = "w]n[dfo|yegz";
+
     char caractere_devant_dessous = (gumba->positionY + 1 < carte->hauteur && gumba->positionX + 1 < carte->largeur) ? carte->carte[gumba->positionY + 1][gumba->positionX + 1] : 'w';
 
     if (caractere_devant_dessous == ' ')
@@ -139,7 +147,8 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
 
     char caractere_devant = (gumba->positionX + 1 < carte->largeur) ? carte->carte[gumba->positionY][gumba->positionX + 1] : 'w';
 
-    if (caractere_devant == 'w' || caractere_devant == ']' || caractere_devant == 'n' || caractere_devant == 'Q' || gumba->positionX == carte->largeur - 3 || caractere_devant == 'd')
+    // Vérifie si la case devant le gumba contient un bloc solide
+    if (strchr(solid_chars, caractere_devant) != NULL)
     {
         gumba->peut_avancer = 0;
     }
@@ -147,9 +156,11 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
     {
         gumba->peut_avancer = 1;
     }
+    
     char caractere_derriere = (gumba->positionX - 1 >= 0) ? carte->carte[gumba->positionY][gumba->positionX - 1] : 'w';
 
-    if (caractere_derriere == 'w' || caractere_derriere == '[' || caractere_derriere == 'n' || caractere_derriere == 'Q' || gumba->positionX == 0 || caractere_derriere == 'd')
+    // Vérifie si la case derrière le gumba contient un bloc solide
+    if (strchr(solid_chars, caractere_derriere) != NULL)
     {
         gumba->peut_reculer = 0;
     }
@@ -217,10 +228,9 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *
         int new_y = perso->positionY + 1;
         if (new_y < carte->hauteur)
         {
-            if (carte->carte[new_y][perso->positionX] != 'w' && carte->carte[new_y][perso->positionX] != 'n' && 
-                carte->carte[new_y][perso->positionX] != ']' && carte->carte[new_y][perso->positionX] != '|'
-                && carte->carte[new_y][perso->positionX] != '[' && carte->carte[new_y][perso->positionX] != 'd' 
-                && carte->carte[new_y][perso->positionX] != 'f' && carte->carte[new_y][perso->positionX] != 'o')
+            // La logique est inversée ici - on veut pouvoir tomber si la case sous nous N'est PAS un bloc solide
+            char caractere_dessous = carte->carte[new_y][perso->positionX];
+            if (strchr("w]n[dfo|yegz", caractere_dessous) == NULL)
             {
                 effacer_position(carte, perso);
                 perso->positionY = new_y;
@@ -267,10 +277,9 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *
 
                         if (next_x >= 0 && next_x < carte->largeur)
                         {
-                            if (carte->carte[perso->positionY][next_x] != 'w' && carte->carte[perso->positionY][next_x] != ']' 
-                                && carte->carte[perso->positionY][next_x] != 'n' && carte->carte[perso->positionY][next_x] != '|'
-                                && carte->carte[perso->positionY][next_x] != '[' && carte->carte[perso->positionY][next_x] != 'd' 
-                                && carte->carte[perso->positionY][next_x] != 'f' && carte->carte[perso->positionY][next_x] != 'o')
+                            // La logique est inversée ici - on veut pouvoir se déplacer si la case suivante N'est PAS un bloc solide
+                            char caractere_suivant = carte->carte[perso->positionY][next_x];
+                            if (strchr("w]n[dfo|yegz", caractere_suivant) == NULL)
                             {
                                 effacer_position(carte, perso);
                                 perso->positionX = next_x;

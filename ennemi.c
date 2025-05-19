@@ -68,30 +68,36 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
 
     switch (niveauActuel)
     {
-        case 0: {
+        case 1: {
             static int x0[] = {74, 80, 120};
             static int y0[] = {14, 9, 8};
             tab_x = x0; tab_y = y0; count = 3;
             break;
         }
-        case 1: {
+        case 2: {
             static int x1[] = {56, 72, 92};
             static int y1[] = {20, 8, 17};
             tab_x = x1; tab_y = y1; count = 3;
             break;
         }
-        case 2: {
+        case 3: {
             static int x2[] = {74, 100, 200, 264, 302};
             static int y2[] = {13, 19, 11, 17, 12};
             tab_x = x2; tab_y = y2; count = 5;
             break;
         }
-        case 3: {
-            static int x3[] = {40, 42};
-            static int y3[] = {14, 14};
-            tab_x = x3; tab_y = y3; count = 2;
+        case 4: {
+            static int x3[] = {66, 100, 140, 157, 148, 202, 180, 218, 273, 284, 430, 470};
+            static int y3[] = {19, 16, 16, 16, 19, 22, 16, 16, 17, 22, 22, 20};
+            tab_x = x3; tab_y = y3; count = 12;
             break;
         }
+        // case 4: {
+        //     static int x2[] = {74, 100, 200, 264, 302};
+        //     static int y2[] = {13, 19, 11, 17, 12};
+        //     tab_x = x2; tab_y = y2; count = 5;
+        //     break;
+        // }
         default:
             return;
     }
@@ -189,27 +195,27 @@ void initialiserPlante(Carte *carte, Tab_plante *tab_plante)
 
     switch (niveauActuel)
     {
-        case 0: {
+        case 1: {
             static int x0[] = {88, 94};
             static int y0[] = {14, 9};
             tab_x = x0; tab_y = y0; count = 2;
             break;
         }
-        case 1: {
+        case 2: {
             static int x1[] = {50, 90};
             static int y1[] = {10, 10};
             tab_x = x1; tab_y = y1; count = 2;
             break;
         }
-        case 2: {
+        case 3: {
             static int x2[] = {150, 247};
             static int y2[] = {10, 15};
             tab_x = x2; tab_y = y2; count = 2;
             break;
         }
-        case 3: {
-            static int x3[] = {60};
-            static int y3[] = {13};
+        case 4: {
+            static int x3[] = {100, 200, 300, 324};
+            static int y3[] = {16, 16, 16, 16};
             tab_x = x3; tab_y = y3; count = 1;
             break;
         }

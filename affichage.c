@@ -584,6 +584,54 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
                     SDL_RenderFillRect(renderer, &tile);
                 }
                 break;
+            case 'e':
+                if (gameTextures != NULL && gameTextures->herbe3 != NULL)
+                {
+                    SDL_RenderCopy(renderer, gameTextures->herbe3, NULL, &tile);
+                }
+                else
+                {
+                    
+                    SDL_SetRenderDrawColor(renderer, 160, 82, 45, 255); 
+                    SDL_RenderFillRect(renderer, &tile);
+                }
+                break;
+            case 'y':
+                if (gameTextures != NULL && gameTextures->terre3 != NULL)
+                {
+                    SDL_RenderCopy(renderer, gameTextures->terre3, NULL, &tile);
+                }
+                else
+                {
+                    
+                    SDL_SetRenderDrawColor(renderer, 160, 82, 45, 255); 
+                    SDL_RenderFillRect(renderer, &tile);
+                }
+                break;
+            case 'z':
+                if (gameTextures != NULL && gameTextures->herbe4 != NULL)
+                {
+                    SDL_RenderCopy(renderer, gameTextures->herbe4, NULL, &tile);
+                }
+                else
+                {
+                    
+                    SDL_SetRenderDrawColor(renderer, 160, 82, 45, 255); 
+                    SDL_RenderFillRect(renderer, &tile);
+                }
+                break;
+            case 'g':
+                if (gameTextures != NULL && gameTextures->terre4 != NULL)
+                {
+                    SDL_RenderCopy(renderer, gameTextures->terre4, NULL, &tile);
+                }
+                else
+                {
+                    
+                    SDL_SetRenderDrawColor(renderer, 160, 82, 45, 255); 
+                    SDL_RenderFillRect(renderer, &tile);
+                }
+                break;
             default:
                 break;
             }

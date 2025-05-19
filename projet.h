@@ -119,6 +119,10 @@ typedef struct {
     SDL_Texture* plante;
     SDL_Texture* herbe5;
     SDL_Texture* terre5;
+    SDL_Texture* herbe4;
+    SDL_Texture* terre4;
+    SDL_Texture* herbe3;
+    SDL_Texture* terre3;
     SDL_Texture* nuage;
 } GameTextures;
 
