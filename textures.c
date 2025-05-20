@@ -19,7 +19,7 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
     textures->herbe5 = NULL;  
     textures->terre5 = NULL;
 
-    SDL_Surface *surface_brick = IMG_Load("asset/sprit/Tiles/herbe.png");
+    SDL_Surface *surface_brick = IMG_Load("asset/Tiles/herbe.png");
     
     if (surface_brick != NULL)
     {
@@ -28,7 +28,7 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
     }
 
     
-    SDL_Surface *surface_terre = IMG_Load("asset/sprit/Tiles/terre.png");
+    SDL_Surface *surface_terre = IMG_Load("asset/Tiles/terre.png");
     
     if (surface_terre != NULL)
     {
@@ -101,7 +101,7 @@ GameTextures *loadGameTextures(SDL_Renderer *renderer)
         SDL_FreeSurface(surface_herbe3);
     }
 
-    SDL_Surface *surface_terre3 = IMG_Load("asset/Tiles/terre3.png");
+    SDL_Surface *surface_terre3 = IMG_Load("asset/Tiles/champignon.png");
     
     if (surface_terre3 != NULL)
     {
