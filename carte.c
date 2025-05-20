@@ -5,7 +5,6 @@ Carte *chargerCarteEnMemoire(const char *fichierCarte)
     FILE *fichier = fopen(fichierCarte, "r");
     if (fichier == NULL)
     {
-        printf("Erreur: Impossible d'ouvrir le fichier %s\n", fichierCarte);
         return NULL;
     }
 
@@ -13,7 +12,6 @@ Carte *chargerCarteEnMemoire(const char *fichierCarte)
     if (carte == NULL)
     {
         fclose(fichier);
-        printf("Erreur d'allocation de memoire pour la carte\n");
         return NULL;
     }
 
@@ -43,7 +41,6 @@ Carte *chargerCarteEnMemoire(const char *fichierCarte)
     {
         fclose(fichier);
         free(carte);
-        printf("Erreur d'allocation de memoire pour les lignes\n");
         return NULL;
     }
 
@@ -59,7 +56,6 @@ Carte *chargerCarteEnMemoire(const char *fichierCarte)
             free(carte->carte);
             free(carte);
             fclose(fichier);
-            printf("Erreur d'allocation de memoire pour une ligne\n");
             return NULL;
         }
         memset(carte->carte[i], ' ', largeur);
@@ -102,7 +98,6 @@ int sauvegarderCarteVersFichier(Carte *carte, const char *fichierCarte)
     FILE *fichier = fopen(fichierCarte, "w");
     if (fichier == NULL)
     {
-        printf("Erreur: Impossible d'ouvrir le fichier %s pour sauvegarder\n", fichierCarte);
         return 0;
     }
 

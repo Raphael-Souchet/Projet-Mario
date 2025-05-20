@@ -15,7 +15,6 @@ void initialiser_pieces(Carte* carte, Tab_piece* tab_piece) {
     tab_piece->count = 0;
     
     if (tab_piece->pieces == NULL) {
-        printf("Erreur: impossible d'allouer la mémoire pour les pièces\n");
         return;
     }
     
@@ -111,7 +110,6 @@ void initialiser_starcoins(Carte* carte, Tab_starcoins* tab_starcoins) {
     tab_starcoins->count = 0;
     
     if (tab_starcoins->starCoins == NULL) {
-        printf("Erreur: impossible d'allouer la mémoire pour les star coins\n");
         return;
     }
     

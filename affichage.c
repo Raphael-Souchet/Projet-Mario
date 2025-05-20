@@ -43,7 +43,6 @@ TTF_Font *initFont()
         font = TTF_OpenFont(fontPaths[i], 32);
         if (font != NULL)
         {
-            printf("Police chargée avec succès: %s\n", fontPaths[i]);
             break;
         }
     }
@@ -63,14 +62,9 @@ SDL_Texture *loadHeartTexture(SDL_Renderer *renderer)
     SDL_Surface *surface = NULL;
 
     surface = IMG_Load(heartPaths);
-    if (surface != NULL)
-    {
-        printf("Image du cœur chargée avec succès: %s\n", heartPaths);
-    }
 
     if (surface == NULL)
     {
-        printf("Impossible de charger l'image du cœur. Création d'une texture par défaut.\n");
         surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0, 0, 0, 0);
         if (surface != NULL)
         {
@@ -78,16 +72,11 @@ SDL_Texture *loadHeartTexture(SDL_Renderer *renderer)
         }
         else
         {
-            printf("Erreur lors de la création de la surface par défaut: %s\n", SDL_GetError());
             return NULL;
         }
     }
 
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (texture == NULL)
-    {
-        printf("Erreur lors de la création de la texture du cœur: %s\n", SDL_GetError());
-    }
 
     SDL_FreeSurface(surface);
     return texture;
@@ -140,14 +129,12 @@ void afficherScore(SDL_Renderer *renderer, int score, int vies)
     SDL_Surface *textSurface = TTF_RenderText_Solid(scoreFont, scoreText, scoreColor);
     if (textSurface == NULL)
     {
-        printf("Impossible de créer la surface de texte: %s\n", TTF_GetError());
         return;
     }
 
     SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
     if (textTexture == NULL)
     {
-        printf("Impossible de créer la texture de texte: %s\n", SDL_GetError());
         SDL_FreeSurface(textSurface);
         return;
     }
@@ -168,15 +155,6 @@ void loadCoinAnimations(SDL_Renderer *renderer)
         const char *coinPaths = "asset/brackeys_platformer_assets/sprites/coin.png";
 
         coinAnimation = loadAnimation(renderer, coinPaths, 6, 16, 16, 100);
-        if (coinAnimation != NULL)
-        {
-            printf("Animation des pièces chargée avec succès: %s\n", coinPaths);
-        }
-
-        if (coinAnimation == NULL)
-        {
-            printf("Échec du chargement de l'animation des pièces. Utilisation de la représentation par défaut.\n");
-        }
     }
 
     if (starCoinAnimation == NULL)
@@ -184,15 +162,6 @@ void loadCoinAnimations(SDL_Renderer *renderer)
         const char *starCoinPaths = "asset/brackeys_platformer_assets/sprites/starcoin.png";
 
         starCoinAnimation = loadAnimation(renderer, starCoinPaths, 9, 30, 30, 50);
-        if (starCoinAnimation != NULL)
-        {
-            printf("Animation des star coins chargée avec succès: %s\n", starCoinPaths);
-        }
-
-        if (starCoinAnimation == NULL)
-        {
-            printf("Échec du chargement de l'animation des star coins. Utilisation de la représentation par défaut.\n");
-        }
     }
 }
 
@@ -201,7 +170,6 @@ BackgroundTexture *loadBackgroundTexture(SDL_Renderer *renderer, const char *pat
     BackgroundTexture *bg = (BackgroundTexture *)malloc(sizeof(BackgroundTexture));
     if (bg == NULL)
     {
-        printf("Erreur: Impossible d'allouer la mémoire pour la texture de fond\n");
         return NULL;
     }
 
@@ -216,7 +184,6 @@ BackgroundTexture *loadBackgroundTexture(SDL_Renderer *renderer, const char *pat
     bg->texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (bg->texture == NULL)
     {
-        printf("Erreur: Impossible de créer la texture: %s\n", SDL_GetError());
         SDL_FreeSurface(surface);
         free(bg);
         return NULL;
@@ -257,14 +224,12 @@ void loadFlagAnimation(SDL_Renderer *renderer)
             flagAnimation = loadAnimation(renderer, flagPaths[i], 4, 32, 32, 200);
             if (flagAnimation != NULL)
             {
-                printf("Animation du drapeau chargée avec succès: %s\n", flagPaths[i]);
                 break;
             }
         }
 
         if (flagAnimation == NULL)
         {
-            printf("Échec du chargement de l'animation du drapeau. Utilisation de la représentation par défaut.\n");
             SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
             if (tempSurface != NULL)
             {
@@ -280,8 +245,6 @@ void loadFlagAnimation(SDL_Renderer *renderer)
                     flagAnimation->frameHeight = 32;
                     flagAnimation->frameDuration = 200;
                     flagAnimation->lastFrameTime = SDL_GetTicks();
-
-                    printf("Animation de drapeau de secours créée\n");
                 }
                 SDL_FreeSurface(tempSurface);
             }
@@ -306,14 +269,12 @@ void loadSlimeAnimation(SDL_Renderer *renderer)
         slimeAnimation = loadAnimation(renderer, slimePaths[i], 8, 32, 32, 150);
         if (slimeAnimation != NULL)
         {
-            printf("Animation du slime chargée avec succès: %s\n", slimePaths[i]);
             break;
         }
     }
 
     if (slimeAnimation == NULL)
     {
-        printf("Échec du chargement de l'animation du slime. Utilisation de la représentation par défaut.\n");
         SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
         if (tempSurface != NULL)
         {
@@ -329,8 +290,6 @@ void loadSlimeAnimation(SDL_Renderer *renderer)
                 slimeAnimation->frameHeight = 32;
                 slimeAnimation->frameDuration = 150;
                 slimeAnimation->lastFrameTime = SDL_GetTicks();
-
-                printf("Animation de slime de secours créée\n");
             }
             SDL_FreeSurface(tempSurface);
         }
@@ -378,7 +337,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
 
         if (globalBackground == NULL)
         {
-            printf("Impossible de charger l'image PNG. Tentative avec un fichier BMP...\n");
             bgPath = "asset/sprit/Mondstadt Tileset Platform - Basic/windrise-background.png";
             globalBackground = loadBackgroundTexture(renderer, bgPath);
         }
@@ -387,19 +345,11 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
     if (gameTextures == NULL)
     {
         gameTextures = loadGameTextures(renderer);
-        if (gameTextures == NULL)
-        {
-            printf("Impossible de charger les textures du jeu\n");
-        }
     }
 
     if (playerAnimations == NULL)
     {
         playerAnimations = loadPlayerAnimations(renderer);
-        if (playerAnimations == NULL)
-        {
-            printf("Impossible de charger les animations du joueur\n");
-        }
     }
 
     loadCoinAnimations(renderer);
@@ -410,10 +360,6 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
     if (heartTexture == NULL)
     {
         heartTexture = loadHeartTexture(renderer);
-        if (heartTexture == NULL)
-        {
-            printf("Impossible de charger la texture du cœur\n");
-        }
     }
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

@@ -20,7 +20,6 @@ void gerer_saut(Carte *carte, Personnage *perso, int direction)
         {
             char contenu_nouv_pos = carte->carte[nouv_y][perso->positionX];
 
-            // Si la position est traversable (n'est PAS un bloc solide)
             if (strchr("w]n[dfo|yegz", contenu_nouv_pos) == NULL)
             {
                 effacer_position(carte, perso);
@@ -46,12 +45,10 @@ void gerer_saut(Carte *carte, Personnage *perso, int direction)
 
 void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, Tab_plante *tab_plante, const char *fichierTemp, SDL_Window *window, SDL_Renderer *renderer)
 {
-    // Liste des blocs solides
     const char* solid_chars = "w]n[dfo|yegz";
 
     char caractere_dessous = (perso->positionY + 1 < carte->hauteur) ? carte->carte[perso->positionY + 1][perso->positionX] : 'w';
 
-    // Si la case sous le personnage est un bloc solide
     if (strchr(solid_chars, caractere_dessous) != NULL)
     {
         perso->en_chute = 0;
@@ -63,7 +60,6 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 
     char caractere_dessus = (perso->positionY - 1 >= 0) ? carte->carte[perso->positionY - 1][perso->positionX] : 'w';
 
-    // Si la case au-dessus du personnage est un bloc solide
     if (strchr(solid_chars, caractere_dessus) != NULL)
     {
         perso->peut_monter = 0;
@@ -75,8 +71,6 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 
     char caractere_devant = (perso->positionX + 1 < carte->largeur) ? carte->carte[perso->positionY][perso->positionX + 1] : 'w';
 
-    // Si la case devant le personnage N'est PAS un bloc solide 
-    // (c'est une erreur, devrait être != NULL pour vérifier s'il peut avancer)
     if (strchr(solid_chars, caractere_devant) != NULL)
     {
         perso->peut_avancer = 0;
@@ -88,8 +82,6 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 
     char caractere_derriere = (perso->positionX - 1 >= 0) ? carte->carte[perso->positionY][perso->positionX - 1] : 'w';
 
-    // Si la case derrière le personnage N'est PAS un bloc solide
-    // (c'est une erreur, devrait être != NULL pour vérifier s'il peut reculer)
     if (strchr(solid_chars, caractere_derriere) != NULL)
     {
         perso->peut_reculer = 0;
@@ -120,7 +112,6 @@ void verifier_collision(Carte *carte, Personnage *perso, Tab_gumba *tab_gumba, T
 
 void verifier_collision_gumba(Carte *carte, Gumba *gumba)
 {
-    // Liste des caractères solides
     const char* solid_chars = "w]n[dfo|yegz";
 
     char caractere_devant_dessous = (gumba->positionY + 1 < carte->hauteur && gumba->positionX + 1 < carte->largeur) ? carte->carte[gumba->positionY + 1][gumba->positionX + 1] : 'w';
@@ -147,7 +138,6 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
 
     char caractere_devant = (gumba->positionX + 1 < carte->largeur) ? carte->carte[gumba->positionY][gumba->positionX + 1] : 'w';
 
-    // Vérifie si la case devant le gumba contient un bloc solide
     if (strchr(solid_chars, caractere_devant) != NULL)
     {
         gumba->peut_avancer = 0;
@@ -159,7 +149,6 @@ void verifier_collision_gumba(Carte *carte, Gumba *gumba)
     
     char caractere_derriere = (gumba->positionX - 1 >= 0) ? carte->carte[gumba->positionY][gumba->positionX - 1] : 'w';
 
-    // Vérifie si la case derrière le gumba contient un bloc solide
     if (strchr(solid_chars, caractere_derriere) != NULL)
     {
         gumba->peut_reculer = 0;
@@ -228,7 +217,6 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *
         int new_y = perso->positionY + 1;
         if (new_y < carte->hauteur)
         {
-            // La logique est inversée ici - on veut pouvoir tomber si la case sous nous N'est PAS un bloc solide
             char caractere_dessous = carte->carte[new_y][perso->positionX];
             if (strchr("w]n[dfo|yegz", caractere_dessous) == NULL)
             {
@@ -277,7 +265,6 @@ void deplacer_joueur(Carte *carte, Personnage *perso, int *isMoving, Tab_gumba *
 
                         if (next_x >= 0 && next_x < carte->largeur)
                         {
-                            // La logique est inversée ici - on veut pouvoir se déplacer si la case suivante N'est PAS un bloc solide
                             char caractere_suivant = carte->carte[perso->positionY][next_x];
                             if (strchr("w]n[dfo|yegz", caractere_suivant) == NULL)
                             {

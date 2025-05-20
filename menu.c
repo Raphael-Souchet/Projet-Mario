@@ -39,7 +39,6 @@ void afficherMenuPrincipal(int selection, Niveau *niveaux)
 {
     extern char nomJoueurStocke[100];
 
-    // Calculer le score total
     int totalScore = 0;
     if (strlen(nomJoueurStocke) > 0)
     {
@@ -50,7 +49,6 @@ void afficherMenuPrincipal(int selection, Niveau *niveaux)
         {
             if (strcmp(saves[i].nom, nomJoueurStocke) == 0)
             {
-                // Calculer le score total comme la somme des scores de chaque niveau
                 for(int j = 0; j < MAX_NIVEAUX; j++) {
                     totalScore += saves[i].scoresNiveaux[j];
                 }
@@ -201,11 +199,6 @@ void menu_mort(Personnage *perso, const char *fichierTemp)
                 stopBackgroundMusic();
                 cleanupAudio();
 
-                if (!initGameAudio())
-                {
-                    printf("Avertissement: L'audio n'a pas pu être réinitialisé.\n");
-                }
-
                 if (selection == 1)
                 {
                     char *musicpath = NULL;
@@ -231,7 +224,6 @@ void menu_mort(Personnage *perso, const char *fichierTemp)
                     extern int niveauMaxDebloque;
                     if (!copierFichier(niveaux[niveauMaxDebloque].fichier, fichierTemp))
                     {
-                        printf("Erreur de reinitialisation !\n");
                         Sleep(1500);
                         menuPrincipal(niveaux);
                         return;
@@ -271,10 +263,8 @@ void menuVictoire(Personnage *perso)
     extern int niveauMaxDebloque;
     extern Niveau niveaux[MAX_NIVEAUX];
 
-    // Sauvegarde le score du niveau actuel
     sauvegarderProgression(niveauMaxDebloque, perso->nom, perso->score);
 
-    // Débloque le niveau suivant si nécessaire
     if (niveauActuel + 1 < MAX_NIVEAUX && niveauActuel + 1 > niveauMaxDebloque)
     {
         niveaux[niveauActuel + 1].debloque = 1;
@@ -333,7 +323,6 @@ void menuVictoire(Personnage *perso)
                 fichierTemp = creerNomFichierTemp(perso->nom);
                 if (!copierFichier(niveaux[niveauActuel + 1].fichier, fichierTemp))
                 {
-                    printf("Erreur de chargement du niveau suivant\n");
                     Sleep(1500);
                     free(fichierTemp);
                     menuPrincipal(niveaux);
@@ -412,7 +401,6 @@ void menuPrincipal()
     while (1)
     {
         int totalScore = 0;
-        // compter le score total du joueur
         afficherMenuPrincipal(selection, niveaux);
 
         touche = _getch();
@@ -443,7 +431,6 @@ void menuPrincipal()
                         {
                             niveauMaxDebloque = saves[i].niveauMaxDebloque;
                             perso.vie = saves[i].vie;
-                            // Ne pas charger le score total ici
                             break;
                         }
                     }
@@ -470,7 +457,7 @@ void menuPrincipal()
                 mettreAJourCoordonnees(&SPAWN_X, &SPAWN_Y, &MORT_Y);
                 perso.positionX = SPAWN_X;
                 perso.positionY = SPAWN_Y;
-                perso.score = 0; // Réinitialiser le score au début du niveau
+                perso.score = 0; 
 
                 jouer(fichierTemp, &perso);
                 free(fichierTemp);
