@@ -1,0 +1,14 @@
+Jeu retro mario codé en C/SDL2 avec dedans : 
+
+5 niveaux différents pour une expérience diversifiée,
+Système de sauvegarde par niveau pour que les joueurs comparent leurs performances,
+Graphisme et musique retro et nouveaux pour plaire aux anciens comme nouveau joueurs,
+Menu dynamique,
+
+Contrôle : 
+
+q/d/z pour se déplacer/sauter,
+echap pour quitter,
+
+
+Venez dans notre jeu à sensation retro !
