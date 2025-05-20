@@ -387,6 +387,11 @@ void mettreAJourCoordonnees(int *x, int *y, int *yMort) {
     extern int niveauActuel;
     
     switch (niveauActuel) {
+        case 0:
+            *x = 11;
+            *y = 15;
+            *yMort = 23;
+            break;
         case 1:
             *x = 21;
             *y = 15;
@@ -400,17 +405,12 @@ void mettreAJourCoordonnees(int *x, int *y, int *yMort) {
         case 3:
             *x = 22;
             *y = 15;
-            *yMort = 19;
+            *yMort = 23;
             break;
         case 4:
             *x = 20;
             *y = 17;
             *yMort = 23;
-            break;
-        case 0:
-            *x = 11;
-            *y = 15;
-            *yMort = 18;
             break;
         default:
             break;
