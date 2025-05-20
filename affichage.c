@@ -521,7 +521,7 @@ void afficherPaysageSDL(Carte *carte, int positionJoueur, SDL_Renderer *renderer
             case 'o':
                 if (gameTextures != NULL && gameTextures->terre5 != NULL)
                 {
-                    SDL_RenderCopy(renderer, gameTextures->terre, NULL, &tile);
+                    SDL_RenderCopy(renderer, gameTextures->terre5, NULL, &tile);
                 }
                 else
                 {
