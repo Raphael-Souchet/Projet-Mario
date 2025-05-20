@@ -129,11 +129,7 @@ void jouer(const char *fichierTemp, Personnage *perso)
     }
     char *musicpath = NULL;
 
-    if (!initGameAudio())
-    {
-        printf("Avertissement: L'audio n'a pas pu être initialisé. Le jeu continuera sans son.\n");
-    }
-    else
+    if (initGameAudio())
     {
         stopBackgroundMusic();
 
@@ -165,10 +161,6 @@ void jouer(const char *fichierTemp, Personnage *perso)
             playBackgroundMusic(-1);
             menuMusicPlaying = 0; 
         }
-        else
-        {
-            printf("Impossible de charger la musique: %s\n", musicpath);
-        }
     }
 
     int largeurAffichage = 50;
@@ -182,7 +174,6 @@ void jouer(const char *fichierTemp, Personnage *perso)
 
     if (window == NULL)
     {
-        printf("Erreur de création de la fenêtre: %s\n", SDL_GetError());
         cleanupAudio();
         IMG_Quit();
         SDL_Quit();
@@ -192,7 +183,6 @@ void jouer(const char *fichierTemp, Personnage *perso)
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (renderer == NULL)
     {
-        printf("Erreur de création du renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
         cleanupAudio();
         IMG_Quit();
@@ -201,15 +191,10 @@ void jouer(const char *fichierTemp, Personnage *perso)
     }
     perso->score = 0;
     scoreFont = initFont();
-    if (scoreFont == NULL)
-    {
-        printf("Avertissement: Impossible de charger la police. Le score ne sera pas affiché.\n");
-    }
 
     Carte *carte = chargerCarteEnMemoire(fichierTemp);
     if (carte == NULL)
     {
-        printf("Erreur: Impossible de charger la carte %s\n", fichierTemp);
         nettoyerSDL(window, renderer);
         cleanupAudio();
         SDL_Quit();

@@ -5,7 +5,6 @@ char *creerNomFichierTemp(const char *nomJoueur)
     char *fichierTemp = malloc(strlen(nomJoueur) + 9);
     if (fichierTemp == NULL)
     {
-        printf("Erreur d'allocation mémoire\n");
         exit(1);
     }
     sprintf(fichierTemp, "temp_%s.txt", nomJoueur);

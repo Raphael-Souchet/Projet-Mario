@@ -5,7 +5,6 @@ Animation *loadAnimation(SDL_Renderer *renderer, const char *path, int frameCoun
     Animation *animation = (Animation *)malloc(sizeof(Animation));
     if (animation == NULL)
     {
-        printf("Erreur: Impossible d'allouer la mémoire pour l'animation\n");
         return NULL;
     }
 
@@ -20,7 +19,6 @@ Animation *loadAnimation(SDL_Renderer *renderer, const char *path, int frameCoun
     SDL_Surface *surface = IMG_Load(path);
     if (surface == NULL)
     {
-        printf("Erreur: Impossible de charger l'image %s: %s\n", path, IMG_GetError());
         free(animation);
         return NULL;
     }
@@ -28,7 +26,6 @@ Animation *loadAnimation(SDL_Renderer *renderer, const char *path, int frameCoun
     animation->texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (animation->texture == NULL)
     {
-        printf("Erreur: Impossible de créer la texture d'animation: %s\n", SDL_GetError());
         SDL_FreeSurface(surface);
         free(animation);
         return NULL;
@@ -103,7 +100,6 @@ PlayerAnimations *loadPlayerAnimations(SDL_Renderer *renderer)
     PlayerAnimations *animations = (PlayerAnimations *)malloc(sizeof(PlayerAnimations));
     if (animations == NULL)
     {
-        printf("Erreur: Impossible d'allouer la mémoire pour les animations du joueur\n");
         return NULL;
     }
 
@@ -135,19 +131,11 @@ PlayerAnimations *loadPlayerAnimations(SDL_Renderer *renderer)
         if (loadedIdle == NULL)
         {
             loadedIdle = loadAnimation(renderer, paths[i][0], 6, 32, 32, 150);
-            if (loadedIdle != NULL)
-            {
-                printf("Animation idle chargée avec succès: %s\n", paths[i][0]);
-            }
         }
 
         if (loadedRun == NULL)
         {
             loadedRun = loadAnimation(renderer, paths[i][1], 6, 32, 32, 100);
-            if (loadedRun != NULL)
-            {
-                printf("Animation run chargée avec succès: %s\n", paths[i][1]);
-            }
         }
     }
 
@@ -168,8 +156,6 @@ PlayerAnimations *loadPlayerAnimations(SDL_Renderer *renderer)
                 loadedIdle->frameHeight = 32;
                 loadedIdle->frameDuration = 150;
                 loadedIdle->lastFrameTime = SDL_GetTicks();
-
-                printf("Animation idle de secours créée\n");
             }
             SDL_FreeSurface(tempSurface);
         }
@@ -187,14 +173,11 @@ PlayerAnimations *loadPlayerAnimations(SDL_Renderer *renderer)
             loadedRun->frameHeight = loadedIdle->frameHeight;
             loadedRun->frameDuration = 100;
             loadedRun->lastFrameTime = SDL_GetTicks();
-
-            printf("Animation run de secours créée (basée sur idle)\n");
         }
     }
 
     if (loadedIdle == NULL || loadedRun == NULL)
     {
-        printf("Erreur: Impossible de charger les animations de base\n");
         if (loadedIdle != NULL)
             freeAnimation(loadedIdle);
         if (loadedRun != NULL && loadedRun->texture != loadedIdle->texture)
@@ -272,14 +255,8 @@ void loadCarnivoreAnimation(SDL_Renderer *renderer)
         const char *carnivorePaths = "asset/Tiles/carnivore.png";
 
         carnivoreAnimation = loadAnimation(renderer, carnivorePaths, 2, 25, 25, 250);
-        if (carnivoreAnimation != NULL)
-        {
-            printf("Animation de la plante carnivore chargée avec succès: %s\n", carnivorePaths);
-        }
-
         if (carnivoreAnimation == NULL)
         {
-            printf("Échec du chargement de l'animation de la plante carnivore. Utilisation de la représentation par défaut.\n");
             SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, 32, 32, 32, 0, 0, 0, 0);
             if (tempSurface != NULL)
             {
@@ -295,8 +272,6 @@ void loadCarnivoreAnimation(SDL_Renderer *renderer)
                     carnivoreAnimation->frameHeight = 32;
                     carnivoreAnimation->frameDuration = 500;
                     carnivoreAnimation->lastFrameTime = SDL_GetTicks();
-                    
-                    printf("Animation de plante carnivore de secours créée\n");
                 }
                 SDL_FreeSurface(tempSurface);
             }
