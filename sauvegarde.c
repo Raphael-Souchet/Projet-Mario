@@ -365,11 +365,11 @@ void initialiserNiveaux()
     extern Niveau niveaux[MAX_NIVEAUX];
     extern int niveauMaxDebloque;
 
-    strcpy(niveaux[0].fichier, "Mario5.txt");
-    strcpy(niveaux[1].fichier, "Mario1.txt");
-    strcpy(niveaux[2].fichier, "Mario2.txt");
-    strcpy(niveaux[3].fichier, "Mario3.txt");
-    strcpy(niveaux[4].fichier, "Mario4.txt");
+    strcpy(niveaux[0].fichier, "Mario1.txt");
+    strcpy(niveaux[1].fichier, "Mario2.txt");
+    strcpy(niveaux[2].fichier, "Mario3.txt");
+    strcpy(niveaux[3].fichier, "Mario4.txt");
+    strcpy(niveaux[4].fichier, "Mario5.txt");
 
     niveaux[0].debloque = 1;
     

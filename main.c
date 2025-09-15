@@ -137,19 +137,19 @@ void jouer(const char *fichierTemp, Personnage *perso)
         switch (niveauActuel)
         {
         case 0:
-            musicpath = "asset/music/swow.mp3";
-            break;
-        case 1:
             musicpath = "asset/music/overworld.mp3";
             break;
-        case 2:
+        case 1:
             musicpath = "asset/music/beach.mp3";
             break;
-        case 3:
+        case 2:
             musicpath = "asset/music/sky.mp3";
             break;
-        case 4:
+        case 3:
             musicpath = "asset/music/tower.mp3";
+            break;
+        case 4:
+            musicpath = "asset/music/swow.mp3";
             break;
         default:
             musicpath = "asset/music/overworld.mp3";
