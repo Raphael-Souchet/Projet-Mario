@@ -93,9 +93,9 @@ void initialiser_gumbas(Carte *carte, Tab_gumba *tab_gumba)
             break;
         }
         case 4: {
-            static int x2[] = {38, 70, 25, 85, 125, 176, 245};
-            static int y2[] = {15, 11, 15, 15, 15, 15, 15};
-            tab_x = x2; tab_y = y2; count = 7;
+            static int x2[] = {38, 70, 25, 85, 176, 245};
+            static int y2[] = {15, 11, 15, 15, 15, 15};
+            tab_x = x2; tab_y = y2; count = 6;
             break;
         }
         default:
