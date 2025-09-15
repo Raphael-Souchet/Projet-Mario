@@ -1,0 +1,12 @@
+===== Sauvegarde Mon Sep 15 10:12:41 2025 =====
+Nom:Raph
+NiveauMax:2
+PositionX:143
+PositionY:10
+ScoreNiveau0:59
+ScoreNiveau1:17
+ScoreNiveau2:0
+ScoreNiveau3:0
+ScoreNiveau4:0
+Vie:3
+
